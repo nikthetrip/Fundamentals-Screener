@@ -383,26 +383,53 @@ per file di GitHub. Un'avvertenza: la mediana a 3 anni dell'EPS normalizzato nel
 grafico è calcolata su questa serie campionata, quindi con dati mensili userebbe
 ~36 punti invece di ~156 (la dashboard lo dichiara).
 
-### Quanto pesa una build al giorno
+### I dati si sovrascrivono a ogni run
 
-Ogni run riscrive ~6 MB di CSV, e git conserva ogni versione come oggetto nuovo
-(un `.gz` cambia per intero, non si comprime per differenze). In accodamento sono
-**circa 2 GB di oggetti git all'anno**, mentre GitHub consiglia di restare sotto
-1 GB.
+Impostato: `KEEP_SINGLE_DATA_COMMIT: "true"` nel workflow.
 
-Nel workflow c'è un interruttore per questo, in cima allo step *Commit dei dati
-aggiornati*:
+Sulla repo resta **sempre un solo commit di dati**: ogni aggiornamento riscrive
+quello precedente invece di accodarsi. Senza questo, una run al giorno che
+riscrive ~6 MB di CSV aggiungerebbe circa **2 GB di oggetti git all'anno** — git
+conserva ogni versione come oggetto nuovo, e un `.gz` cambia per intero, non si
+comprime per differenze. GitHub consiglia di restare sotto 1 GB.
 
-- `KEEP_SINGLE_DATA_COMMIT: "false"` (default) — ogni aggiornamento è un commit
-  in più: storia completa dei dati, repo che cresce, e un `git pull` dal tuo
-  computer funziona sempre.
-- `KEEP_SINGLE_DATA_COMMIT: "true"` — l'ultimo commit di dati viene **riscritto**
-  invece di accodato, quindi la repo resta a dimensione costante. Usa force-push,
-  quindi se tieni una copia locale dopo un aggiornamento serve
-  `git pull --rebase`. I commit di codice non vengono mai toccati.
+**I commit di codice non vengono mai toccati.** La riscrittura avviene solo se il
+vertice del branch è già un commit di dati. Se hai appena spinto del codice, il
+primo aggiornamento successivo crea un commit nuovo e da lì riprende a
+riscrivere quello. Verificato: dopo tre run consecutive resta un solo commit di
+dati e tutti i commit di codice sono intatti.
 
-Se aggiorni ogni giorno e non ti serve la storia dei dataset passati, metti
-`"true"`.
+Il push usa `--force-with-lease`, non `--force`: se nel frattempo hai spinto
+qualcosa dal tuo computer il push viene **rifiutato** invece di cancellare il tuo
+lavoro, e la Action si fermerebbe con un messaggio esplicito. Non si perde nulla,
+basta rilanciarla.
+
+#### ⚠️ Cosa cambia per la tua copia locale
+
+Dato che la storia del branch viene riscritta, un `git pull` normale dopo un
+aggiornamento automatico non funziona. Usa:
+
+```bash
+git pull --rebase
+```
+
+Oppure, se non hai modifiche locali da conservare, allinea e basta:
+
+```bash
+git fetch origin && git reset --hard origin/main
+```
+
+Se preferisci evitare del tutto questa complicazione, metti
+`KEEP_SINGLE_DATA_COMMIT: "false"`: ogni aggiornamento diventa un commit in più,
+`git pull` resta sempre liscio, e la repo cresce.
+
+### Consumo di minuti Actions
+
+Una run giornaliera su `sp500+russell1000` costa ~14 minuti (test + build +
+commit), cioè ~420 minuti al mese. Su repository **pubbliche** i minuti sono
+illimitati; su una privata il piano gratuito ne dà 2.000 al mese, quindi ci stai
+comodamente. Con `us-all` quotidiano invece sforeresti: usalo a cadenza
+settimanale.
 
 ---
 

@@ -187,6 +187,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Storia completa, non il clone superficiale di default.
+          # Con KEEP_SINGLE_DATA_COMMIT il commit di dati viene RISCRITTO, e
+          # riscrivere il vertice di un clone a profondita' 1 significa spingere
+          # una storia troncata: il suo unico commit ha un genitore che in locale
+          # non esiste. Con la storia intera l'operazione e' quella che sembra.
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -220,16 +227,20 @@ jobs:
           # Committando in accodamento sono circa 2 GB di oggetti git all'anno:
           # GitHub consiglia di restare sotto 1 GB e avvisa a 5.
           #
-          #   "false" (default) — ogni aggiornamento e' un commit in piu'. Storia
-          #            completa dei dati, repo che cresce. Nessun force-push:
-          #            un `git pull` dal tuo computer funziona sempre.
-          #   "true"  — l'ultimo commit di dati viene RISCRITTO invece di
-          #            accodato, quindi la repo non cresce. Richiede force-push:
-          #            se hai una copia locale, dopo un aggiornamento serve
-          #            `git pull --rebase`. Un commit di codice non viene mai
-          #            toccato: in quel caso il primo aggiornamento successivo
-          #            crea un commit nuovo e da li' riprende a riscrivere.
-          KEEP_SINGLE_DATA_COMMIT: "false"
+          #   "true" (impostato) — l'ultimo commit di dati viene RISCRITTO
+          #            invece di accodato: sulla repo resta sempre un solo
+          #            commit di dati e la dimensione non cresce. Serve un
+          #            force-push, quindi da una copia locale dopo un
+          #            aggiornamento ci vuole `git pull --rebase`.
+          #   "false" — ogni aggiornamento e' un commit in piu': storia completa
+          #            dei dataset passati, repo che cresce, `git pull` sempre
+          #            liscio.
+          #
+          # I commit di CODICE non vengono mai toccati: la riscrittura avviene
+          # solo se il vertice e' gia' un commit di dati. Se hai appena spinto
+          # del codice, il primo aggiornamento successivo crea un commit nuovo e
+          # da li' riprende a riscrivere quello.
+          KEEP_SINGLE_DATA_COMMIT: "true"
           DATA_COMMIT_PREFIX: "Update Lynch dataset"
         run: |
           git config user.name "github-actions[bot]"
@@ -250,7 +261,14 @@ jobs:
              && git log -1 --pretty=%s | grep -q "^$DATA_COMMIT_PREFIX"; then
             echo "Riscrivo il commit di dati precedente (repo a dimensione costante)."
             git commit --amend -m "$MSG"
-            git push --force-with-lease
+            # --force-with-lease, non --force: se nel frattempo qualcuno ha
+            # spinto sul branch il push viene RIFIUTATO invece di cancellare il
+            # suo lavoro. In quel caso non si perde nulla: basta rilanciare.
+            if ! git push --force-with-lease; then
+              echo "::error::Push rifiutato: il branch e' cambiato durante la build."
+              echo "Nessun dato perso. Rilancia la Action."
+              exit 1
+            fi
           else
             git commit -m "$MSG"
             git push
