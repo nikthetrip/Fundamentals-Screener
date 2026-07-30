@@ -1,4 +1,5 @@
 ticker,motivo
+ADT,"nessun EPS utilizzabile; tag presenti ma non usabili: CommonStockDividendsPerShareDeclared, CommonStockParOrStatedValuePerShare, EarningsPerShareBasic, EarningsPerShareBasicAndDiluted"
 ALM,nessun tag EPS ne' utile netto in us-gaap (possibile filer estero/IFRS)
 AS,nessun tag EPS ne' utile netto in us-gaap (possibile filer estero/IFRS)
 ASND,nessun tag EPS ne' utile netto in us-gaap (possibile filer estero/IFRS)
