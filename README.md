@@ -308,15 +308,62 @@ restare vuote senza spiegazione.
 Alla fine un job unisce i pezzi e committa i CSV aggiornati nella repo. Se hai
 l'app su Streamlit Cloud, si riavvia da sola con i dati nuovi.
 
-### La schedulazione automatica
+### Le cadenze automatiche
 
-Gira **ogni giorno alle 4 del mattino, ora di Roma** (`cron: "0 2 * * *"`).
+Attiva ora: **ogni giorno alle 4 del mattino, ora di Roma** (`cron: "0 2 * * *"`).
 
-GitHub accetta solo UTC, quindi l'ora legale sposta l'orario reale: le 02:00 UTC
-sono le 04:00 a Roma da fine marzo a fine ottobre e le 03:00 nei mesi di ora
-solare. Non vale la pena inseguirlo: GitHub mette in coda i job schedulati e li
-avvia con ritardi che arrivano a mezz'ora, quindi la precisione al minuto non
-esiste comunque.
+Nel workflow ci sono tutte e tre pronte all'uso, una attiva e due commentate:
+
+```yaml
+schedule:
+  - cron: "0 2 * * *"      # ATTIVA — ogni giorno alle 4
+  # - cron: "0 2 * * 1"    # ogni lunedì alle 4
+  # - cron: "0 2 1 * *"    # il primo del mese alle 4
+```
+
+Per cambiare cadenza: commenta quella in uso, togli il commento a quella che
+vuoi. Il bottone **Run workflow** resta sempre disponibile per un aggiornamento
+immediato, indipendentemente dalla schedulazione.
+
+#### ⚠️ Sono alternative, non cumulative
+
+Attivarne più di una non raddoppia gli aggiornamenti: li fa litigare. Il dataset
+è **un unico set di CSV** in `data/`, quindi se la giornaliera scrive
+`sp500+russell1000` e la settimanale scrive `us-all`, il lunedì il file è
+l'intero listino e il martedì torna alle 990 società — l'ultima che gira vince e
+i dati oscillano fra universi diversi senza che nulla lo segnali. E se girassero
+tutte con lo stesso universo, la più frequente renderebbe le altre inutili.
+Tienine **una**.
+
+#### L'ora è in UTC
+
+GitHub non accetta fusi orari. `02:00` UTC sono le **04:00 a Roma** da fine marzo
+a fine ottobre (ora legale) e le 03:00 nei mesi di ora solare. Non vale la pena
+inseguire lo scarto: GitHub accoda i job schedulati e li avvia con ritardi che
+arrivano a mezz'ora, quindi la precisione al minuto non esiste comunque.
+
+#### Cosa protegge la run giornaliera
+
+- **`concurrency`**: una build alla volta. Una run lunga può accavallarsi con la
+  successiva, e due job che scrivono gli stessi CSV e fanno push sullo stesso
+  branch si sovrascrivono a vicenda. Vanno in coda, senza cancellare quella in
+  corso.
+- **Controllo del secret in testa**: se manca `SEC_USER_AGENT` (o non contiene
+  una email) la Action si ferma in dieci secondi con l'istruzione esatta, invece
+  di installare tutto, girare i test e fallire venti minuti dopo.
+- **Riepilogo nella pagina della run**: universo, risoluzione, job paralleli e
+  tipo di avvio, così a colpo d'occhio sai cosa ha girato.
+- **Se uno shard fallisce, il commit non parte.** Con `us-all` diviso su più job,
+  un dataset a cui manca un pezzo sembrerebbe completo: meglio nessun
+  aggiornamento che un universo troncato spacciato per intero.
+
+#### Consumo di minuti Actions
+
+Una run giornaliera su `sp500+russell1000` costa ~14 minuti (test + build +
+commit), cioè ~420 minuti al mese. Su repository **pubbliche** i minuti sono
+illimitati; su una privata il piano gratuito ne dà 2.000 al mese, quindi ci stai
+comodamente. Con `us-all` quotidiano invece sforeresti: usalo a cadenza
+settimanale.
 
 ### freq: cosa cambia (e cosa non cambia)
 

@@ -27,19 +27,45 @@ on:
         type: choice
         default: "6"
         options: ["1", "2", "4", "6", "8", "12"]
-  # Aggiornamento automatico GIORNALIERO alle 4 del mattino, ora di Roma.
+  # ---------------------------------------------------------------------------
+  # AGGIORNAMENTO AUTOMATICO
   #
-  # GitHub accetta solo UTC, quindi l'ora legale sposta l'orario effettivo:
-  # 02:00 UTC sono le 04:00 a Roma da fine marzo a fine ottobre (CEST) e le
-  # 03:00 nei mesi di ora solare (CET). Non c'e' modo di dichiarare un fuso, e
-  # non vale la pena inseguirlo: GitHub mette in coda i job schedulati e li
-  # avvia con ritardi che arrivano a mezz'ora, quindi la precisione al minuto
-  # non esiste comunque.
+  # Le tre cadenze qui sotto sono ALTERNATIVE, non cumulative. Il dataset e' un
+  # unico set di CSV in data/: se due schedulazioni girano con universi diversi,
+  # l'ultima sovrascrive la precedente e i dati oscillano fra un universo e
+  # l'altro senza che nulla lo segnali. Se invece girassero con lo stesso
+  # universo, la piu' frequente renderebbe le altre inutili.
+  # Quindi: UNA sola attiva. Per cambiare cadenza, commenta quella in uso e
+  # togli il commento a quella che vuoi.
+  #
+  # L'ORA E' IN UTC, GitHub non accetta fusi. 02:00 UTC sono le 04:00 a Roma da
+  # fine marzo a fine ottobre (ora legale) e le 03:00 nei mesi di ora solare.
+  # Non vale la pena inseguire lo scarto: GitHub accoda i job schedulati e li
+  # avvia con ritardi che arrivano a mezz'ora.
+  #
+  # Il bottone "Run workflow" resta sempre disponibile per un aggiornamento
+  # immediato, con qualunque universo e risoluzione.
+  # ---------------------------------------------------------------------------
   schedule:
+    # ATTIVA — ogni giorno alle 4 del mattino (ora di Roma)
     - cron: "0 2 * * *"
+
+    # Ogni lunedi' alle 4 del mattino
+    # - cron: "0 2 * * 1"
+
+    # Il primo giorno di ogni mese alle 4 del mattino
+    # - cron: "0 2 1 * *"
 
 permissions:
   contents: write
+
+# Una build alla volta. Con la cadenza giornaliera una run lunga (us-all) puo'
+# accavallarsi con quella successiva: due job che scrivono gli stessi CSV e
+# fanno push sullo stesso branch si sovrascrivono a vicenda. In coda, non in
+# parallelo — e senza cancellare quella in corso, che ha gia' fatto il lavoro.
+concurrency:
+  group: build-lynch-data
+  cancel-in-progress: false
 
 env:
   SCOPE: ${{ github.event.inputs.scope || 'sp500+russell1000' }}
@@ -62,6 +88,22 @@ jobs:
           python-version: "3.12"
           cache: pip
       - run: pip install -r requirements.txt
+      - name: Verifica che il contatto per la SEC sia configurato
+        env:
+          SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
+        run: |
+          # La SEC risponde 403 alle richieste senza un contatto reale, quindi
+          # senza questo segreto la build non puo' funzionare. Meglio fermarsi
+          # qui in dieci secondi che dopo aver installato tutto e girato i test.
+          if [ -z "${SEC_USER_AGENT:-}" ] || case "$SEC_USER_AGENT" in *@*) false ;; *) true ;; esac; then
+            echo "::error::Manca il secret SEC_USER_AGENT (o non contiene una email)."
+            echo "Impostalo in Settings → Secrets and variables → Actions:"
+            echo "  nome:   SEC_USER_AGENT"
+            echo "  valore: Lynch Research tua@email.com"
+            exit 1
+          fi
+          echo "Contatto SEC configurato."
+
       - name: Verifica logica (test offline)
         run: |
           python test_logic.py
@@ -85,6 +127,16 @@ jobs:
           fi
           echo "shards=$N" >> "$GITHUB_OUTPUT"
           echo "matrix=$(python -c "import json,sys; print(json.dumps(list(range(int(sys.argv[1])))))" "$N")" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Build Lynch data"
+            echo ""
+            echo "| | |"
+            echo "|---|---|"
+            echo "| Universo | \`$SCOPE\` |"
+            echo "| Risoluzione storico | \`$FREQ\` |"
+            echo "| Job paralleli | $N |"
+            echo "| Avvio | ${{ github.event_name }} |"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   # -------------------------------------------------------------------------
   # 2. Elaborazione vera e propria, eventualmente divisa fra piu' job.
