@@ -124,13 +124,20 @@ flow, CAGR, classificazione Lynch e arbitraggio fra fonti EPS discordi.
 
 ## Passo 3 — Genera i dati
 
-Tre universi, dalla prova rapida all'intero mercato USA:
+Dalla prova rapida all'intero mercato USA. Più universi si uniscono con `+`,
+senza elaborare due volte le società in comune:
 
 ```bash
-python build_dataset.py                       # 10 ticker di test, ~1 minuto
-python build_dataset.py --universe sp500      # S&P 500, ~10 minuti
-python build_dataset.py --universe us-all     # ~7.500 titoli USA, ~45 minuti
+python build_dataset.py                                  # 10 ticker, ~1 min
+python build_dataset.py --universe sp500                 # ~500 societa', ~6 min
+python build_dataset.py --universe sp500+russell1000     # ~990 societa', ~12 min
+python build_dataset.py --universe us-all                # ~6.600 societa', ~75 min
 ```
+
+`sp500+russell1000` è il default della GitHub Action: copre large e mid cap
+americane e porta la densità del confronto per industria a ~7,6 società per
+industria (contro 4,5 del solo S&P 500), cioè molti meno confronti che devono
+ripiegare sul settore.
 
 `--full` resta valido come alias di `--universe sp500`.
 
@@ -198,9 +205,38 @@ pannello dedicato — così un titolo mancante non sembra un problema dei filtri
 ## Passo 4 — Lancia la dashboard
 
 ```bash
-streamlit run app.py
+./run.sh
 ```
-Si apre su `http://localhost:8501`.
+
+Si apre su `http://localhost:8501`. Lo script ricorda al posto tuo il percorso
+del virtualenv e la variabile per la SEC.
+
+| Comando | Cosa fa |
+|---|---|
+| `./run.sh` | apre la dashboard con i dati che ci sono |
+| `./run.sh --update` | **prima** rigenera i dati, poi apre |
+| `./run.sh --update-only` | rigenera e basta |
+| `./run.sh --update --universe sp500` | aggiorna un universo diverso |
+| `./run.sh --port 8600` | usa un'altra porta |
+
+Per aggiornare i dati serve il contatto per la SEC. Scrivilo una volta in un
+file locale (non versionato, vedi `.gitignore`):
+
+```bash
+echo "Lynch Research tua@email.com" > .sec_user_agent
+```
+
+### ⚠️ Aprire la dashboard NON aggiorna i dati
+
+Sono due operazioni separate, di proposito:
+
+- `build_dataset.py` scarica da SEC e yfinance e scrive i CSV in `data/`. Minuti.
+- `app.py` legge solo quei CSV. Non tocca la rete. Secondi.
+
+Tenerle separate significa che la dashboard si apre subito invece di far
+aspettare un quarto d'ora. In alto a sinistra c'è sempre scritto `updated
+<data e ora>`, così sai a quando risalgono i numeri che stai guardando. Per
+aggiornarli: `./run.sh --update`, oppure il bottone della GitHub Action.
 
 NB: l'interfaccia della dashboard è in **inglese** (etichette, caption, nomi
 colonna); questo README resta in italiano per chi la mantiene.
@@ -215,9 +251,9 @@ La colonna **Δ P/E vs ind.** confronta il P/E del titolo con la **mediana della
 sua industria**: un P/E di 30 è caro per una utility ed economico per il
 software, quindi il numero assoluto da solo dice metà della storia. Mediana e
 non media perché i multipli hanno una coda lunga a destra e una sola società a
-P/E 900 sposterebbe la media di tutto il gruppo. Il confronto compare solo se
-l'industria ha almeno **5** società nel dataset: sotto quella soglia non è un
-riferimento, è un aneddoto.
+P/E 900 sposterebbe la media di tutto il gruppo. Se l'industria ha meno di **5**
+società nel dataset il confronto ripiega sul settore, e il valore è marcato con
+un **asterisco**: un gruppo più largo, quindi meno stringente, e va detto.
 
 L'export CSV contiene **tutto**: bilanci, indicatori e ogni CAGR (3, 5 e 10 anni
 per utile per azione, ricavi, free cash flow, utile netto e flusso di cassa
@@ -233,8 +269,7 @@ operativo), oltre alle colonne diagnostiche.
 | 🔍 **Data quality** | **formula e fonte di ogni metrica con link di verifica**, estremi di ogni CAGR, divergenze fra fonti, eventi societari, filing SEC |
 
 Nella scheda **Valuation** i sei KPI sono in fila e il conto si chiude a vista:
-`EPS × P/E target = fair value` e `prezzo ÷ EPS = P/E`. Prima l'EPS non c'era e
-si leggeva un fair value senza il numero da cui deriva.
+`EPS × P/E target = fair value` e `prezzo ÷ EPS = P/E`.
 
 ### Il sanity check (scheda Data quality)
 
@@ -255,6 +290,72 @@ sembrare qualunque cosa scegliendo l'anno di partenza: mostrare gli estremi rend
 la scelta ispezionabile, e rende visibile quando un "+98% l'anno" dipende da una
 base depressa. Le combinazioni non calcolabili sono elencate come tali invece di
 restare vuote senza spiegazione.
+
+---
+
+## Aggiornare i dati da GitHub
+
+### Il bottone
+
+**Actions** → **Build Lynch data** → **Run workflow**. Tre scelte:
+
+| Campo | Significato |
+|---|---|
+| **scope** | quale universo: `test`, `sp500`, `sp500+russell1000` (default), `russell1000`, `us-all` |
+| **freq** | risoluzione dello **storico dei prezzi** — vedi sotto, non è la frequenza dei run |
+| **shards** | in quanti job dividere il lavoro; serve solo a `us-all` |
+
+Alla fine un job unisce i pezzi e committa i CSV aggiornati nella repo. Se hai
+l'app su Streamlit Cloud, si riavvia da sola con i dati nuovi.
+
+### La schedulazione automatica
+
+Gira **ogni giorno alle 4 del mattino, ora di Roma** (`cron: "0 2 * * *"`).
+
+GitHub accetta solo UTC, quindi l'ora legale sposta l'orario reale: le 02:00 UTC
+sono le 04:00 a Roma da fine marzo a fine ottobre e le 03:00 nei mesi di ora
+solare. Non vale la pena inseguirlo: GitHub mette in coda i job schedulati e li
+avvia con ritardi che arrivano a mezz'ora, quindi la precisione al minuto non
+esiste comunque.
+
+### freq: cosa cambia (e cosa non cambia)
+
+`freq` è la **risoluzione dello storico dei prezzi**, non la frequenza con cui
+gira la build. Tocca solo il grafico della scheda Valuation e il peso del file.
+**Non tocca** KPI, ROE, FCF, CAGR, delta di industria, screener e tabelle
+finanziarie: quelli vengono dai depositi EDGAR e dai valori correnti.
+
+| freq | Punti/anno | 17 anni di storia | File (990 società) | Cosa vedi |
+|---|---|---|---|---|
+| `D` giornaliero | ~250 | ~4.250 punti | ~21 MB | dettaglio non distinguibile a quello zoom |
+| `W` settimanale | ~52 | ~880 punti | **4,2 MB** | ogni movimento leggibile — **default consigliato** |
+| `M` mensile | 12 | ~200 punti | ~1 MB | i cali che rientrano in poche settimane spariscono |
+
+Il mensile serve su `us-all`, dove il giornaliero sfonderebbe il limite di 100 MB
+per file di GitHub. Un'avvertenza: la mediana a 3 anni dell'EPS normalizzato nel
+grafico è calcolata su questa serie campionata, quindi con dati mensili userebbe
+~36 punti invece di ~156 (la dashboard lo dichiara).
+
+### Quanto pesa una build al giorno
+
+Ogni run riscrive ~6 MB di CSV, e git conserva ogni versione come oggetto nuovo
+(un `.gz` cambia per intero, non si comprime per differenze). In accodamento sono
+**circa 2 GB di oggetti git all'anno**, mentre GitHub consiglia di restare sotto
+1 GB.
+
+Nel workflow c'è un interruttore per questo, in cima allo step *Commit dei dati
+aggiornati*:
+
+- `KEEP_SINGLE_DATA_COMMIT: "false"` (default) — ogni aggiornamento è un commit
+  in più: storia completa dei dati, repo che cresce, e un `git pull` dal tuo
+  computer funziona sempre.
+- `KEEP_SINGLE_DATA_COMMIT: "true"` — l'ultimo commit di dati viene **riscritto**
+  invece di accodato, quindi la repo resta a dimensione costante. Usa force-push,
+  quindi se tieni una copia locale dopo un aggiornamento serve
+  `git pull --rebase`. I commit di codice non vengono mai toccati.
+
+Se aggiorni ogni giorno e non ti serve la storia dei dataset passati, metti
+`"true"`.
 
 ---
 
