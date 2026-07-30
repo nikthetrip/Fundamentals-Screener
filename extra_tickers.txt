@@ -1,0 +1,10 @@
+# Ticker extra, oltre all'SP500 -- uno per riga.
+# Righe vuote o che iniziano con '#' vengono ignorate.
+#
+# Si sommano sempre alla lista base (sia in modalita' test sia --full), non
+# la sostituiscono. Devono avere utili pubblici su SEC EDGAR (societa' USA
+# quotate) per essere elaborabili dalla stessa pipeline EDGAR + prezzi del
+# resto del dataset.
+#
+# Esempio: titoli non ancora nell'indice SP500 (IPO recenti, mid cap, ecc.)
+RDDT

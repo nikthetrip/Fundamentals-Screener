@@ -1,0 +1,43 @@
+# --- Ambiente virtuale (497 MB: non va mai in un repo) ---
+.venv/
+venv/
+env/
+
+# --- Cache Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# --- Configurazione locale di Claude Code ---
+# Contiene la tua email e i permessi della macchina: e' locale, non del progetto.
+.claude/settings.local.json
+
+# --- Cache della build ---
+# L'archivio companyfacts della SEC scaricato da --bulk-facts (~1,5 GB).
+.cache/
+
+# --- File parziali degli shard ---
+# Prodotti dai job paralleli e consumati da `--merge`: intermedi, non risultati.
+data/*.part*.csv
+data/*.part*.csv.gz
+
+# --- Storico non compresso ---
+# La pipeline scrive history.csv.gz; un .csv qui e' un residuo di run vecchi e
+# su universi ampi supera il limite di 100 MB di GitHub.
+data/history.csv
+
+# --- Copie di lavoro ---
+data_*backup*/
+*.bak
+
+# --- Sistema operativo ---
+.DS_Store
+Thumbs.db
+
+# NB: il resto di data/ (fundamentals, history.csv.gz, financials_annual,
+# cagr_detail, events, filings, skipped) VA committato di proposito: e' cosi'
+# che Streamlit Cloud trova i dati senza rigenerarli a ogni avvio.
+
+# --- Contatto per la SEC: contiene un indirizzo email, resta locale ---
+.sec_user_agent

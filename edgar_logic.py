@@ -1,0 +1,1559 @@
+"""
+edgar_logic.py — Logica pura (niente rete) per costruire la Lynch earnings line.
+
+Separata dalle chiamate di rete così da poterla testare offline con dati sintetici.
+Le funzioni qui dentro trasformano i "facts" grezzi di SEC EDGAR in una serie
+TTM EPS, e poi in una fair value line allineata ai prezzi.
+
+Concetti chiave:
+- EDGAR companyfacts espone EarningsPerShareDiluted (o ...Basic) come lista di
+  "fatti", ognuno con start/end/val/fy/fp/form/frame.
+- Un fatto con durata ~90 giorni e' un TRIMESTRE discreto; ~365 giorni e' un ANNO (FY).
+- Il Q4 discreto spesso NON e' riportato: si ricava come FY - (Q1+Q2+Q3).
+- TTM EPS a una certa data = somma degli ultimi 4 EPS trimestrali discreti.
+- Fair value(t) = TTM_EPS(as-of t) * target_PE   (es. P/E 15 -> "prezzo a P/E 15").
+"""
+
+from __future__ import annotations
+from datetime import date, datetime
+from typing import Optional
+
+
+# ---------------------------------------------------------------------------
+# Parsing dei facts EDGAR
+# ---------------------------------------------------------------------------
+
+MAX_PLAUSIBLE_EPS = 5000.0
+
+# Durate (in giorni) che qualificano un fatto XBRL come trimestrale o annuale.
+QUARTER_MIN_DUR, QUARTER_MAX_DUR = 80, 100
+ANNUAL_MIN_DUR, ANNUAL_MAX_DUR = 330, 400
+
+# Ampiezza ammessa per una finestra TTM, misurata tra la chiusura del primo e
+# quella del quarto trimestre sommati. Quattro trimestri consecutivi distano
+# ~273 giorni (3 trimestri). Un valore intorno a 365 significa che i quattro
+# punti coprono CINQUE trimestri, cioe' che manca un trimestre in mezzo: la
+# somma non e' un TTM e non va prodotta.
+TTM_MIN_SPAN, TTM_MAX_SPAN = 240, 310
+
+# Oltre questa eta' l'ultimo dato EDGAR non descrive piu' l'esercizio corrente.
+# Berkshire, che dal 2014 tagga l'EPS per classe di azioni, espone una serie
+# ferma al 2013: senza questa soglia veniva usata come se fosse attuale.
+MAX_SERIES_AGE_DAYS = 200
+
+# La stessa soglia applicata a una serie ANNUALE scarterebbe societa'
+# perfettamente in regola. Chi deposita solo il bilancio d'esercizio ha, per
+# costruzione, un ultimo dato vecchio di parecchi mesi: a fine luglio l'ultimo
+# esercizio chiuso il 31 dicembre ha 210 giorni. Con la soglia trimestrale
+# sparivano dallo screener decine di societa' per ogni centinaio esaminato,
+# tutte con lo stesso motivo "serie obsoleta: 210 giorni". Un anno e mezzo e'
+# il limite oltre il quale un bilancio annuale e' davvero fermo.
+MAX_ANNUAL_SERIES_AGE_DAYS = 550
+
+# SECONDA soglia, molto piu' larga: oltre questa la serie non e' nemmeno
+# UTILIZZABILE e il ticker esce dal dataset.
+#
+# Servono due soglie perche' i due casi non sono lo stesso problema. Berkshire,
+# ferma al 2013, e' una serie di un'altra epoca: va buttata. Citigroup, il cui
+# ultimo dato nelle API XBRL della SEC si fermava al trimestre precedente, ha
+# invece uno storico completo e corretto — solo in ritardo di un trimestre.
+# Con una soglia sola finivano nello stesso cestino, e Citigroup, Molson Coors
+# e Paramount sparivano dallo screener pur avendo dati validi e un EPS corrente
+# disponibile dal provider di mercato. Tra le due soglie la serie si usa, con
+# la sua eta' dichiarata: e' l'arbitraggio di choose_eps a preferire il dato
+# aggiornato del provider per i valori "di oggi".
+MAX_SERIES_USABLE_DAYS = 420
+MAX_ANNUAL_SERIES_USABLE_DAYS = 800
+
+# Concetti XBRL usati per l'EPS, in ordine di PREFERENZA (non di priorita'
+# assoluta: a parita' di freschezza vince il primo, ma un tag con dati piu'
+# recenti batte sempre uno piu' vecchio — vedi _pick_concept).
+EPS_TAG_CANDIDATES = (
+    "EarningsPerShareDiluted",
+    "EarningsPerShareBasicAndDiluted",
+    "EarningsPerShareBasic",
+    "IncomeLossFromContinuingOperationsPerDilutedShare",
+    "IncomeLossFromContinuingOperationsPerBasicShare",
+)
+
+# Concetti per l'utile netto, usati quando l'EPS non e' disponibile perche'
+# la societa' lo tagga per classe di azioni (fatti dimensionali, che le API
+# XBRL della SEC non espongono). Vedi build_derived_eps_facts.
+NET_INCOME_TAG_CANDIDATES = (
+    "NetIncomeLoss",
+    "NetIncomeLossAvailableToCommonStockholdersBasic",
+    "ProfitLoss",
+)
+
+
+def _to_date(s: str) -> date:
+    return datetime.strptime(s, "%Y-%m-%d").date()
+
+
+def _pick_concept(gaap: dict, candidates: tuple[str, ...],
+                  unit: str) -> tuple[Optional[dict], Optional[str]]:
+    """
+    Sceglie fra piu' concetti XBRL quello con i dati PIU' RECENTI.
+
+    Prendere semplicemente il primo della lista che contiene dati e' sbagliato:
+    una societa' puo' aver smesso di usare un tag anni fa e averlo sostituito con
+    un altro. Emerson (EMR) ne e' il caso tipico: 'EarningsPerShareDiluted' e'
+    fermo, mentre 'IncomeLossFromContinuingOperationsPerDilutedShare' e'
+    aggiornato. A parita' di data piu' recente vince l'ordine di preferenza.
+    """
+    best_key = None
+    best: tuple[Optional[dict], Optional[str]] = (None, None)
+    for rank, name in enumerate(candidates):
+        node = gaap.get(name)
+        rows = (node or {}).get("units", {}).get(unit)
+        if not rows:
+            continue
+        ends = [r["end"] for r in rows if r.get("end")]
+        if not ends:
+            continue
+        key = (max(ends), -rank)
+        if best_key is None or key > best_key:
+            best_key, best = key, (node, name)
+    return best
+
+
+def _normalize_facts(rows: list[dict], concept: str,
+                     max_abs: Optional[float] = None) -> list[dict]:
+    """Normalizza i fatti grezzi XBRL nella forma usata dal resto del modulo."""
+    out = []
+    for r in rows:
+        if "start" not in r or "end" not in r or r.get("val") is None:
+            continue
+        try:
+            start = _to_date(r["start"])
+            end = _to_date(r["end"])
+        except (ValueError, TypeError):
+            continue
+        filed = None
+        if r.get("filed"):
+            try:
+                filed = _to_date(r["filed"])
+            except (ValueError, TypeError):
+                filed = None
+        val = float(r["val"])
+        # scarta valori impossibili: quasi sempre errori di unita' nei dati XBRL
+        if max_abs is not None and abs(val) > max_abs:
+            continue
+        out.append({
+            "start": start,
+            "end": end,
+            "val": val,
+            "fy": r.get("fy"),
+            "fp": r.get("fp"),
+            "form": r.get("form"),
+            "frame": r.get("frame"),
+            "filed": filed,
+            "dur": (end - start).days,
+            "concept": concept,
+        })
+    return out
+
+
+def extract_eps_facts(companyfacts: dict) -> list[dict]:
+    """
+    Estrae i fatti EPS da un JSON companyfacts di EDGAR.
+
+    Prova piu' concetti XBRL (non tutte le societa' usano EarningsPerShareDiluted)
+    e sceglie quello con i dati piu' recenti.
+
+    LIMITE NOTO DELL'API: companyfacts espone solo i fatti SENZA dimensioni. Le
+    societa' con piu' classi di azioni taggano l'EPS con un asse ClassOfStockAxis,
+    quindi per loro qui non arriva nulla (Visa, Constellation, KKR) oppure arriva
+    una serie interrotta all'anno in cui hanno cambiato tagging (Berkshire, ferma
+    al 2013). Per quei casi vedi build_derived_eps_facts.
+
+    Ritorna lista normalizzata: {start, end, val, fy, fp, form, frame, filed,
+    dur, concept}.
+    """
+    gaap = companyfacts.get("facts", {}).get("us-gaap", {})
+    node, name = _pick_concept(gaap, EPS_TAG_CANDIDATES, "USD/shares")
+    if not node:
+        return []
+    rows = node.get("units", {}).get("USD/shares", [])
+    return _normalize_facts(rows, name or "", max_abs=MAX_PLAUSIBLE_EPS)
+
+
+def extract_net_income_facts(companyfacts: dict) -> list[dict]:
+    """Fatti di utile netto (in dollari), stessa forma normalizzata dell'EPS."""
+    gaap = companyfacts.get("facts", {}).get("us-gaap", {})
+    node, name = _pick_concept(gaap, NET_INCOME_TAG_CANDIDATES, "USD")
+    if not node:
+        return []
+    return _normalize_facts(node.get("units", {}).get("USD", []), name or "")
+
+
+def extract_dei_shares(companyfacts: dict) -> Optional[tuple[date, float]]:
+    """
+    Numero di azioni in circolazione dalla copertina dei filing (taxonomy 'dei').
+
+    Utile come denominatore quando l'EPS non e' ricavabile. Anche questo dato
+    e' dimensionale per le societa' multiclasse: in quei casi l'ultimo valore
+    disponibile e' vecchio di anni (Visa si ferma al 2010) e va scartato dal
+    chiamante in base alla data, che per questo viene restituita.
+    """
+    rows = (companyfacts.get("facts", {}).get("dei", {})
+            .get("EntityCommonStockSharesOutstanding", {})
+            .get("units", {}).get("shares", []))
+    best: Optional[tuple[date, float]] = None
+    for r in rows:
+        if not r.get("end") or r.get("val") is None:
+            continue
+        try:
+            d = _to_date(r["end"])
+        except (ValueError, TypeError):
+            continue
+        val = float(r["val"])
+        if val <= 0:
+            continue
+        if best is None or d > best[0]:
+            best = (d, val)
+    return best
+
+
+def build_derived_eps_facts(companyfacts: dict, shares: float) -> list[dict]:
+    """
+    Ricostruisce fatti EPS dividendo l'utile netto EDGAR per un numero di azioni.
+
+    Serve alle societa' multiclasse, per le quali l'EPS non e' esposto dalle API
+    XBRL ma l'utile netto si'. Il numeratore resta quindi un dato primario SEC;
+    il denominatore e' un numero di azioni COSTANTE, quindi la serie storica non
+    riflette buyback e diluizioni passate. E' una stima, non un dato depositato:
+    chi la usa deve etichettarla come tale (vedi eps_source='edgar-derived').
+    """
+    if not shares or shares <= 0:
+        return []
+    facts = extract_net_income_facts(companyfacts)
+    out = []
+    for f in facts:
+        val = f["val"] / shares
+        if abs(val) > MAX_PLAUSIBLE_EPS:
+            continue
+        out.append({**f, "val": val, "concept": f["concept"] + "/shares"})
+    return out
+
+
+def series_age_days(series: list[tuple[date, float]],
+                    today: Optional[date] = None) -> Optional[int]:
+    """Giorni trascorsi dall'ultimo punto della serie. None se la serie e' vuota."""
+    if not series:
+        return None
+    return ((today or date.today()) - max(d for d, _ in series)).days
+
+
+def max_age_for_method(method: str) -> int:
+    """
+    Soglia di obsolescenza adatta al passo della serie.
+
+    Una serie TTM trimestrale deve essere recente; una serie annuale e'
+    normale che abbia mesi sulle spalle. Applicare la stessa soglia a entrambe
+    significa scartare chi deposita solo il 10-K.
+    """
+    return MAX_ANNUAL_SERIES_AGE_DAYS if method == "annual" else MAX_SERIES_AGE_DAYS
+
+
+def max_usable_age_for_method(method: str) -> int:
+    """Eta' oltre la quale la serie non e' piu' utilizzabile affatto."""
+    return (MAX_ANNUAL_SERIES_USABLE_DAYS if method == "annual"
+            else MAX_SERIES_USABLE_DAYS)
+
+
+def series_is_stale(series: list[tuple[date, float]],
+                    max_age_days: int = MAX_SERIES_AGE_DAYS,
+                    today: Optional[date] = None) -> bool:
+    """
+    True se la serie e' troppo vecchia per descrivere l'esercizio corrente.
+
+    Una serie obsoleta non e' un dato degradato: e' un dato di un'altra epoca.
+    Va scartata, non pesata meno.
+    """
+    age = series_age_days(series, today)
+    return age is None or age > max_age_days
+
+
+def _dedupe_by_end(facts: list[dict]) -> dict[date, dict]:
+    """
+    Piu' fatti possono avere lo stesso 'end' (comparativi ri-dichiarati in filing
+    successivi, es. dopo uno stock split). Teniamo il piu' affidabile:
+    PREFERISCI IL FILING PIU' RECENTE (riflette split e rettifiche); a parita' di
+    data di deposito, preferisci quello con 'frame' (valore standardizzato SEC).
+
+    Questa regola e' cio' che evita la contaminazione pre/post-split: il valore
+    piu' vecchio (pre-split, numero grande) viene scartato in favore di quello
+    ridepositato dopo lo split.
+    """
+    best: dict[date, dict] = {}
+    for f in facts:
+        e = f["end"]
+        cur = best.get(e)
+        if cur is None:
+            best[e] = f
+            continue
+        f_filed = f.get("filed") or date.min
+        c_filed = cur.get("filed") or date.min
+        if f_filed > c_filed:
+            best[e] = f
+        elif f_filed == c_filed and f.get("frame") and not cur.get("frame"):
+            best[e] = f
+    return best
+
+
+def build_quarterly_eps(facts: list[dict]) -> list[tuple[date, float]]:
+    """
+    Ricostruisce una serie di EPS TRIMESTRALI DISCRETI (end_date, eps_del_trimestre).
+
+    Strategia:
+    1. Prendi i fatti "quarterly-like" (durata 80..100 gg) -> trimestri discreti diretti.
+    2. Prendi i fatti "annual" (durata 330..400 gg) -> FY.
+    3. Per ogni FY, se conosciamo esattamente tre trimestri di quell'esercizio,
+       ricava il quarto come FY - (Q1+Q2+Q3). Il Q4 discreto quasi mai viene
+       depositato: esiste il 10-K, non un "10-Q del quarto trimestre".
+
+    LA FINESTRA DELL'ESERCIZIO E' LA PARTE DELICATA. Deve iniziare subito DOPO la
+    chiusura dell'esercizio precedente. Una finestra anche solo di pochi giorni
+    piu' larga vi fa rientrare il Q4 dell'anno prima — che questo stesso ciclo ha
+    appena ricostruito e inserito nella mappa — portando il conteggio a quattro e
+    impedendo per sempre la ricostruzione dell'anno corrente. Il difetto si
+    auto-alterna (ricostruisce l'anno N solo se non ha ricostruito N-1) e
+    colpiva circa meta' dell'S&P 500: Estee Lauder risultava a +1,25$ di utile
+    per azione mentre il TTM reale era -0,71$.
+
+    Per lo stesso motivo gli esercizi vanno percorsi in ORDINE CRONOLOGICO: su un
+    dizionario l'ordine dipende da come sono arrivati i fatti nel JSON.
+    """
+    quarterly = _dedupe_by_end(
+        [f for f in facts if QUARTER_MIN_DUR <= f["dur"] <= QUARTER_MAX_DUR])
+    annual = _dedupe_by_end(
+        [f for f in facts if ANNUAL_MIN_DUR <= f["dur"] <= ANNUAL_MAX_DUR])
+
+    # mappa end_date -> valore del trimestre discreto
+    q_by_end = {e: f["val"] for e, f in quarterly.items()}
+
+    fy_ends = sorted(annual)
+    for i, fy_end in enumerate(fy_ends):
+        if fy_end in q_by_end:
+            continue  # il Q4 discreto c'e' gia', niente da ricostruire
+
+        # Inizio dell'esercizio: il giorno dopo la chiusura precedente se questa
+        # e' davvero l'anno prima; altrimenti un limite prudenziale a 372 giorni,
+        # che copre anche gli esercizi da 53 settimane.
+        floor = date.fromordinal(fy_end.toordinal() - 372)
+        prev_fy_end = fy_ends[i - 1] if i else None
+        if prev_fy_end is not None and prev_fy_end > floor:
+            win_start = date.fromordinal(prev_fy_end.toordinal() + 1)
+        else:
+            win_start = floor
+
+        qs_in_fy = [(e, v) for e, v in q_by_end.items() if win_start <= e <= fy_end]
+        if len(qs_in_fy) == 3:
+            q_by_end[fy_end] = annual[fy_end]["val"] - sum(v for _, v in qs_in_fy)
+
+    return sorted(q_by_end.items())
+
+
+def build_annual_eps(facts: list[dict]) -> list[tuple[date, float]]:
+    """Serie annuale FY (fallback quando i trimestri sono insufficienti)."""
+    annual = _dedupe_by_end(
+        [f for f in facts if ANNUAL_MIN_DUR <= f["dur"] <= ANNUAL_MAX_DUR])
+    return sorted((e, f["val"]) for e, f in annual.items())
+
+
+def rolling_ttm(quarters: list[tuple[date, float]]) -> list[tuple[date, float]]:
+    """
+    Somma rolling di quattro trimestri discreti -> serie TTM.
+
+    Produce un punto SOLO per le finestre che coprono davvero dodici mesi: la
+    verifica dell'ampiezza e' il presidio che rende innocuo un eventuale buco
+    nella serie trimestrale. Sommare quattro punti che coprono cinque trimestri
+    produce un numero plausibile e sbagliato, che e' il tipo di errore peggiore.
+    """
+    ttm: list[tuple[date, float]] = []
+    quarters = sorted(quarters)
+    for i in range(3, len(quarters)):
+        window = quarters[i - 3:i + 1]
+        span = (window[-1][0] - window[0][0]).days
+        if not (TTM_MIN_SPAN <= span <= TTM_MAX_SPAN):
+            continue  # buco nella serie: questi quattro punti non sono un TTM
+        ttm.append((window[-1][0], sum(v for _, v in window)))
+    return ttm
+
+
+def build_ttm_eps(facts: list[dict], min_quarters: int = 4) -> tuple[list[tuple[date, float]], str]:
+    """
+    Costruisce la serie EPS "annualizzata" da usare per la fair value line.
+
+    Ritorna (serie, metodo) dove serie = [(end_date, eps_annualizzato), ...]
+    e metodo in {"ttm", "annual"}.
+
+    - Se abbiamo >= min_quarters trimestri discreti: TTM = somma rolling di 4,
+      ma SOLO per le finestre che coprono davvero dodici mesi.
+    - Altrimenti fallback: serie annuale FY.
+    """
+    quarters = build_quarterly_eps(facts)
+    if len(quarters) >= min_quarters:
+        ttm = rolling_ttm(quarters)
+        if ttm:
+            return ttm, "ttm"
+
+    annual = build_annual_eps(facts)
+    return annual, "annual"
+
+
+# ---------------------------------------------------------------------------
+# Merge as-of con i prezzi + fair value
+# ---------------------------------------------------------------------------
+
+def asof_eps_dated(eps_series: list[tuple[date, float]],
+                   on: date) -> Optional[tuple[date, float]]:
+    """
+    Come asof_eps, ma ritorna anche la DATA del dato usato.
+
+    Serve a sapere quanto e' vecchio l'utile che si sta attribuendo a un prezzo:
+    senza quella data non si puo' distinguere un dato del trimestre scorso da uno
+    di nove anni prima. Vedi build_fair_value_rows.
+    """
+    result = None
+    for d, v in eps_series:
+        if d <= on:
+            result = (d, v)
+        else:
+            break
+    return result
+
+
+def asof_eps(eps_series: list[tuple[date, float]], on: date) -> Optional[float]:
+    """
+    Ritorna l'EPS (annualizzato) piu' recente con end_date <= 'on'.
+    eps_series deve essere ordinata per data crescente.
+    """
+    got = asof_eps_dated(eps_series, on)
+    return got[1] if got else None
+
+
+# Per quanti giorni un EPS depositato descrive ancora il prezzo di quel giorno.
+# Oltre, non e' un dato vecchio: e' un buco riempito con un numero di un'altra
+# epoca. GoDaddy non ha EPS nelle API XBRL della SEC fra il 2017 e il 2022, e
+# senza questo limite il suo utile del 2016 (-0,23$) veniva riportato in avanti
+# per NOVE anni: la scheda dichiarava una perdita nel 2025, la banda rossa
+# "utili negativi" copriva mezzo grafico e la mediana a 3 anni ne usciva falsata.
+# 400 giorni coprono chi deposita una volta l'anno; un buco piu' lungo va
+# mostrato come buco.
+MAX_EPS_CARRY_DAYS = 400
+
+
+def build_fair_value_rows(
+    price_rows: list[tuple[date, float]],
+    eps_series: list[tuple[date, float]],
+    target_pes: list[int],
+    max_carry_days: int = MAX_EPS_CARRY_DAYS,
+) -> list[dict]:
+    """
+    Per ogni (data, prezzo), calcola fair value = EPS_asof * PE per ogni target PE.
+
+    Salta le date precedenti al primo EPS disponibile E quelle per cui l'ultimo
+    EPS disponibile e' piu' vecchio di max_carry_days: in un buco della serie non
+    sappiamo quanto guadagnasse la societa', e riportare in avanti l'ultimo valore
+    noto non colma l'ignoranza, la traveste da dato. Il grafico mostra un buco,
+    che e' la rappresentazione onesta.
+
+    Ritorna righe dict: {date, price, eps, fair_value_pe15, ...}.
+    """
+    eps_series = sorted(eps_series)
+    rows = []
+    for d, price in price_rows:
+        got = asof_eps_dated(eps_series, d)
+        if got is None:
+            continue
+        eps_date, eps = got
+        if (d - eps_date).days > max_carry_days:
+            continue
+        # eps_date accompagna la riga: senza di essa non si sa a quale periodo
+        # appartenga l'utile attribuito a quel prezzo, e qualunque verifica che
+        # ragioni per finestre temporali finisce per confrontare mele con pere
+        # (vedi il controllo di coerenza nella dashboard).
+        row = {"date": d, "price": price, "eps": eps, "eps_date": eps_date}
+        for pe in target_pes:
+            # EPS negativo -> fair value non significativo, lo lasciamo None
+            row[f"fair_value_pe{pe}"] = round(eps * pe, 4) if eps > 0 else None
+        rows.append(row)
+    return rows
+
+
+def adjust_facts_for_splits(facts: list[dict],
+                            splits: list[tuple[date, float]]) -> list[dict]:
+    """
+    Rettifica gli EPS storici per gli stock split.
+
+    PROBLEMA: EDGAR conserva i valori come furono depositati. Un EPS depositato
+    PRIMA di uno split e' espresso sul vecchio numero di azioni (es. AMZN Q1-2022
+    = -7.56$ pre-split 20:1). I prezzi di mercato sono invece gia' rettificati.
+    Mescolarli produce una fair value line assurda (linea blu a 972$ contro un
+    prezzo di 150$).
+
+    SOLUZIONE: per ogni fatto, dividi il valore per il prodotto degli split
+    avvenuti DOPO la sua data di deposito. Un fatto depositato dopo lo split e'
+    gia' rettificato e resta intatto.
+
+    splits: [(data_split, rapporto)], es. [(date(2022,6,6), 20.0)]
+    """
+    if not splits:
+        return facts
+    out = []
+    for f in facts:
+        ref = f.get("filed") or f.get("end")
+        factor = 1.0
+        for sd, ratio in splits:
+            if ref and ref < sd and ratio > 0:
+                factor *= ratio
+        if factor != 1.0:
+            g = dict(f)
+            g["val"] = f["val"] / factor
+            g["split_adjusted_by"] = factor
+            out.append(g)
+        else:
+            out.append(f)
+    return out
+
+
+def extract_share_counts(companyfacts: dict) -> list[tuple[date, float]]:
+    """
+    Estrae il numero medio di azioni diluite (serie annuale) da EDGAR.
+    Serve a individuare diluizioni (emissioni) e buyback significativi.
+    Ritorna [(end_date, numero_azioni), ...] ordinata.
+    """
+    gaap = companyfacts.get("facts", {}).get("us-gaap", {})
+    node = (gaap.get("WeightedAverageNumberOfDilutedSharesOutstanding")
+            or gaap.get("WeightedAverageNumberOfSharesOutstandingBasic"))
+    if not node:
+        return []
+    rows = node.get("units", {}).get("shares", [])
+    annual: dict[date, dict] = {}
+    for r in rows:
+        if not r.get("end") or r.get("val") is None or not r.get("start"):
+            continue
+        try:
+            start = _to_date(r["start"])
+            end = _to_date(r["end"])
+        except (ValueError, TypeError):
+            continue
+        if not (330 <= (end - start).days <= 400):   # solo periodi annuali
+            continue
+        filed = None
+        if r.get("filed"):
+            try:
+                filed = _to_date(r["filed"])
+            except (ValueError, TypeError):
+                filed = None
+        cur = annual.get(end)
+        if cur is None or (filed and cur.get("filed") and filed > cur["filed"]):
+            annual[end] = {"val": float(r["val"]), "filed": filed}
+    return sorted((d, v["val"]) for d, v in annual.items())
+
+
+def detect_share_events(share_counts: list[tuple[date, float]],
+                        threshold_pct: float = 5.0) -> list[dict]:
+    """
+    Individua variazioni annue rilevanti del numero di azioni.
+    +threshold% -> 'diluizione' (emissione azioni)
+    -threshold% -> 'buyback'   (riacquisto azioni)
+    Ritorna [{date, type, change_pct}, ...].
+    """
+    events = []
+    for i in range(1, len(share_counts)):
+        d_prev, v_prev = share_counts[i - 1]
+        d_cur, v_cur = share_counts[i]
+        if v_prev <= 0:
+            continue
+        change = (v_cur - v_prev) / v_prev * 100
+        if abs(change) >= threshold_pct:
+            events.append({
+                "date": d_cur,
+                "type": "dilution" if change > 0 else "buyback",
+                "change_pct": round(change, 1),
+            })
+    return events
+
+
+def normalized_eps(eps_series: list[tuple[date, float]], years: int = 3) -> Optional[float]:
+    """
+    EPS "normalizzato": media dei valori TTM degli ultimi N anni.
+
+    Serve a smussare gli utili gonfiati o depressi da voci straordinarie
+    (plusvalenze su partecipazioni, svalutazioni una-tantum, picchi ciclici).
+    E' l'approccio usato dai modelli Lynch "normalizzati": il fair value che ne
+    deriva e' piu' conservativo di quello su utili GAAP grezzi.
+
+    Usiamo la MEDIANA e non la media perche' e' robusta agli outlier: un singolo
+    valore corrotto da EDGAR (unita' sbagliata, ricostruzione Q4 andata male)
+    trascinerebbe la media, producendo fair value da milioni di dollari.
+    """
+    if not eps_series:
+        return None
+    series = sorted(eps_series)
+    cutoff = series[-1][0].toordinal() - int(365.25 * years)
+    window = sorted(v for d, v in series if d.toordinal() >= cutoff)
+    if not window:
+        return None
+    n = len(window); mid = n // 2
+    return window[mid] if n % 2 else (window[mid - 1] + window[mid]) / 2
+
+
+def choose_eps(eps_edgar, eps_yf, eps_norm, price, days_stale: int = 0):
+    """
+    Sceglie quale EPS usare quando le due fonti divergono, e spiega perche'.
+    Ritorna (valore, fonte, flag).
+
+    Regole:
+      1. Se una sola fonte e' disponibile, si usa quella.
+      2. Se divergono <=15%, si usa yfinance (aggiornato in tempo reale).
+      3. Se divergono di piu', si arbitra con due controlli indipendenti:
+         a) coerenza con l'EPS normalizzato storico (mediana 3 anni);
+         b) P/E implicito (prezzo/EPS) dentro un intervallo plausibile 2-150.
+         Vince chi supera piu' controlli; a parita' si preferisce EDGAR (dato
+         ufficiale da bilancio) se la serie non e' vecchia.
+
+    Caso reale all'origine: Waste Management, dove yfinance riportava 0.86
+    contro 6.91 di EDGAR, con un P/E implicito di 277.
+    """
+    if eps_edgar is None and eps_yf is None:
+        return None, "nessuna", "no-eps"
+    if eps_yf is None:
+        return eps_edgar, "edgar", "edgar-only"
+    if eps_edgar is None:
+        return eps_yf, "yfinance", "yf-only"
+    if eps_yf == 0:
+        return eps_edgar, "edgar", "check"
+
+    divergence = abs(eps_edgar - eps_yf) / abs(eps_yf) * 100
+    if divergence <= 15:
+        return eps_yf, "yfinance", "ok"
+
+    def score(val):
+        if val is None or val <= 0:
+            return -1
+        s = 0
+        if eps_norm and eps_norm > 0 and 0.4 <= val / eps_norm <= 2.5:
+            s += 1
+        if price and price > 0 and 2 <= price / val <= 150:
+            s += 1
+        return s
+
+    s_edgar, s_yf = score(eps_edgar), score(eps_yf)
+    if s_edgar > s_yf:
+        return eps_edgar, "edgar", "check"
+    if s_yf > s_edgar:
+        return eps_yf, "yfinance", "check"
+    if days_stale <= 200 and eps_edgar and eps_edgar > 0:
+        return eps_edgar, "edgar", "check"
+    return eps_yf, "yfinance", "check"
+
+
+def fair_value_is_plausible(fair_value, price, max_ratio: float = 20.0) -> bool:
+    """
+    Cancello di sicurezza finale: un fair value distante dal prezzo piu' di
+    max_ratio volte non e' una valutazione, e' un errore nei dati. Meglio non
+    mostrarlo (es. Halliburton a 10 milioni di dollari per azione).
+    """
+    if fair_value is None or price is None or price <= 0 or fair_value <= 0:
+        return False
+    return (1 / max_ratio) <= (fair_value / price) <= max_ratio
+
+
+def series_cagr_detail(series: list[tuple[date, float]], years: int = 5,
+                       min_coverage: float = 0.7) -> Optional[dict]:
+    """
+    CAGR con i DUE PUNTI da cui e' ricavato, per poterlo rifare a mano.
+
+    Ritorna {start_date, start_value, end_date, end_value, span_years, cagr_pct}
+    oppure None quando il tasso non e' calcolabile. Un tasso di crescita senza i
+    suoi estremi non e' verificabile: chi legge "+26% l'anno" ha diritto di
+    sapere da quale valore a quale valore, e su quanti anni esatti.
+
+    Il punto di partenza e' quello PIU' VICINO a N anni prima dell'ultimo, non il
+    primo che cade dentro la finestra. La differenza non e' accademica: cercando
+    il primo punto "dentro" i cinque anni, una serie trimestrale parte
+    sistematicamente un trimestre dopo il bordo e il tasso viene calcolato su
+    4,75 anni invece di 5 — per Apple, 5,7% invece di 6,8%. Il tasso resta
+    annualizzato sullo span effettivo, che quindi conviene tenere il piu' vicino
+    possibile a quello richiesto.
+
+    None se la base di partenza e' <= 0 (il CAGR non e' definito partendo da una
+    perdita) o se lo span effettivo copre meno di min_coverage della finestra
+    richiesta — meglio nessun numero che un "CAGR a 5 anni" su due anni e mezzo.
+    """
+    if len(series) < 2:
+        return None
+    s = sorted(series)
+    end_d, end_v = s[-1]
+    target = end_d.toordinal() - int(365.25 * years)
+    start_d, start_v = min(s[:-1], key=lambda p: abs(p[0].toordinal() - target))
+    span_years = (end_d - start_d).days / 365.25
+    if span_years < years * min_coverage or start_v <= 0 or end_v <= 0:
+        return None
+    return {
+        "start_date": start_d,
+        "start_value": start_v,
+        "end_date": end_d,
+        "end_value": end_v,
+        "span_years": span_years,
+        "cagr_pct": ((end_v / start_v) ** (1 / span_years) - 1) * 100,
+    }
+
+
+def series_cagr(series: list[tuple[date, float]], years: int = 5,
+                min_coverage: float = 0.7) -> Optional[float]:
+    """CAGR di una serie datata su N anni, in percentuale. Vedi series_cagr_detail."""
+    got = series_cagr_detail(series, years, min_coverage)
+    return got["cagr_pct"] if got else None
+
+
+def eps_cagr(eps_series: list[tuple[date, float]], years: int = 5) -> Optional[float]:
+    """CAGR degli utili per azione su N anni. Vedi series_cagr."""
+    return series_cagr(eps_series, years)
+
+
+def yoy_change(series: list[tuple[date, float]],
+               tol_days: int = 75) -> Optional[float]:
+    """
+    Variazione percentuale sull'ultimo anno, confrontando per DATA e non per
+    posizione: cerca il punto piu' vicino a 365 giorni prima dell'ultimo e
+    rifiuta il confronto se il piu' vicino dista oltre tol_days.
+
+    Confrontare per posizione (es. "quattro punti indietro") produce numeri
+    sbagliati appena la serie ha spaziatura irregolare o un buco — che nei dati
+    XBRL succede spesso.
+    """
+    if len(series) < 2:
+        return None
+    s = sorted(series)
+    last_d, last_v = s[-1]
+    target = last_d.toordinal() - 365
+    best, best_gap = None, None
+    for d, v in s[:-1]:
+        gap = abs(d.toordinal() - target)
+        if best_gap is None or gap < best_gap:
+            best, best_gap = (d, v), gap
+    if best is None or best_gap > tol_days or best[1] == 0:
+        return None
+    return (last_v - best[1]) / abs(best[1]) * 100.0
+
+
+def earnings_volatility(eps_series: list[tuple[date, float]], years: int = 7) -> Optional[float]:
+    """
+    Volatilita' degli utili: deviazione standard delle variazioni YoY, in %.
+    Valori alti (>40) indicano utili erratici, tipici delle societa' cicliche.
+
+    Il confronto anno su anno e' fatto per DATA. La versione precedente
+    confrontava il punto i con il punto i-4 dando per scontata una serie
+    trimestrale: sulle serie ANNUALI (fallback quando i trimestri EDGAR non
+    bastano) quel passo confrontava valori distanti quattro anni, e la
+    "volatilita' annua" che ne usciva era il tasso di crescita quadriennale.
+    Con quella misura una societa' in crescita costante risultava ciclica.
+    """
+    if len(eps_series) < 5:
+        return None
+    s = sorted(eps_series)
+    cutoff = s[-1][0].toordinal() - int(365.25 * years)
+    pts = [(d, v) for d, v in s if d.toordinal() >= cutoff]
+    if len(pts) < 5:
+        return None
+    changes = []
+    for i, (d, v) in enumerate(pts):
+        target = d.toordinal() - 365
+        prev = None
+        best_gap = None
+        for pd_, pv in pts[:i]:
+            gap = abs(pd_.toordinal() - target)
+            if best_gap is None or gap < best_gap:
+                prev, best_gap = pv, gap
+        if prev is None or best_gap > 75 or prev == 0:
+            continue
+        changes.append((v - prev) / abs(prev) * 100)
+    if len(changes) < 3:
+        return None
+    mean = sum(changes) / len(changes)
+    var = sum((c - mean) ** 2 for c in changes) / len(changes)
+    return var ** 0.5
+
+
+def had_recent_losses(eps_series: list[tuple[date, float]], years: int = 5) -> bool:
+    """True se negli ultimi N anni c'e' stato almeno un TTM in perdita."""
+    if not eps_series:
+        return False
+    s = sorted(eps_series)
+    cutoff = s[-1][0].toordinal() - int(365.25 * years)
+    return any(v < 0 for d, v in s if d.toordinal() >= cutoff)
+
+
+# Soglia di volatilita' degli utili oltre la quale una societa' di settore
+# ciclico viene classificata come "Ciclica". E' la deviazione standard delle
+# variazioni annue dell'EPS, in punti percentuali. Valore tarabile: piu' basso
+# = piu' societa' classificate cicliche (approccio prudente, perche' per le
+# cicliche il P/E corrente e' fuorviante).
+CYCLICAL_VOL_THRESHOLD = 40.0
+
+# Settori strutturalmente ciclici (classificazione yfinance)
+CYCLICAL_SECTORS = {
+    "Energy", "Basic Materials", "Industrials",
+    "Consumer Cyclical", "Real Estate",
+}
+
+
+def classify_lynch(
+    growth_pct: Optional[float],
+    eps_now: Optional[float],
+    volatility: Optional[float],
+    sector: Optional[str],
+    dividend_yield: Optional[float],
+    price_to_book: Optional[float],
+    market_cap: Optional[float],
+    recent_losses: bool = False,
+) -> dict:
+    """
+    Classifica una societa' nelle sei categorie di Peter Lynch e assegna il
+    multiplo P/E equo corrispondente.
+
+    Le categorie (da 'One Up on Wall Street'):
+      - turnaround   : societa' in ripresa dopo perdite. Utili non affidabili
+                       come base di valutazione -> nessun multiplo.
+      - asset play   : quota sotto il valore degli asset (P/B < 1). Il valore sta
+                       nel patrimonio, non negli utili -> nessun multiplo.
+      - cyclical     : utili erratici legati al ciclo. Il P/E corrente inganna
+                       (basso ai massimi del ciclo) -> multiplo prudente su utili
+                       normalizzati.
+      - fast grower  : crescita > 20%. Multiplo = crescita, con cap a 25.
+      - stalwart     : crescita 10-20%, grande capitalizzazione. Multiplo = crescita.
+      - slow grower  : crescita < 10%, spesso alto dividendo. Multiplo = crescita +
+                       dividendo, con tetto a 12.
+
+    L'ordine di verifica conta: turnaround e asset play hanno priorita' perche'
+    per loro la valutazione sugli utili non e' significativa.
+
+    Ritorna: {category, fair_pe, basis, note}
+    """
+    g = growth_pct
+    div = dividend_yield or 0.0
+
+    # 1) TURNAROUND — recent losses (even if back to profit now)
+    if recent_losses:
+        return {
+            "category": "Turnaround",
+            "fair_pe": None,
+            "basis": "earnings not normalizable",
+            "note": ("Losses in the past few years: the P/E is not a reliable "
+                     "basis. Assess the margin recovery and balance sheet strength."),
+        }
+
+    # 2) ASSET PLAY — trading below book value
+    if price_to_book is not None and 0 < price_to_book < 1.0:
+        return {
+            "category": "Asset Play",
+            "fair_pe": None,
+            "basis": "asset value",
+            "note": (f"Trading at {price_to_book:.2f}x book value: the value is in "
+                     "the assets, not the earnings. Assess with P/B, not P/E."),
+        }
+
+    # 3) CYCLICAL — cyclical sector with erratic earnings
+    is_cyc_sector = sector in CYCLICAL_SECTORS
+    is_erratic = volatility is not None and volatility > CYCLICAL_VOL_THRESHOLD
+    if is_cyc_sector and is_erratic:
+        return {
+            "category": "Cyclical",
+            "fair_pe": 12.0,
+            "basis": "conservative multiple on normalized earnings",
+            "note": ("Erratic, cycle-driven earnings: a low P/E can signal the "
+                     "cycle's peak, not a bargain. Use normalized earnings."),
+        }
+
+    if g is None:
+        return {
+            "category": "Unclassified",
+            "fair_pe": None,
+            "basis": "growth not calculable",
+            "note": "Not enough earnings history to estimate 5-year growth.",
+        }
+
+    # 4) FAST GROWER — growth above 20%
+    if g > 20:
+        return {
+            "category": "Fast Grower",
+            "fair_pe": min(g, 25.0),      # cap at 25: higher growth rates don't last
+            "basis": f"P/E = growth {g:.0f}% (capped at 25)",
+            "note": ("High growth: the multiple tracks the growth rate but is "
+                     "capped at 25, because very few companies sustain it for years."),
+        }
+
+    # 5) STALWART — growth 10-20%
+    if g >= 10:
+        # Senza market cap non si puo' dire se sia large o mid: dirlo, invece di
+        # far ricadere in "mid cap" ogni societa' con il dato mancante.
+        if market_cap is None:
+            label = "Stalwart (dimensione non disponibile)"
+        else:
+            label = "Stalwart" if market_cap > 5e10 else "Stalwart (mid cap)"
+        return {
+            "category": label,
+            "fair_pe": g,
+            "basis": f"P/E = growth {g:.0f}%",
+            "note": ("Solid, predictable growth: the fair P/E matches the growth "
+                     "rate (PEG = 1)."),
+        }
+
+    # 6a) DECLINING EARNINGS — negative growth: PEG doesn't apply.
+    # A multiple "equal to growth" with negative growth is meaningless, and the
+    # max(growth,0)+dividend formula would collapse toward zero, producing a
+    # negligible fair value. Better to state the model doesn't apply here.
+    if g < 0:
+        return {
+            "category": "Slow Grower (declining earnings)",
+            "fair_pe": None,
+            "basis": f"negative growth ({g:.0f}%): PEG not applicable",
+            "note": ("Earnings are contracting: a growth-linked P/E is meaningless "
+                     "here. Use the fixed-P/E model and assess whether the decline "
+                     "is cyclical or structural."),
+        }
+
+    # 6b) SLOW GROWER — growth between 0 and 10%
+    # Floor at 6: even a nearly-stagnant but solid company isn't worth 2-3x
+    # earnings. Cap at 12: beyond that it's no longer a slow grower.
+    fair = min(max(g + div, 6.0), 12.0)
+    div_txt = (f"dividend {div:.1f}%" if dividend_yield is not None
+               else "dividend not available (treated as 0)")
+    return {
+        "category": "Slow Grower",
+        "fair_pe": fair,
+        "basis": f"P/E = growth {g:.0f}% + {div_txt} (floor 6, cap 12)",
+        "note": ("Modest growth: deserves a contained multiple. The dividend "
+                 "partly offsets the lower growth."),
+    }
+
+
+def lynch_ratio(growth_pct: Optional[float], dividend_yield: Optional[float],
+                pe_ratio: Optional[float]) -> Optional[float]:
+    """
+    Lynch ratio = (crescita % + rendimento dividendo %) / P/E effettivo.
+    Lettura: >1.5 interessante · ~1 equo · <1 caro.
+    """
+    if not pe_ratio or pe_ratio <= 0 or growth_pct is None:
+        return None
+    return (growth_pct + (dividend_yield or 0.0)) / pe_ratio
+
+
+def ttm_growth_yoy_dated(eps_series: list[tuple[date, float]],
+                         tol_days: int = 60) -> Optional[float]:
+    """
+    Crescita YoY robusta basata sulle DATE reali (non sugli indici).
+    Confronta l'ultimo valore con quello ~365 giorni prima (entro tol_days).
+    Evita il gonfiaggio quando la serie ha spaziatura irregolare o buchi.
+    """
+    if len(eps_series) < 2:
+        return None
+    series = sorted(eps_series)
+    last_date, last_val = series[-1]
+    target = last_date.toordinal() - 365
+    # cerca il punto piu' vicino a un anno prima
+    best = None
+    best_gap = None
+    for d, v in series[:-1]:
+        gap = abs(d.toordinal() - target)
+        if best is None or gap < best_gap:
+            best, best_gap = (d, v), gap
+    if best is None or best_gap > tol_days:
+        return None
+    prev_val = best[1]
+    if prev_val == 0:
+        return None
+    return (last_val - prev_val) / abs(prev_val) * 100.0
+
+
+def ttm_growth_yoy(eps_series: list[tuple[date, float]]) -> Optional[float]:
+    """
+    Crescita EPS YoY corretta: confronta l'ultimo EPS annualizzato con quello
+    di ~4 punti prima (per serie TTM trimestrale = 1 anno). Per serie annuale,
+    confronta ultimo vs penultimo. Ritorna percentuale.
+    """
+    if len(eps_series) < 2:
+        return None
+    latest = eps_series[-1][1]
+    # distanza tipica: se la serie e' trimestrale, ~4 passi indietro = 1 anno
+    # euristica: se abbiamo >=5 punti e i due ultimi distano <200gg, e' trimestrale
+    idx_prev = -2
+    if len(eps_series) >= 5:
+        gap = (eps_series[-1][0] - eps_series[-2][0]).days
+        if gap < 200:  # trimestrale
+            idx_prev = -5
+    prev = eps_series[idx_prev][1]
+    if prev == 0:
+        return None
+    return (latest - prev) / abs(prev) * 100.0
+
+
+# ===========================================================================
+# BILANCIO E CONTO ECONOMICO — grandezze oltre l'EPS
+#
+# Serve alla sezione "Financials" della scheda titolo: ricavi, utile netto,
+# free cash flow, patrimonio, attivo, debito a lungo termine. Tutto dagli
+# stessi companyfacts EDGAR gia' scaricati per l'EPS, quindi senza nuove
+# dipendenze ne' chiamate a pagamento.
+#
+# Due forme di fatto XBRL, che vanno trattate diversamente:
+#   - DURATA  (conto economico, rendiconto finanziario): hanno start e end.
+#   - ISTANTE (stato patrimoniale): hanno solo end. E' questo che li distingue.
+#
+# E il punto delicato: nel rendiconto finanziario i valori sono CUMULATI DA
+# INIZIO ESERCIZIO (year-to-date), non per trimestre. Il fatto Q3 di Apple
+# copre nove mesi, non tre. Sommare quattro fatti YTD darebbe un numero
+# gonfiato di circa 2,5 volte. Vanno prima differenziati (vedi
+# build_quarterly_flow).
+# ===========================================================================
+
+# Ricavi. L'ordine e' di preferenza: dal 2018 (ASC 606) il tag corretto e'
+# RevenueFromContractWithCustomer*, prima si usava SalesRevenueNet/Revenues.
+# Per avere cinque anni pieni di storia i concetti vengono UNITI (vedi
+# extract_flow_facts): il preferito vince dove c'e', gli altri riempiono i buchi.
+REVENUE_TAG_CANDIDATES = (
+    "RevenueFromContractWithCustomerExcludingAssessedTax",
+    "RevenueFromContractWithCustomerIncludingAssessedTax",
+    "Revenues",
+    "RevenuesNetOfInterestExpense",          # banche
+    "SalesRevenueNet",
+    "SalesRevenueGoodsNet",
+    "TotalRevenuesAndOtherIncome",           # oil & gas
+)
+
+# Risultato operativo (EBIT). Per le banche OperatingIncomeLoss spesso manca e
+# l'equivalente e' l'utile ante imposte.
+OPERATING_INCOME_TAG_CANDIDATES = (
+    "OperatingIncomeLoss",
+    "IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
+    "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments",
+)
+
+OCF_TAG_CANDIDATES = (
+    "NetCashProvidedByUsedInOperatingActivities",
+    "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations",
+)
+
+CAPEX_TAG_CANDIDATES = (
+    "PaymentsToAcquirePropertyPlantAndEquipment",
+    "PaymentsToAcquireProductiveAssets",
+    "PaymentsForCapitalImprovements",
+    "PaymentsToAcquirePropertyPlantAndEquipmentAndIntangibleAssets",
+)
+
+DIVIDENDS_PAID_TAG_CANDIDATES = (
+    "PaymentsOfDividendsCommonStock",
+    "PaymentsOfDividends",
+)
+
+ASSETS_TAG_CANDIDATES = ("Assets",)
+
+# Patrimonio netto. Il primo esclude le minoranze (definizione corretta per il
+# ROE dell'azionista ordinario), il secondo le include ed e' il fallback.
+EQUITY_TAG_CANDIDATES = (
+    "StockholdersEquity",
+    "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest",
+    "MembersEquity",
+    "PartnersCapital",
+)
+
+LONG_TERM_DEBT_TAG_CANDIDATES = (
+    "LongTermDebtNoncurrent",
+    "LongTermDebtAndCapitalLeaseObligations",
+    "LongTermDebt",
+    # Ultima risorsa, e con una definizione piu' larga (include le quote in
+    # scadenza entro l'anno): senza di essa le banche, che usano solo questo
+    # tag, non hanno alcun dato sul debito.
+    "LongTermDebtAndCapitalLeaseObligationsIncludingCurrentMaturities",
+)
+
+# Eta' massima di un dato di stato patrimoniale perche' descriva "adesso".
+# Oltre, quasi sempre significa che la societa' ha cambiato tagging.
+MAX_BALANCE_AGE_DAYS = 400
+
+
+def _normalize_duration_facts(rows: list[dict], concept: str) -> list[dict]:
+    """Fatti di DURATA (conto economico / rendiconto): richiedono start e end."""
+    return _normalize_facts([r for r in rows if r.get("start")], concept)
+
+
+def extract_flow_facts(companyfacts: dict, candidates: tuple[str, ...],
+                       unit: str = "USD") -> list[dict]:
+    """
+    Fatti di durata per una grandezza economica, UNENDO piu' concetti XBRL.
+
+    Il concetto piu' preferito vince su ogni periodo che copre; gli altri
+    riempiono solo i buchi. Serve perche' le societa' cambiano tag nel tempo
+    (ASC 606 nel 2018 ha spostato tutti i ricavi su un tag nuovo): prendendo un
+    solo concetto la serie storica si interrompe e il CAGR a 5 anni sparisce
+    proprio dove servirebbe.
+    """
+    gaap = companyfacts.get("facts", {}).get("us-gaap", {})
+    merged: dict[tuple[date, date], dict] = {}
+    for rank, name in enumerate(candidates):
+        rows = (gaap.get(name) or {}).get("units", {}).get(unit)
+        if not rows:
+            continue
+        for f in _normalize_duration_facts(rows, name):
+            key = (f["start"], f["end"])
+            cur = merged.get(key)
+            if cur is None:
+                merged[key] = {**f, "_rank": rank}
+            elif rank < cur["_rank"]:
+                merged[key] = {**f, "_rank": rank}
+            elif rank == cur["_rank"]:
+                # stesso concetto, stesso periodo: vince il deposito piu' recente
+                if (f.get("filed") or date.min) > (cur.get("filed") or date.min):
+                    merged[key] = {**f, "_rank": rank}
+    return sorted(merged.values(), key=lambda f: (f["end"], f["start"]))
+
+
+def extract_instant_series(companyfacts: dict, candidates: tuple[str, ...],
+                           unit: str = "USD") -> list[tuple[date, float]]:
+    """
+    Serie di ISTANTE (stato patrimoniale): [(data, valore), ...] ordinata.
+
+    Riconosce i fatti di istante dall'assenza di 'start'. A parita' di data
+    vince il deposito piu' recente (riflette le rettifiche successive).
+    """
+    gaap = companyfacts.get("facts", {}).get("us-gaap", {})
+    best: dict[date, tuple[int, date, float]] = {}
+    for rank, name in enumerate(candidates):
+        rows = (gaap.get(name) or {}).get("units", {}).get(unit)
+        if not rows:
+            continue
+        for r in rows:
+            if r.get("start") or not r.get("end") or r.get("val") is None:
+                continue
+            try:
+                end = _to_date(r["end"])
+                filed = _to_date(r["filed"]) if r.get("filed") else date.min
+            except (ValueError, TypeError):
+                continue
+            cur = best.get(end)
+            cand = (rank, filed, float(r["val"]))
+            # rank piu' basso = concetto piu' preferito; a parita', filed piu' recente
+            if cur is None or cand[0] < cur[0] or (cand[0] == cur[0] and cand[1] > cur[1]):
+                best[end] = cand
+    return sorted((d, v[2]) for d, v in best.items())
+
+
+def build_quarterly_flow(facts: list[dict]) -> list[tuple[date, float]]:
+    """
+    Trimestri DISCRETI da fatti di durata, gestendo i valori cumulati YTD.
+
+    Due sorgenti, in ordine di fiducia:
+      1. Fatti gia' trimestrali (durata 80..100 giorni): valgono cosi' come sono.
+      2. Differenza fra due cumulati consecutivi dello STESSO esercizio
+         (stesso 'start'): Q3 = YTD_9mesi - YTD_6mesi. E' cosi' che si ricava il
+         trimestre discreto dal rendiconto finanziario, che EDGAR pubblica solo
+         in forma cumulata, e il Q4 dal bilancio annuale (FY - YTD_9mesi).
+
+    Senza il passo 2, sommare quattro fatti di cash flow darebbe un "TTM" pari a
+    circa due volte e mezzo il valore vero.
+    """
+    # dedupe per periodo esatto: vince il deposito piu' recente
+    best: dict[tuple[date, date], dict] = {}
+    for f in facts:
+        key = (f["start"], f["end"])
+        cur = best.get(key)
+        if cur is None or (f.get("filed") or date.min) > (cur.get("filed") or date.min):
+            best[key] = f
+    facts = sorted(best.values(), key=lambda f: (f["start"], f["end"]))
+
+    quarters: dict[date, float] = {}
+    for f in facts:                                    # 1) trimestri diretti
+        if QUARTER_MIN_DUR <= f["dur"] <= QUARTER_MAX_DUR:
+            quarters[f["end"]] = f["val"]
+
+    by_start: dict[date, list[dict]] = {}
+    for f in facts:
+        by_start.setdefault(f["start"], []).append(f)
+
+    for _, group in by_start.items():                   # 2) differenze YTD
+        group.sort(key=lambda f: f["end"])
+        for prev, cur in zip(group, group[1:]):
+            if cur["dur"] <= QUARTER_MAX_DUR:
+                continue                                # gia' un trimestre discreto
+            gap = (cur["end"] - prev["end"]).days
+            if not (QUARTER_MIN_DUR <= gap <= QUARTER_MAX_DUR):
+                continue                                # non sono consecutivi
+            quarters.setdefault(cur["end"], cur["val"] - prev["val"])
+
+    return sorted(quarters.items())
+
+
+def build_annual_flow(facts: list[dict]) -> list[tuple[date, float]]:
+    """Serie annuale FY da fatti di durata (durata 330..400 giorni)."""
+    annual = _dedupe_by_end(
+        [f for f in facts if ANNUAL_MIN_DUR <= f["dur"] <= ANNUAL_MAX_DUR])
+    return sorted((e, f["val"]) for e, f in annual.items())
+
+
+def combine_series(a: list[tuple[date, float]], b: list[tuple[date, float]],
+                   op) -> list[tuple[date, float]]:
+    """
+    Combina due serie datate sulle sole date presenti in ENTRAMBE.
+
+    Serve per il free cash flow = flusso operativo - investimenti in immobilizzi:
+    allineare per data e' l'unico modo per non sottrarre periodi diversi.
+    """
+    bd = dict(b)
+    return sorted((d, op(v, bd[d])) for d, v in a if d in bd)
+
+
+def latest_value(series: list[tuple[date, float]],
+                 max_age_days: Optional[int] = MAX_BALANCE_AGE_DAYS,
+                 today: Optional[date] = None) -> Optional[tuple[date, float]]:
+    """Ultimo punto di una serie, se non piu' vecchio di max_age_days."""
+    if not series:
+        return None
+    d, v = max(series)
+    if max_age_days is not None and ((today or date.today()) - d).days > max_age_days:
+        return None
+    return d, v
+
+
+def safe_div(num: Optional[float], den: Optional[float]) -> Optional[float]:
+    """Divisione che ritorna None (invece di esplodere o dare inf) sui casi degeneri."""
+    if num is None or den is None or den == 0:
+        return None
+    return num / den
+
+
+def extract_financials(companyfacts: dict,
+                       today: Optional[date] = None) -> dict:
+    """
+    Estrae da un companyfacts EDGAR il quadro economico-patrimoniale completo.
+
+    Ritorna un dizionario di SERIE (non di singoli numeri), cosi' che il
+    chiamante possa calcolare TTM, ultimo esercizio, CAGR e andamento a cinque
+    anni senza rileggere il JSON:
+
+      revenue_q/ttm/fy, net_income_q/ttm/fy, ebit_ttm/fy,
+      ocf_q/ttm/fy, capex_q/ttm/fy, fcf_ttm/fy,
+      assets, equity, long_term_debt  (serie di istante)
+
+    Tutti i valori sono in dollari. Le serie possono essere vuote: nessun
+    campo e' garantito, perche' nessun tag XBRL e' obbligatorio per tutti i
+    filer (le banche, per esempio, non hanno un capex confrontabile).
+    """
+    rev_f = extract_flow_facts(companyfacts, REVENUE_TAG_CANDIDATES)
+    ni_f = extract_flow_facts(companyfacts, NET_INCOME_TAG_CANDIDATES)
+    ebit_f = extract_flow_facts(companyfacts, OPERATING_INCOME_TAG_CANDIDATES)
+    ocf_f = extract_flow_facts(companyfacts, OCF_TAG_CANDIDATES)
+    capex_f = extract_flow_facts(companyfacts, CAPEX_TAG_CANDIDATES)
+    div_f = extract_flow_facts(companyfacts, DIVIDENDS_PAID_TAG_CANDIDATES)
+
+    out: dict = {}
+    for name, facts in (("revenue", rev_f), ("net_income", ni_f), ("ebit", ebit_f),
+                        ("ocf", ocf_f), ("capex", capex_f), ("dividends_paid", div_f)):
+        q = build_quarterly_flow(facts)
+        out[f"{name}_q"] = q
+        out[f"{name}_ttm"] = rolling_ttm(q)
+        out[f"{name}_fy"] = build_annual_flow(facts)
+
+    # Free cash flow = flusso di cassa operativo - investimenti in immobilizzi.
+    # Definizione volutamente semplice e verificabile a mano sul rendiconto.
+    out["fcf_q"] = combine_series(out["ocf_q"], out["capex_q"], lambda a, b: a - b)
+    out["fcf_ttm"] = rolling_ttm(out["fcf_q"])
+    out["fcf_fy"] = combine_series(out["ocf_fy"], out["capex_fy"], lambda a, b: a - b)
+
+    out["assets"] = extract_instant_series(companyfacts, ASSETS_TAG_CANDIDATES)
+    out["equity"] = extract_instant_series(companyfacts, EQUITY_TAG_CANDIDATES)
+    out["long_term_debt"] = extract_instant_series(
+        companyfacts, LONG_TERM_DEBT_TAG_CANDIDATES)
+
+    # Da QUALI tag XBRL sono venuti i numeri. Nessun tag e' obbligatorio e le
+    # societa' cambiano il proprio nel tempo: senza questa mappa, "ricavi 44,1
+    # B$" non e' verificabile, perche' non si sa quale voce del bilancio sia.
+    # Con essa si apre il concetto sulle API della SEC e si confronta.
+    out["concepts"] = {
+        "revenue": concepts_used(rev_f),
+        "net_income": concepts_used(ni_f),
+        "ebit": concepts_used(ebit_f),
+        "ocf": concepts_used(ocf_f),
+        "capex": concepts_used(capex_f),
+        "assets": instant_concept_used(companyfacts, ASSETS_TAG_CANDIDATES),
+        "equity": instant_concept_used(companyfacts, EQUITY_TAG_CANDIDATES),
+        "long_term_debt": instant_concept_used(
+            companyfacts, LONG_TERM_DEBT_TAG_CANDIDATES),
+    }
+    return out
+
+
+def concepts_used(facts: list[dict], max_names: int = 3) -> str:
+    """
+    I concetti XBRL che hanno effettivamente contribuito, dal piu' recente.
+
+    Piu' di uno e' la norma, non un'anomalia: ASC 606 nel 2018 ha spostato tutti
+    i ricavi su un tag nuovo, e una serie di dieci anni attraversa quel confine.
+    """
+    if not facts:
+        return ""
+    by_recency: dict[str, date] = {}
+    for f in facts:
+        c = f.get("concept") or ""
+        if c and (c not in by_recency or f["end"] > by_recency[c]):
+            by_recency[c] = f["end"]
+    names = sorted(by_recency, key=lambda c: by_recency[c], reverse=True)
+    return "+".join(names[:max_names])
+
+
+def instant_concept_used(companyfacts: dict, candidates: tuple[str, ...],
+                         unit: str = "USD") -> str:
+    """Il concetto di stato patrimoniale che fornisce il dato piu' recente."""
+    gaap = companyfacts.get("facts", {}).get("us-gaap", {})
+    best: Optional[tuple[int, date, str]] = None
+    for rank, name in enumerate(candidates):
+        rows = (gaap.get(name) or {}).get("units", {}).get(unit)
+        if not rows:
+            continue
+        ends = [r["end"] for r in rows if r.get("end") and not r.get("start")]
+        if not ends:
+            continue
+        try:
+            newest = _to_date(max(ends))
+        except (ValueError, TypeError):
+            continue
+        cand = (rank, newest, name)
+        if best is None or cand[0] < best[0]:
+            best = cand
+    return best[2] if best else ""
+
+
+def compute_ratios(fin: dict, price: Optional[float] = None,
+                   market_cap: Optional[float] = None,
+                   shares: Optional[float] = None,
+                   today: Optional[date] = None) -> dict:
+    """
+    Indicatori di qualita' e di prezzo, dalle serie prodotte da extract_financials.
+
+    Ogni voce e' calcolata da grandezze depositate alla SEC, non da campi
+    pre-confezionati di un provider: la formula e' quindi verificabile riga per
+    riga, ed e' quella dichiarata nei tooltip dell'interfaccia.
+
+      ROE            = utile netto TTM / patrimonio netto medio del periodo
+      Equity ratio   = patrimonio netto / totale attivo
+      Earning power  = EBIT TTM / totale attivo   (rendimento del capitale
+                       investito prima di struttura finanziaria e fisco)
+      P/S            = capitalizzazione / ricavi TTM
+      FCF yield      = free cash flow TTM / capitalizzazione
+      Net margin     = utile netto TTM / ricavi TTM
+      Debt / equity  = debito a lungo termine / patrimonio netto
+
+    Il patrimonio netto MEDIO (inizio + fine periodo) e' la definizione corretta
+    per un rapporto fra una grandezza di flusso e una di stato: usare solo il
+    dato finale gonfia il ROE delle societa' che hanno appena fatto buyback.
+    """
+    r: dict = {}
+
+    def last(series, max_age=MAX_BALANCE_AGE_DAYS):
+        got = latest_value(series, max_age, today)
+        return got[1] if got else None
+
+    def flow_now(name: str) -> Optional[float]:
+        """
+        Grandezza "ultimi dodici mesi", con ripiego sull'ultimo esercizio.
+
+        Il TTM e' preferibile perche' include gli ultimi trimestri, ma non
+        tutti lo consentono: i filer piu' piccoli depositano solo il bilancio
+        annuale, e le societa' che hanno appena cambiato tag XBRL hanno una
+        serie trimestrale interrotta. Senza questo ripiego l'intera scheda
+        finanziaria (ricavi, margini, ROE, FCF) resterebbe vuota per loro,
+        pur avendo un bilancio annuale perfettamente utilizzabile.
+        """
+        ttm = fin.get(f"{name}_ttm") or []
+        got = latest_value(ttm, MAX_BALANCE_AGE_DAYS, today)
+        if got:
+            return got[1]
+        got = latest_value(fin.get(f"{name}_fy") or [], 550, today)
+        if got:
+            r.setdefault("_annual_fallback", []).append(name)
+            return got[1]
+        return None
+
+    ni_ttm = flow_now("net_income")
+    rev_ttm = flow_now("revenue")
+    ebit_ttm = flow_now("ebit")
+    fcf_ttm = flow_now("fcf")
+    ocf_ttm = flow_now("ocf")
+
+    equity_now = last(fin.get("equity", []))
+    assets_now = last(fin.get("assets", []))
+    ltd_now = last(fin.get("long_term_debt", []))
+
+    # patrimonio medio sull'anno che il TTM copre
+    equity_avg = equity_now
+    eq = sorted(fin.get("equity", []))
+    if eq and len(eq) >= 2 and equity_now is not None:
+        target = eq[-1][0].toordinal() - 365
+        prior = [(abs(d.toordinal() - target), v) for d, v in eq[:-1]]
+        if prior:
+            gap, v_prior = min(prior, key=lambda t: t[0])
+            if gap <= 75:
+                equity_avg = (equity_now + v_prior) / 2
+
+    r["revenue_ttm"] = rev_ttm
+    r["net_income_ttm"] = ni_ttm
+    r["ebit_ttm"] = ebit_ttm
+    r["ocf_ttm"] = ocf_ttm
+    r["fcf_ttm"] = fcf_ttm
+    r["fcf_latest_fy"] = fin["fcf_fy"][-1][1] if fin.get("fcf_fy") else None
+    r["revenue_latest_fy"] = fin["revenue_fy"][-1][1] if fin.get("revenue_fy") else None
+    r["equity"] = equity_now
+    r["assets"] = assets_now
+    r["long_term_debt"] = ltd_now
+
+    r["roe_pct"] = (safe_div(ni_ttm, equity_avg) or 0) * 100 if (
+        ni_ttm is not None and equity_avg and equity_avg > 0) else None
+    r["equity_ratio_pct"] = (safe_div(equity_now, assets_now) or 0) * 100 if (
+        equity_now is not None and assets_now and assets_now > 0) else None
+    r["earning_power_pct"] = (safe_div(ebit_ttm, assets_now) or 0) * 100 if (
+        ebit_ttm is not None and assets_now and assets_now > 0) else None
+    r["net_margin_pct"] = (safe_div(ni_ttm, rev_ttm) or 0) * 100 if (
+        ni_ttm is not None and rev_ttm and rev_ttm > 0) else None
+    r["operating_margin_pct"] = (safe_div(ebit_ttm, rev_ttm) or 0) * 100 if (
+        ebit_ttm is not None and rev_ttm and rev_ttm > 0) else None
+    r["debt_to_equity"] = safe_div(ltd_now, equity_now) if (
+        ltd_now is not None and equity_now and equity_now > 0) else None
+
+    if market_cap and market_cap > 0:
+        r["ps_ratio"] = safe_div(market_cap, rev_ttm) if (rev_ttm and rev_ttm > 0) else None
+        r["fcf_yield_pct"] = ((fcf_ttm / market_cap) * 100) if fcf_ttm is not None else None
+        r["pfcf_ratio"] = safe_div(market_cap, fcf_ttm) if (fcf_ttm and fcf_ttm > 0) else None
+    else:
+        r["ps_ratio"] = r["fcf_yield_pct"] = r["pfcf_ratio"] = None
+
+    if shares and shares > 0:
+        r["revenue_per_share"] = safe_div(rev_ttm, shares)
+        r["fcf_per_share"] = safe_div(fcf_ttm, shares)
+        r["book_value_per_share"] = safe_div(equity_now, shares)
+    else:
+        r["revenue_per_share"] = r["fcf_per_share"] = r["book_value_per_share"] = None
+
+    # crescita: FY su FY (il confronto che fa il mercato quando esce il bilancio),
+    # con fallback al TTM se manca l'esercizio precedente
+    r["fcf_growth_yoy_pct"] = (yoy_change(fin.get("fcf_fy", []))
+                               if len(fin.get("fcf_fy", [])) >= 2
+                               else yoy_change(fin.get("fcf_ttm", [])))
+    r["revenue_growth_yoy_pct"] = (yoy_change(fin.get("revenue_ttm", []))
+                                   or yoy_change(fin.get("revenue_fy", [])))
+    # Dichiara quali grandezze non sono su base TTM ma sull'ultimo esercizio:
+    # e' una differenza che il lettore ha diritto di conoscere prima di
+    # confrontare questa societa' con un'altra.
+    fallback = r.pop("_annual_fallback", None)
+    r["financials_basis"] = ("annual:" + ",".join(sorted(set(fallback))
+                             ) if fallback else "ttm")
+    return r
+
+
+def cagr_sources(fin: dict, eps_series: list[tuple[date, float]]) -> dict:
+    """
+    Quale serie alimenta ciascun CAGR, e con che passo.
+
+    Ritorna {nome: (serie, base)} dove base e' 'ttm' o 'annual'. Il chiamante ha
+    bisogno di sapere entrambe le cose: un tasso calcolato su una serie annuale
+    non e' confrontabile con uno calcolato su un TTM, e finora la differenza non
+    era visibile da nessuna parte.
+    """
+    out: dict[str, tuple[list, str]] = {"eps": (eps_series, "ttm")}
+    for name in ("revenue", "fcf", "net_income", "ocf"):
+        ttm = fin.get(f"{name}_ttm") or []
+        if ttm:
+            out[name] = (ttm, "ttm")
+        else:
+            out[name] = (fin.get(f"{name}_fy") or [], "annual")
+    return out
+
+
+def compute_cagr_details(fin: dict, eps_series: list[tuple[date, float]],
+                         horizons: tuple[int, ...] = (3, 5, 10)) -> list[dict]:
+    """
+    Righe di verifica per ogni CAGR: metrica, orizzonte, i due estremi, lo span
+    effettivo e il tasso. Una riga per combinazione calcolabile.
+
+    E' il materiale del "sanity check": con questa tabella si rifa' il conto a
+    mano, ((fine/inizio)^(1/anni) - 1), e si vede subito se un tasso spettacolare
+    dipende da una base di partenza depressa.
+    """
+    rows: list[dict] = []
+    for name, (series, basis) in cagr_sources(fin, eps_series).items():
+        for years in horizons:
+            got = series_cagr_detail(series, years)
+            if got is None:
+                continue
+            rows.append({"metric": name, "horizon_years": years,
+                         "series_basis": basis, "n_points": len(series), **got})
+    return rows
+
+
+def compute_cagrs(fin: dict, eps_series: list[tuple[date, float]],
+                  horizons: tuple[int, ...] = (3, 5)) -> dict:
+    """
+    CAGR di utile per azione, ricavi, free cash flow e utile netto sugli
+    orizzonti richiesti.
+
+    Il CAGR e' calcolato sulle serie TTM (o annuali se il TTM non e'
+    ricostruibile), quindi su dodici mesi pieni: confrontare un trimestre con
+    un altro trimestre darebbe un numero dominato dalla stagionalita'.
+    Resta None quando il valore di partenza e' <= 0, perche' un tasso composto
+    a partire da una perdita non ha significato.
+    """
+    out: dict = {}
+    sources = {
+        "eps": eps_series,
+        "revenue": fin.get("revenue_ttm") or fin.get("revenue_fy") or [],
+        "fcf": fin.get("fcf_ttm") or fin.get("fcf_fy") or [],
+        "net_income": fin.get("net_income_ttm") or fin.get("net_income_fy") or [],
+        "ocf": fin.get("ocf_ttm") or fin.get("ocf_fy") or [],
+    }
+    for name, series in sources.items():
+        for y in horizons:
+            out[f"cagr_{name}_{y}y"] = series_cagr(series, y)
+    return out
+
+
+def annual_financial_table(fin: dict, eps_series: list[tuple[date, float]],
+                           n_years: int = 5) -> list[dict]:
+    """
+    Ultimi N esercizi in forma tabellare, per la sezione "andamento a 5 anni".
+
+    L'ancora sono gli esercizi dei RICAVI (o, se mancano, dell'utile netto): le
+    altre grandezze vengono agganciate alla stessa data di chiusura, con una
+    tolleranza di pochi giorni per gli esercizi da 52/53 settimane, che non
+    cadono mai due volte nello stesso giorno.
+    """
+    anchor = fin.get("revenue_fy") or fin.get("net_income_fy") or []
+    if not anchor:
+        return []
+    rows: list[dict] = []
+    for fy_end, revenue in sorted(anchor)[-n_years:]:
+        row = {"fy_end": fy_end, "revenue": revenue}
+        for key, series in (("net_income", fin.get("net_income_fy")),
+                            ("ebit", fin.get("ebit_fy")),
+                            ("ocf", fin.get("ocf_fy")),
+                            ("capex", fin.get("capex_fy")),
+                            ("fcf", fin.get("fcf_fy")),
+                            ("assets", fin.get("assets")),
+                            ("equity", fin.get("equity")),
+                            ("eps", eps_series)):
+            row[key] = _value_near(series or [], fy_end, tol_days=10)
+        rows.append(row)
+    return rows
+
+
+def _value_near(series: list[tuple[date, float]], when: date,
+                tol_days: int = 10) -> Optional[float]:
+    """Valore della serie alla data piu' vicina a 'when', entro tol_days."""
+    best, best_gap = None, None
+    for d, v in series:
+        gap = abs((d - when).days)
+        if best_gap is None or gap < best_gap:
+            best, best_gap = v, gap
+    return best if (best_gap is not None and best_gap <= tol_days) else None

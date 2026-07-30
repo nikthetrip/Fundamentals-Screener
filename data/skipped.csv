@@ -1,0 +1,29 @@
+ticker,motivo
+ALM,nessun tag EPS ne' utile netto in us-gaap (possibile filer estero/IFRS)
+AS,nessun tag EPS ne' utile netto in us-gaap (possibile filer estero/IFRS)
+ASND,nessun tag EPS ne' utile netto in us-gaap (possibile filer estero/IFRS)
+AU,nessun tag EPS ne' utile netto in us-gaap (possibile filer estero/IFRS)
+AUGO,nessun tag EPS ne' utile netto in us-gaap (possibile filer estero/IFRS)
+BEPC,nessun tag EPS ne' utile netto in us-gaap (possibile filer estero/IFRS)
+BIRK,nessun tag EPS ne' utile netto in us-gaap (possibile filer estero/IFRS)
+BLSH,nessun tag EPS ne' utile netto in us-gaap (possibile filer estero/IFRS)
+CAH,serie EPS EDGAR obsoleta: ultimo dato 2221 giorni fa (soglia 420 per una serie ttm); tipico delle societa' che hanno iniziato a taggare l'EPS per classe di azioni
+DOX,serie EPS EDGAR obsoleta: ultimo dato 668 giorni fa (soglia 420 per una serie ttm); tipico delle societa' che hanno iniziato a taggare l'EPS per classe di azioni
+FDXF,nessun tag EPS ne' utile netto in us-gaap (possibile filer estero/IFRS)
+FLO,serie EPS EDGAR obsoleta: ultimo dato 5143 giorni fa (soglia 420 per una serie ttm); tipico delle societa' che hanno iniziato a taggare l'EPS per classe di azioni
+GFS,nessun tag EPS ne' utile netto in us-gaap (possibile filer estero/IFRS)
+GLOB,nessun tag EPS ne' utile netto in us-gaap (possibile filer estero/IFRS)
+HONA,nessun tag EPS ne' utile netto in us-gaap (possibile filer estero/IFRS)
+JAN,"nessun EPS utilizzabile; tag presenti ma non usabili: EarningsPerShareBasic, EarningsPerShareDiluted"
+MASI,non risolto su EDGAR (ticker->CIK o 404)
+MWH,"nessun EPS utilizzabile; tag presenti ma non usabili: EarningsPerShareBasic, EarningsPerShareDiluted, CommonStockParOrStatedValuePerShare"
+NU,nessun tag EPS ne' utile netto in us-gaap (possibile filer estero/IFRS)
+ONON,nessun tag EPS ne' utile netto in us-gaap (possibile filer estero/IFRS)
+OZK,non risolto su EDGAR (ticker->CIK o 404)
+SPCX,nessun tag EPS ne' utile netto in us-gaap (possibile filer estero/IFRS)
+SPOT,nessun tag EPS ne' utile netto in us-gaap (possibile filer estero/IFRS)
+TIGO,nessun tag EPS ne' utile netto in us-gaap (possibile filer estero/IFRS)
+VGNT,EPS non esposto dalle API XBRL (taggato per classe di azioni) e numero di azioni non ricavabile per derivarlo dall'utile netto
+VIK,nessun tag EPS ne' utile netto in us-gaap (possibile filer estero/IFRS)
+XE,EPS non esposto dalle API XBRL (taggato per classe di azioni) e numero di azioni non ricavabile per derivarlo dall'utile netto
+XP,nessun tag EPS ne' utile netto in us-gaap (possibile filer estero/IFRS)

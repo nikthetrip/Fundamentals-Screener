@@ -1,0 +1,5795 @@
+ticker,date,type,detail
+A,2008-10-31,dilution,+91379210.3% shares
+A,2009-10-31,buyback,-6.7% shares
+A,2014-11-03,split,1.398:1
+AA,1974-02-04,split,1.5:1
+AA,1981-02-23,split,2:1
+AA,1995-02-27,split,2:1
+AA,1999-02-26,split,2:1
+AA,2000-06-12,split,2:1
+AA,2016-10-06,split,0.333333:1
+AA,2016-11-01,split,1.24844:1
+AA,2024-12-31,dilution,+20.2% shares
+AA,2025-12-31,dilution,+22.0% shares
+AAL,2010-12-31,dilution,+13.3% shares
+AAL,2011-12-31,buyback,-62.5% shares
+AAL,2012-12-31,dilution,+99.6% shares
+AAL,2013-12-31,dilution,+12.3% shares
+AAL,2014-12-31,dilution,+161.9% shares
+AAL,2015-12-31,buyback,-6.4% shares
+AAL,2016-12-31,buyback,-19.1% shares
+AAL,2017-12-31,buyback,-11.6% shares
+AAL,2018-12-31,buyback,-5.3% shares
+AAL,2020-12-31,dilution,+8.9% shares
+AAL,2021-12-31,dilution,+33.1% shares
+AAL,2023-12-31,dilution,+9.9% shares
+AAL,2025-12-31,buyback,-8.4% shares
+AAOI,2013-12-31,dilution,+3652.2% shares
+AAOI,2014-12-31,dilution,+52.4% shares
+AAOI,2015-12-31,dilution,+8.9% shares
+AAOI,2016-12-31,dilution,+7.1% shares
+AAOI,2017-12-31,dilution,+13.7% shares
+AAOI,2020-12-31,dilution,+9.4% shares
+AAOI,2021-12-31,dilution,+23.1% shares
+AAOI,2023-12-31,dilution,+14.7% shares
+AAOI,2024-12-31,dilution,+30.0% shares
+AAOI,2025-12-31,dilution,+44.9% shares
+AAON,1993-09-16,split,0.25:1
+AAON,1995-03-07,split,1.1:1
+AAON,2001-10-01,split,1.5:1
+AAON,2002-06-05,split,1.5:1
+AAON,2007-08-22,split,1.5:1
+AAON,2011-06-14,split,1.5:1
+AAON,2011-12-31,dilution,+47.3% shares
+AAON,2012-12-31,dilution,+48.9% shares
+AAON,2013-07-03,split,1.5:1
+AAON,2014-07-17,split,1.5:1
+AAON,2021-12-31,dilution,+51.9% shares
+AAON,2023-08-17,split,1.5:1
+AAPL,1987-06-16,split,2:1
+AAPL,2000-06-21,split,2:1
+AAPL,2005-02-28,split,2:1
+AAPL,2012-09-29,dilution,+606.5% shares
+AAPL,2014-06-09,split,7:1
+AAPL,2014-09-27,buyback,-6.1% shares
+AAPL,2015-09-26,buyback,-5.4% shares
+AAPL,2016-09-24,buyback,-5.1% shares
+AAPL,2018-09-29,dilution,+280.8% shares
+AAPL,2019-09-28,buyback,-7.0% shares
+AAPL,2020-08-31,split,4:1
+AAPL,2020-09-26,buyback,-5.7% shares
+ABBV,2020-12-31,dilution,+12.7% shares
+ABBV,2021-12-31,dilution,+6.2% shares
+ABNB,2020-12-31,dilution,+9.0% shares
+ABNB,2021-12-31,dilution,+116.9% shares
+ABNB,2022-12-31,dilution,+10.4% shares
+ABT,1981-06-01,split,2:1
+ABT,1986-06-02,split,2:1
+ABT,1990-06-01,split,2:1
+ABT,1992-06-01,split,2:1
+ABT,1998-06-01,split,2:1
+ABT,2004-05-03,split,1.06883:1
+ABT,2013-01-02,split,2.0842:1
+ABT,2017-12-31,dilution,+17.9% shares
+ACGL,2009-12-31,dilution,+186.7% shares
+ACGL,2010-12-31,buyback,-15.2% shares
+ACGL,2011-05-12,split,3:1
+ACGL,2011-12-31,buyback,-12.2% shares
+ACGL,2015-12-31,buyback,-6.6% shares
+ACGL,2016-12-31,dilution,+196.9% shares
+ACGL,2017-12-31,dilution,+11.7% shares
+ACGL,2018-06-21,split,3:1
+ACGL,2022-12-31,buyback,-5.7% shares
+ACI,2022-02-26,buyback,-17.8% shares
+ACI,2023-02-25,dilution,+12.4% shares
+ACI,2024-02-24,dilution,+8.8% shares
+ACI,2026-02-28,buyback,-6.3% shares
+ACM,2009-09-30,dilution,+5.3% shares
+ACM,2010-09-30,dilution,+5.2% shares
+ACM,2012-09-30,buyback,-5.5% shares
+ACM,2013-09-30,buyback,-8.9% shares
+ACM,2015-09-30,dilution,+51.6% shares
+ACM,2021-09-30,buyback,-7.2% shares
+ADBE,1987-03-12,split,2:1
+ADBE,1988-11-23,split,2:1
+ADBE,1993-08-11,split,2:1
+ADBE,1999-10-27,split,2:1
+ADBE,2000-10-25,split,2:1
+ADBE,2005-05-24,split,2:1
+ADBE,2008-11-28,buyback,-8.4% shares
+ADBE,2025-11-28,buyback,-5.0% shares
+ADC,2011-12-31,dilution,+5.3% shares
+ADC,2012-12-31,dilution,+15.0% shares
+ADC,2013-12-31,dilution,+18.1% shares
+ADC,2014-12-31,dilution,+13.8% shares
+ADC,2015-12-31,dilution,+20.7% shares
+ADC,2016-12-31,dilution,+27.1% shares
+ADC,2017-12-31,dilution,+20.6% shares
+ADC,2018-12-31,dilution,+17.0% shares
+ADC,2019-12-31,dilution,+27.2% shares
+ADC,2020-12-31,dilution,+27.1% shares
+ADC,2021-12-31,dilution,+28.1% shares
+ADC,2022-12-31,dilution,+17.9% shares
+ADC,2023-12-31,dilution,+20.6% shares
+ADC,2024-12-31,dilution,+6.7% shares
+ADC,2025-12-31,dilution,+9.2% shares
+ADI,1980-04-16,split,1.25:1
+ADI,1981-04-07,split,1.25:1
+ADI,1982-04-13,split,1.25:1
+ADI,1983-04-05,split,1.5:1
+ADI,1984-04-17,split,1.33333:1
+ADI,1986-04-15,split,1.33333:1
+ADI,1995-01-05,split,1.5:1
+ADI,1996-01-04,split,1.5:1
+ADI,1997-01-07,split,1.33333:1
+ADI,2000-03-16,split,2:1
+ADI,2008-11-01,buyback,-10.6% shares
+ADI,2017-10-28,dilution,+12.2% shares
+ADI,2018-11-03,dilution,+7.0% shares
+ADI,2021-10-30,dilution,+7.9% shares
+ADI,2022-10-29,dilution,+30.4% shares
+ADM,1980-10-27,split,1.05:1
+ADM,1981-03-23,split,1.5:1
+ADM,1981-08-17,split,1.05:1
+ADM,1982-08-17,split,1.05:1
+ADM,1983-08-16,split,1.05:1
+ADM,1984-08-14,split,1.05:1
+ADM,1985-08-13,split,1.05:1
+ADM,1986-06-03,split,1.5:1
+ADM,1986-08-12,split,1.05:1
+ADM,1987-08-11,split,1.05:1
+ADM,1988-08-16,split,1.05:1
+ADM,1989-08-22,split,1.05:1
+ADM,1989-12-05,split,1.5:1
+ADM,1990-08-14,split,1.05:1
+ADM,1991-08-13,split,1.05:1
+ADM,1992-08-11,split,1.05:1
+ADM,1993-08-17,split,1.05:1
+ADM,1994-08-16,split,1.05:1
+ADM,1994-12-06,split,1.5:1
+ADM,1995-08-17,split,1.05:1
+ADM,1996-08-15,split,1.05:1
+ADM,1997-08-14,split,1.05:1
+ADM,1998-08-20,split,1.05:1
+ADM,1999-08-19,split,1.05:1
+ADM,2000-08-24,split,1.05:1
+ADM,2001-08-30,split,1.05:1
+ADM,2015-12-31,buyback,-5.3% shares
+ADM,2024-12-31,buyback,-9.0% shares
+ADP,1981-05-22,split,2:1
+ADP,1986-06-09,split,2:1
+ADP,1991-05-01,split,2:1
+ADP,1996-01-02,split,2:1
+ADP,1999-01-04,split,2:1
+ADP,2007-04-02,split,1.10705:1
+ADP,2014-10-01,split,1.139:1
+ADSK,1987-03-30,split,3:1
+ADSK,1994-10-31,split,2:1
+ADSK,2002-04-19,split,2:1
+ADSK,2004-12-21,split,2:1
+ADT,2018-12-31,dilution,+16.6% shares
+AEIS,2012-12-31,buyback,-10.3% shares
+AEP,1962-10-31,split,2:1
+AEP,2009-12-31,dilution,+13.7% shares
+AES,1994-02-01,split,1.5:1
+AES,1994-03-04,split,1.03:1
+AES,1997-08-29,split,2:1
+AES,2000-06-02,split,2:1
+AES,2010-12-31,dilution,+15.5% shares
+AES,2023-12-31,dilution,+6.6% shares
+AFG,1988-03-14,split,2:1
+AFG,2006-12-18,split,1.5:1
+AFG,2010-12-31,buyback,-5.4% shares
+AFG,2011-12-31,buyback,-6.9% shares
+AFG,2012-12-31,buyback,-6.8% shares
+AFL,1983-12-14,split,1.2:1
+AFL,1984-10-22,split,1.1:1
+AFL,1985-06-04,split,1.5:1
+AFL,1986-03-03,split,1.33333:1
+AFL,1987-02-03,split,2:1
+AFL,1993-06-15,split,1.25:1
+AFL,1996-03-18,split,1.5:1
+AFL,1998-06-09,split,2:1
+AFL,2001-03-19,split,2:1
+AFL,2016-12-31,dilution,+91.1% shares
+AFL,2018-03-19,split,2:1
+AFL,2021-12-31,buyback,-5.5% shares
+AFL,2022-12-31,buyback,-5.8% shares
+AFL,2023-12-31,buyback,-6.1% shares
+AFL,2024-12-31,buyback,-5.6% shares
+AFL,2025-12-31,buyback,-5.3% shares
+AFRM,2021-06-30,dilution,+232.8% shares
+AFRM,2022-06-30,dilution,+76.9% shares
+AFRM,2025-06-30,dilution,+10.1% shares
+AGCO,1994-12-16,split,1.5:1
+AGCO,1996-02-01,split,2:1
+AGCO,2014-12-31,buyback,-5.2% shares
+AGCO,2015-12-31,buyback,-7.5% shares
+AGCO,2016-12-31,buyback,-6.2% shares
+AGNC,2017-12-31,dilution,+8.1% shares
+AGNC,2018-12-31,dilution,+23.1% shares
+AGNC,2019-12-31,dilution,+22.7% shares
+AGNC,2023-12-31,dilution,+15.4% shares
+AGNC,2024-12-31,dilution,+26.9% shares
+AGNC,2025-12-31,dilution,+30.2% shares
+AGO,2010-12-31,dilution,+46.3% shares
+AGO,2014-12-31,buyback,-7.5% shares
+AGO,2015-12-31,buyback,-14.2% shares
+AGO,2016-12-31,buyback,-10.0% shares
+AGO,2017-12-31,buyback,-8.8% shares
+AGO,2018-12-31,buyback,-9.0% shares
+AGO,2019-12-31,buyback,-10.0% shares
+AGO,2020-12-31,buyback,-14.0% shares
+AGO,2021-12-31,buyback,-13.8% shares
+AGO,2022-12-31,buyback,-14.0% shares
+AGO,2023-12-31,buyback,-6.7% shares
+AGO,2024-12-31,buyback,-8.9% shares
+AGO,2025-12-31,buyback,-10.3% shares
+AHR,2020-12-31,buyback,-75.3% shares
+AHR,2021-12-31,dilution,+11.3% shares
+AHR,2022-12-31,dilution,+31.4% shares
+AHR,2024-12-31,dilution,+97.8% shares
+AHR,2025-12-31,dilution,+27.7% shares
+AIG,1974-04-01,split,1.25:1
+AIG,1977-03-29,split,1.25:1
+AIG,1981-05-28,split,1.5:1
+AIG,1983-04-26,split,1.25:1
+AIG,1986-11-18,split,2:1
+AIG,1990-07-23,split,1.25:1
+AIG,1993-07-30,split,1.5:1
+AIG,1995-07-31,split,1.5:1
+AIG,1997-07-28,split,1.5:1
+AIG,1998-08-03,split,1.5:1
+AIG,1999-08-02,split,1.25:1
+AIG,2000-07-31,split,1.5:1
+AIG,2009-07-01,split,0.05:1
+AIG,2011-12-31,dilution,+1216.8% shares
+AIG,2012-12-31,buyback,-6.2% shares
+AIG,2013-12-31,buyback,-12.2% shares
+AIG,2015-12-31,buyback,-7.8% shares
+AIG,2016-12-31,buyback,-18.2% shares
+AIG,2017-12-31,buyback,-14.7% shares
+AIG,2022-12-31,buyback,-8.9% shares
+AIG,2023-12-31,buyback,-8.0% shares
+AIG,2024-12-31,buyback,-9.4% shares
+AIG,2025-12-31,buyback,-13.2% shares
+AIT,1988-06-06,split,1.5:1
+AIT,1989-06-05,split,1.5:1
+AIT,1995-12-05,split,1.5:1
+AIT,1997-09-16,split,1.5:1
+AIT,2004-12-20,split,1.5:1
+AIT,2006-06-16,split,1.5:1
+AIZ,2010-12-31,buyback,-5.9% shares
+AIZ,2011-12-31,buyback,-12.3% shares
+AIZ,2012-12-31,buyback,-12.8% shares
+AIZ,2013-12-31,buyback,-9.0% shares
+AIZ,2014-12-31,buyback,-5.8% shares
+AIZ,2015-12-31,buyback,-5.7% shares
+AIZ,2016-12-31,buyback,-10.3% shares
+AIZ,2017-12-31,buyback,-10.7% shares
+AIZ,2018-12-31,dilution,+7.7% shares
+AIZ,2022-12-31,buyback,-8.9% shares
+AJG,1986-07-16,split,2:1
+AJG,2000-03-16,split,2:1
+AJG,2001-01-19,split,2:1
+AJG,2011-12-31,dilution,+6.6% shares
+AJG,2012-12-31,dilution,+8.3% shares
+AJG,2013-12-31,dilution,+6.5% shares
+AJG,2014-12-31,dilution,+18.6% shares
+AJG,2015-12-31,dilution,+12.6% shares
+AJG,2021-12-31,dilution,+6.1% shares
+AJG,2025-12-31,dilution,+16.1% shares
+ALAB,2023-12-31,dilution,+8.7% shares
+ALAB,2024-12-31,dilution,+253.5% shares
+ALAB,2025-12-31,dilution,+36.8% shares
+ALB,2007-03-02,split,2:1
+ALB,2013-12-31,buyback,-6.2% shares
+ALB,2014-12-31,buyback,-6.2% shares
+ALB,2015-12-31,dilution,+41.0% shares
+ALB,2021-12-31,dilution,+9.1% shares
+ALGM,2021-03-26,dilution,+1664.2% shares
+ALGM,2022-03-25,dilution,+8.7% shares
+ALGN,2010-12-31,dilution,+13.0% shares
+ALK,1980-11-17,split,1.05:1
+ALK,1981-11-16,split,1.05:1
+ALK,2010-12-31,dilution,+103.5% shares
+ALK,2012-03-19,split,2:1
+ALK,2012-12-31,dilution,+95.5% shares
+ALK,2014-07-10,split,2:1
+ALK,2015-12-31,buyback,-5.4% shares
+ALK,2025-12-31,buyback,-6.6% shares
+ALL,1998-07-02,split,2:1
+ALL,2008-12-31,buyback,-8.2% shares
+ALL,2012-12-31,buyback,-5.8% shares
+ALL,2014-12-31,buyback,-6.8% shares
+ALL,2015-12-31,buyback,-7.2% shares
+ALL,2016-12-31,buyback,-7.3% shares
+ALL,2019-12-31,buyback,-5.6% shares
+ALL,2020-12-31,buyback,-5.4% shares
+ALL,2021-12-31,buyback,-5.2% shares
+ALL,2022-12-31,buyback,-9.3% shares
+ALLY,2010-12-31,dilution,+51.2% shares
+ALLY,2011-12-31,dilution,+66.2% shares
+ALLY,2012-12-31,dilution,+30900.0% shares
+ALLY,2014-04-10,split,310:1
+ALLY,2014-12-31,buyback,-99.9% shares
+ALLY,2015-12-31,dilution,+100094.8% shares
+ALLY,2017-12-31,buyback,-5.6% shares
+ALLY,2018-12-31,buyback,-6.1% shares
+ALLY,2019-12-31,buyback,-7.5% shares
+ALLY,2022-12-31,buyback,-12.7% shares
+ALNY,2020-12-31,dilution,+5.2% shares
+ALNY,2025-12-31,dilution,+5.5% shares
+ALSN,2017-12-31,buyback,-11.2% shares
+ALSN,2018-12-31,buyback,-10.7% shares
+ALSN,2019-12-31,buyback,-8.2% shares
+ALSN,2020-12-31,buyback,-7.3% shares
+ALSN,2021-12-31,buyback,-6.1% shares
+ALSN,2022-12-31,buyback,-10.3% shares
+ALSN,2023-12-31,buyback,-5.2% shares
+AM,2019-12-31,dilution,+137.7% shares
+AM,2020-12-31,dilution,+8.1% shares
+AMAT,1980-04-02,split,1.5:1
+AMAT,1981-02-06,split,1.5:1
+AMAT,1986-05-16,split,2:1
+AMAT,1992-04-07,split,2:1
+AMAT,1993-10-06,split,2:1
+AMAT,1995-10-13,split,2:1
+AMAT,1997-10-14,split,2:1
+AMAT,2000-03-16,split,2:1
+AMAT,2002-04-17,split,2:1
+AMAT,2016-10-30,buyback,-9.0% shares
+AMAT,2018-10-28,buyback,-5.4% shares
+AMAT,2019-10-27,buyback,-7.9% shares
+AMCR,2020-06-30,dilution,+35.3% shares
+AMCR,2023-09-30,buyback,-91.7% shares
+AMCR,2024-06-30,dilution,+1071.5% shares
+AMCR,2024-09-28,buyback,-91.8% shares
+AMCR,2025-06-30,dilution,+1253.4% shares
+AMCR,2026-01-15,split,0.2:1
+AMD,1980-10-24,split,2:1
+AMD,1982-10-28,split,1.5:1
+AMD,1983-08-23,split,2:1
+AMD,2000-08-22,split,2:1
+AMD,2009-12-26,dilution,+11.7% shares
+AMD,2010-12-25,dilution,+8.1% shares
+AMD,2016-12-31,dilution,+6.6% shares
+AMD,2017-12-30,dilution,+14.0% shares
+AMD,2018-12-29,dilution,+11.8% shares
+AMD,2019-12-28,dilution,+5.3% shares
+AMD,2020-12-26,dilution,+7.8% shares
+AMD,2022-12-31,dilution,+27.8% shares
+AME,1987-11-20,split,2:1
+AME,2004-03-01,split,2:1
+AME,2006-11-28,split,1.5:1
+AME,2008-12-31,dilution,+49.8% shares
+AME,2010-12-22,split,1.5:1
+AME,2010-12-31,dilution,+49.2% shares
+AME,2012-07-02,split,1.5:1
+AMG,2004-03-30,split,1.5:1
+AMG,2009-12-31,dilution,+13.3% shares
+AMG,2010-12-31,dilution,+14.1% shares
+AMG,2011-12-31,dilution,+7.3% shares
+AMG,2013-12-31,dilution,+7.0% shares
+AMG,2018-12-31,buyback,-8.2% shares
+AMG,2019-12-31,buyback,-5.9% shares
+AMG,2020-12-31,buyback,-7.7% shares
+AMG,2022-12-31,dilution,+9.4% shares
+AMG,2023-12-31,buyback,-13.9% shares
+AMG,2024-12-31,buyback,-14.5% shares
+AMG,2025-12-31,buyback,-8.6% shares
+AMGN,1990-08-13,split,2:1
+AMGN,1991-09-11,split,3:1
+AMGN,1995-08-16,split,2:1
+AMGN,1999-03-01,split,2:1
+AMGN,1999-11-22,split,2:1
+AMGN,2009-12-31,buyback,-5.0% shares
+AMGN,2010-12-31,buyback,-5.5% shares
+AMGN,2011-12-31,buyback,-5.5% shares
+AMGN,2012-12-31,buyback,-13.7% shares
+AMGN,2018-12-31,buyback,-9.5% shares
+AMGN,2019-12-31,buyback,-8.4% shares
+AMGN,2022-12-31,buyback,-5.6% shares
+AMH,2017-12-31,dilution,+12.9% shares
+AMH,2018-12-31,dilution,+11.4% shares
+AMH,2021-12-31,dilution,+6.0% shares
+AMH,2022-12-31,dilution,+7.5% shares
+AMKR,2009-12-31,dilution,+44.1% shares
+AMKR,2010-12-31,dilution,+7.3% shares
+AMKR,2012-12-31,buyback,-11.2% shares
+AMP,2008-12-31,buyback,-6.3% shares
+AMP,2009-12-31,dilution,+8.7% shares
+AMP,2010-12-31,dilution,+7.3% shares
+AMP,2011-12-31,buyback,-6.1% shares
+AMP,2012-12-31,buyback,-9.5% shares
+AMP,2013-12-31,buyback,-7.0% shares
+AMP,2014-12-31,buyback,-5.8% shares
+AMP,2015-12-31,buyback,-5.5% shares
+AMP,2016-12-31,buyback,-8.7% shares
+AMP,2017-12-31,buyback,-6.8% shares
+AMP,2018-12-31,buyback,-5.7% shares
+AMP,2019-12-31,buyback,-7.9% shares
+AMP,2020-12-31,buyback,-7.6% shares
+AMP,2022-12-31,buyback,-5.2% shares
+AMP,2023-12-31,buyback,-5.2% shares
+AMT,2015-12-31,dilution,+5.7% shares
+AMTM,2025-10-03,dilution,+168.1% shares
+AMZN,1998-06-02,split,2:1
+AMZN,1999-01-05,split,3:1
+AMZN,1999-09-02,split,2:1
+AMZN,2020-12-31,dilution,+1923.4% shares
+AMZN,2022-06-06,split,20:1
+AN,1996-06-10,split,2:1
+AN,2010-12-31,buyback,-10.5% shares
+AN,2011-12-31,buyback,-7.1% shares
+AN,2012-12-31,buyback,-14.6% shares
+AN,2016-12-31,buyback,-8.9% shares
+AN,2017-12-31,buyback,-5.4% shares
+AN,2018-12-31,buyback,-7.0% shares
+AN,2021-12-31,buyback,-15.4% shares
+AN,2022-12-31,buyback,-24.4% shares
+AN,2023-12-31,buyback,-20.8% shares
+AN,2024-12-31,buyback,-8.9% shares
+AN,2025-12-31,buyback,-6.8% shares
+ANET,2013-12-31,dilution,+20.7% shares
+ANET,2014-12-31,dilution,+81.7% shares
+ANET,2015-12-31,dilution,+30.8% shares
+ANET,2017-12-31,dilution,+7.9% shares
+ANET,2019-12-31,dilution,+300.2% shares
+ANET,2021-11-18,split,4:1
+ANET,2022-12-31,dilution,+296.5% shares
+ANET,2024-12-04,split,4:1
+AON,1987-05-27,split,2:1
+AON,1994-05-17,split,1.5:1
+AON,1997-05-15,split,1.5:1
+AON,1999-05-18,split,1.5:1
+AON,2008-12-31,buyback,-6.9% shares
+AON,2011-12-31,dilution,+14.4% shares
+AON,2013-12-31,buyback,-5.2% shares
+AON,2014-12-31,buyback,-5.0% shares
+AON,2015-12-31,buyback,-5.3% shares
+AON,2018-12-31,buyback,-5.3% shares
+AON,2022-12-31,buyback,-5.7% shares
+AOS,1993-08-17,split,2:1
+AOS,1998-08-18,split,1.5:1
+AOS,2010-11-16,split,1.5:1
+AOS,2010-12-31,dilution,+33.9% shares
+AOS,2011-12-31,dilution,+101.8% shares
+AOS,2013-05-16,split,2:1
+AOS,2014-12-31,dilution,+96.1% shares
+AOS,2016-10-06,split,2:1
+APA,1979-05-15,split,1.33333:1
+APA,1980-05-15,split,1.5:1
+APA,1981-02-20,split,1.5:1
+APA,2001-12-27,split,1.1:1
+APA,2003-03-10,split,1.05:1
+APA,2004-01-15,split,2:1
+APA,2022-12-31,buyback,-11.2% shares
+APA,2023-12-31,buyback,-7.2% shares
+APA,2024-12-31,dilution,+14.2% shares
+APD,1986-06-06,split,2:1
+APD,1992-03-10,split,2:1
+APD,1998-06-16,split,2:1
+APD,2016-10-03,split,1.081:1
+APG,2020-12-31,dilution,+27.1% shares
+APG,2021-12-31,dilution,+21.9% shares
+APG,2022-12-31,dilution,+29.2% shares
+APG,2023-12-31,dilution,+32.6% shares
+APG,2024-12-31,dilution,+13.8% shares
+APG,2025-07-01,split,1.5:1
+APH,2000-04-26,split,2:1
+APH,2004-03-30,split,2:1
+APH,2007-04-02,split,2:1
+APH,2012-12-31,dilution,+90.8% shares
+APH,2014-10-10,split,2:1
+APH,2019-12-31,dilution,+97.0% shares
+APH,2021-03-05,split,2:1
+APH,2022-12-31,dilution,+98.6% shares
+APH,2024-06-12,split,2:1
+APLD,2022-04-13,split,0.166667:1
+APLD,2022-05-31,dilution,+3680.2% shares
+APLD,2023-05-31,dilution,+64.5% shares
+APLD,2024-05-31,dilution,+21.4% shares
+APLD,2025-05-31,dilution,+76.4% shares
+APLD,2026-05-31,dilution,+36.8% shares
+APO,2022-12-31,dilution,+147.2% shares
+APP,2021-12-31,dilution,+59.5% shares
+APP,2022-12-31,dilution,+8.4% shares
+APPF,2016-12-31,dilution,+57.3% shares
+APTV,2011-12-31,buyback,-38.6% shares
+APTV,2012-12-31,buyback,-23.3% shares
+APTV,2015-12-31,buyback,-5.1% shares
+APTV,2017-12-05,split,1.193:1
+APTV,2020-12-31,dilution,+5.2% shares
+APTV,2024-12-31,buyback,-9.3% shares
+APTV,2025-12-31,buyback,-14.0% shares
+AR,2016-12-31,dilution,+7.6% shares
+AR,2017-12-31,dilution,+7.2% shares
+AR,2020-12-31,buyback,-11.1% shares
+AR,2021-12-31,dilution,+13.1% shares
+AR,2022-12-31,dilution,+6.8% shares
+AR,2023-12-31,buyback,-5.4% shares
+ARE,2010-12-31,dilution,+25.4% shares
+ARE,2011-12-31,dilution,+22.0% shares
+ARE,2012-12-31,dilution,+5.2% shares
+ARE,2015-12-31,dilution,+15.1% shares
+ARE,2016-12-31,dilution,+6.4% shares
+ARE,2017-12-31,dilution,+21.0% shares
+ARE,2018-12-31,dilution,+12.2% shares
+ARE,2019-12-31,dilution,+8.9% shares
+ARE,2020-12-31,dilution,+12.4% shares
+ARE,2021-12-31,dilution,+16.6% shares
+ARE,2022-12-31,dilution,+9.6% shares
+ARE,2023-12-31,dilution,+5.7% shares
+ARMK,2014-10-03,dilution,+13.4% shares
+ARMK,2023-10-02,split,1.385:1
+ARW,1981-01-12,split,2:1
+ARW,1997-10-16,split,2:1
+ARW,2009-12-31,dilution,+99664.8% shares
+ARW,2013-12-31,buyback,-6.6% shares
+ARW,2019-12-31,buyback,-5.5% shares
+ARW,2020-12-31,buyback,-5.9% shares
+ARW,2021-12-31,buyback,-6.7% shares
+ARW,2022-12-31,buyback,-10.8% shares
+ARW,2023-12-31,buyback,-12.9% shares
+ARW,2024-12-31,buyback,-5.7% shares
+ARWR,2004-01-15,split,0.0153846:1
+ARWR,2011-09-30,dilution,+21.7% shares
+ARWR,2011-11-17,split,0.1:1
+ARWR,2017-09-30,dilution,+843.7% shares
+ARWR,2018-09-30,dilution,+13.2% shares
+ARWR,2019-09-30,dilution,+17.9% shares
+ARWR,2024-09-30,dilution,+12.2% shares
+ARWR,2025-09-30,dilution,+11.7% shares
+ASH,1988-07-29,split,2:1
+ASH,2000-03-30,split,1.05652:1
+ASH,2005-07-01,split,1.21773:1
+ASH,2015-09-30,buyback,-12.8% shares
+ASH,2016-09-30,buyback,-7.4% shares
+ASH,2017-05-15,split,2.044:1
+ASH,2022-09-30,buyback,-8.2% shares
+ASH,2024-09-30,buyback,-7.4% shares
+ASH,2025-09-30,buyback,-8.0% shares
+ASTS,2024-12-31,dilution,+88.8% shares
+ASTS,2025-12-31,dilution,+65.7% shares
+ATI,2011-12-31,dilution,+15.4% shares
+ATI,2013-12-31,buyback,-8.4% shares
+ATI,2018-12-31,dilution,+32.5% shares
+ATI,2020-12-31,buyback,-13.7% shares
+ATI,2022-01-02,dilution,+20.1% shares
+ATO,1985-06-13,split,2:1
+ATO,1994-05-17,split,1.5:1
+ATO,2014-09-30,dilution,+6.4% shares
+ATO,2019-09-30,dilution,+5.8% shares
+ATO,2021-09-30,dilution,+5.7% shares
+ATO,2022-09-30,dilution,+6.4% shares
+ATO,2023-09-30,dilution,+5.1% shares
+ATO,2024-09-30,dilution,+5.2% shares
+ATO,2025-09-30,dilution,+5.2% shares
+ATR,1998-08-26,split,2:1
+ATR,2007-05-10,split,2:1
+AUR,2020-12-31,dilution,+6.5% shares
+AUR,2021-12-31,dilution,+129.2% shares
+AUR,2022-12-31,dilution,+84.1% shares
+AUR,2023-12-31,dilution,+16.1% shares
+AUR,2024-12-31,dilution,+21.9% shares
+AUR,2025-12-31,dilution,+13.7% shares
+AVAV,2024-04-30,dilution,+9.1% shares
+AVAV,2026-04-30,dilution,+74.2% shares
+AVB,2010-12-31,dilution,+5.0% shares
+AVB,2011-12-31,dilution,+7.3% shares
+AVB,2012-12-31,dilution,+8.0% shares
+AVB,2013-12-31,dilution,+29.8% shares
+AVGO,2017-10-29,dilution,+9.9% shares
+AVGO,2022-10-30,dilution,+886.5% shares
+AVGO,2024-07-15,split,10:1
+AVGO,2024-11-03,dilution,+11.8% shares
+AVT,1981-06-01,split,1.1:1
+AVT,1983-02-16,split,2:1
+AVT,2000-09-29,split,2:1
+AVT,2013-06-29,buyback,-6.4% shares
+AVT,2018-06-30,buyback,-6.8% shares
+AVT,2019-06-29,buyback,-7.6% shares
+AVT,2020-06-27,buyback,-9.3% shares
+AVT,2023-07-01,buyback,-6.5% shares
+AVTR,2019-12-31,dilution,+202.3% shares
+AVTR,2020-12-31,dilution,+45.4% shares
+AVTR,2022-12-31,dilution,+13.3% shares
+AVY,1983-12-29,split,2:1
+AVY,1987-03-17,split,2:1
+AVY,1996-12-23,split,2:1
+AWI,2014-12-31,buyback,-5.1% shares
+AWK,2009-12-31,dilution,+5.1% shares
+AWK,2023-12-31,dilution,+6.0% shares
+AXON,2004-02-11,split,3:1
+AXON,2004-04-30,split,2:1
+AXON,2004-11-30,split,2:1
+AXON,2012-12-31,buyback,-7.9% shares
+AXON,2018-12-31,dilution,+7.5% shares
+AXON,2021-12-31,dilution,+7.1% shares
+AXON,2022-12-31,dilution,+9.6% shares
+AXP,1983-02-11,split,1.33333:1
+AXP,1983-08-11,split,1.5:1
+AXP,1987-05-11,split,2:1
+AXP,1994-05-31,split,1.13314:1
+AXP,2000-05-11,split,3:1
+AXP,2005-10-03,split,1.14247:1
+AXP,2016-12-31,buyback,-6.8% shares
+AXP,2017-12-31,buyback,-5.2% shares
+AXS,2010-12-31,buyback,-9.4% shares
+AXS,2011-12-31,buyback,-5.9% shares
+AXS,2013-12-31,buyback,-6.7% shares
+AXS,2014-12-31,buyback,-8.3% shares
+AXS,2015-12-31,buyback,-5.8% shares
+AXS,2016-12-31,buyback,-8.1% shares
+AXS,2017-12-31,buyback,-8.1% shares
+AXS,2025-12-31,buyback,-6.9% shares
+AXSM,2022-12-31,dilution,+8.1% shares
+AXSM,2023-12-31,dilution,+11.7% shares
+AXSM,2024-12-31,dilution,+5.5% shares
+AYI,2018-08-31,buyback,-5.3% shares
+AYI,2021-08-31,buyback,-7.7% shares
+AYI,2022-08-31,buyback,-5.2% shares
+AYI,2023-08-31,buyback,-7.2% shares
+AZO,1992-02-03,split,2:1
+AZO,1994-04-21,split,2:1
+AZO,2009-08-29,buyback,-12.3% shares
+AZO,2010-08-28,buyback,-11.9% shares
+AZO,2011-08-27,buyback,-11.6% shares
+AZO,2012-08-25,buyback,-9.1% shares
+AZO,2013-08-31,buyback,-7.7% shares
+AZO,2014-08-30,buyback,-7.4% shares
+AZO,2016-08-27,buyback,-5.3% shares
+AZO,2018-08-25,buyback,-5.6% shares
+AZO,2019-08-31,buyback,-7.0% shares
+AZO,2020-08-29,buyback,-5.5% shares
+AZO,2021-08-28,buyback,-5.4% shares
+AZO,2022-08-27,buyback,-9.1% shares
+AZO,2023-08-26,buyback,-7.9% shares
+AZO,2024-08-31,buyback,-6.8% shares
+BA,1966-05-18,split,2:1
+BA,1977-09-13,split,2:1
+BA,1979-04-16,split,1.5:1
+BA,1980-04-15,split,1.5:1
+BA,1985-06-10,split,1.5:1
+BA,1989-06-12,split,1.5:1
+BA,1990-06-11,split,1.5:1
+BA,1997-06-09,split,2:1
+BA,2015-12-31,buyback,-5.7% shares
+BA,2016-12-31,buyback,-7.5% shares
+BA,2017-12-31,buyback,-5.1% shares
+BA,2024-12-31,dilution,+6.8% shares
+BA,2025-12-31,dilution,+17.8% shares
+BAC,1986-11-21,split,2:1
+BAC,1997-02-28,split,2:1
+BAC,2004-08-30,split,2:1
+BAC,2009-12-31,dilution,+68.1% shares
+BAC,2010-12-31,dilution,+26.7% shares
+BAC,2012-12-31,dilution,+5.7% shares
+BAC,2013-12-31,dilution,+6.0% shares
+BAC,2014-12-31,buyback,-7.9% shares
+BAC,2015-12-31,dilution,+6.2% shares
+BAC,2018-12-31,buyback,-5.0% shares
+BAC,2019-12-31,buyback,-7.8% shares
+BAC,2020-12-31,buyback,-6.8% shares
+BAH,2012-03-31,dilution,+10.5% shares
+BALL,1982-10-04,split,2:1
+BALL,1985-10-02,split,2:1
+BALL,2002-02-25,split,2:1
+BALL,2004-08-24,split,2:1
+BALL,2009-12-31,dilution,+97807.6% shares
+BALL,2011-02-16,split,2:1
+BALL,2011-12-31,buyback,-8.1% shares
+BALL,2012-12-31,buyback,-6.2% shares
+BALL,2013-12-31,buyback,-5.6% shares
+BALL,2015-12-31,dilution,+98.0% shares
+BALL,2016-12-31,dilution,+14.5% shares
+BALL,2017-05-17,split,2:1
+BALL,2017-12-31,dilution,+10.6% shares
+BALL,2025-12-31,buyback,-10.5% shares
+BAX,1981-11-09,split,2:1
+BAX,1983-11-18,split,2:1
+BAX,1992-12-01,split,1.10104:1
+BAX,2001-05-31,split,2:1
+BAX,2015-07-01,split,1.841:1
+BBIO,2021-12-31,dilution,+22.3% shares
+BBIO,2023-12-31,dilution,+10.4% shares
+BBIO,2024-12-31,dilution,+14.3% shares
+BBWI,1986-06-24,split,1.5:1
+BBWI,1990-06-20,split,2:1
+BBWI,1998-06-02,split,1.0176:1
+BBWI,2000-05-31,split,2:1
+BBWI,2012-01-28,buyback,-5.7% shares
+BBWI,2013-02-02,buyback,-5.4% shares
+BBWI,2021-08-03,split,1.237:1
+BBWI,2023-01-28,buyback,-14.7% shares
+BBWI,2026-01-31,buyback,-5.4% shares
+BBY,1986-04-01,split,2:1
+BBY,1987-02-23,split,1.5:1
+BBY,1993-09-02,split,1.5:1
+BBY,1994-04-29,split,2:1
+BBY,1998-05-27,split,2:1
+BBY,1999-03-19,split,2:1
+BBY,2002-05-13,split,1.5:1
+BBY,2005-08-04,split,1.5:1
+BBY,2009-02-28,buyback,-6.6% shares
+BBY,2012-01-28,buyback,-8.3% shares
+BBY,2013-02-02,buyback,-9.6% shares
+BBY,2017-01-28,buyback,-8.0% shares
+BBY,2019-02-02,buyback,-8.4% shares
+BBY,2022-01-29,buyback,-5.2% shares
+BBY,2023-01-28,buyback,-9.5% shares
+BC,1983-11-16,split,2:1
+BC,1986-02-18,split,2:1
+BC,1987-06-10,split,2:1
+BC,2020-12-31,buyback,-6.9% shares
+BC,2023-12-31,buyback,-6.2% shares
+BDX,1986-03-03,split,2:1
+BDX,1993-03-01,split,2:1
+BDX,1996-08-16,split,2:1
+BDX,1998-08-21,split,2:1
+BDX,2011-09-30,buyback,-5.8% shares
+BDX,2012-09-30,buyback,-7.6% shares
+BDX,2018-09-30,dilution,+18.4% shares
+BDX,2022-04-01,split,1.025:1
+BDX,2026-02-10,split,1.272:1
+BE,2018-12-31,dilution,+419.8% shares
+BE,2019-12-31,dilution,+116.1% shares
+BE,2020-12-31,dilution,+20.5% shares
+BE,2021-12-31,dilution,+25.0% shares
+BE,2022-12-31,dilution,+7.2% shares
+BE,2023-12-31,dilution,+14.4% shares
+BE,2024-12-31,dilution,+6.9% shares
+BE,2025-12-31,dilution,+5.7% shares
+BEN,1984-04-13,split,1.25:1
+BEN,1985-04-02,split,2:1
+BEN,1986-01-23,split,2:1
+BEN,1986-10-27,split,1.5:1
+BEN,1987-07-15,split,1.25:1
+BEN,1990-01-16,split,1.5:1
+BEN,1992-04-15,split,2:1
+BEN,1997-01-15,split,1.5:1
+BEN,1998-01-16,split,2:1
+BEN,2009-09-30,dilution,+97038.9% shares
+BEN,2011-09-30,dilution,+193.0% shares
+BEN,2013-07-26,split,3:1
+BEN,2016-09-30,buyback,-5.1% shares
+BEN,2019-09-30,buyback,-6.3% shares
+BF-A,1981-07-17,split,2:1
+BF-A,1987-04-02,split,1.5:1
+BF-A,1994-05-31,split,3:1
+BF-A,2004-01-21,split,2:1
+BF-A,2008-10-28,split,1.25:1
+BF-A,2011-04-30,dilution,+47.9% shares
+BF-A,2012-08-13,split,1.5:1
+BF-A,2015-04-30,dilution,+98.1% shares
+BF-A,2016-04-30,dilution,+19.8% shares
+BF-A,2016-08-19,split,2:1
+BF-A,2018-02-07,split,1.339:1
+BF-A,2018-03-01,split,1.25:1
+BF-B,1981-07-17,split,2:1
+BF-B,1987-04-02,split,1.5:1
+BF-B,1994-05-31,split,3:1
+BF-B,2004-01-21,split,2:1
+BF-B,2008-10-28,split,1.25:1
+BF-B,2011-04-30,dilution,+47.9% shares
+BF-B,2012-08-13,split,1.5:1
+BF-B,2015-04-30,dilution,+98.1% shares
+BF-B,2016-04-30,dilution,+19.8% shares
+BF-B,2016-08-19,split,2:1
+BF-B,2018-03-01,split,1.25:1
+BFAM,2013-12-31,dilution,+964.8% shares
+BFAM,2015-12-31,buyback,-7.3% shares
+BG,2024-12-31,buyback,-5.7% shares
+BG,2025-12-31,dilution,+17.0% shares
+BHF,2019-12-31,buyback,-6.1% shares
+BHF,2020-12-31,buyback,-15.3% shares
+BHF,2021-12-31,buyback,-11.4% shares
+BHF,2022-12-31,buyback,-12.9% shares
+BHF,2023-12-31,buyback,-10.3% shares
+BHF,2024-12-31,buyback,-6.7% shares
+BHF,2025-12-31,buyback,-5.9% shares
+BIIB,1999-12-21,split,2:1
+BIIB,2001-01-18,split,3:1
+BIIB,2008-12-31,buyback,-7.9% shares
+BIIB,2010-12-31,buyback,-12.0% shares
+BIIB,2016-12-31,buyback,-5.4% shares
+BIIB,2019-12-31,buyback,-8.7% shares
+BIIB,2020-12-31,buyback,-13.9% shares
+BIIB,2021-12-31,buyback,-7.3% shares
+BILL,2021-06-30,dilution,+87.8% shares
+BILL,2022-06-30,dilution,+22.9% shares
+BIO,1980-03-18,split,2:1
+BIO,1985-08-01,split,1.5:1
+BIO,1986-06-11,split,1.5:1
+BIO,1996-06-03,split,1.5:1
+BIO,2002-03-08,split,2:1
+BJ,2019-02-02,dilution,+31.3% shares
+BJ,2020-02-01,dilution,+14.8% shares
+BKNG,2003-06-16,split,0.166667:1
+BKNG,2019-12-31,buyback,-9.4% shares
+BKNG,2020-12-31,buyback,-5.4% shares
+BKNG,2023-12-31,buyback,-8.8% shares
+BKNG,2024-12-31,buyback,-6.8% shares
+BKNG,2026-04-06,split,25:1
+BLDR,2016-12-31,dilution,+10.1% shares
+BLDR,2021-12-31,dilution,+72.6% shares
+BLDR,2022-12-31,buyback,-19.7% shares
+BLDR,2023-12-31,buyback,-21.1% shares
+BLDR,2024-12-31,buyback,-7.8% shares
+BLDR,2025-12-31,buyback,-6.0% shares
+BLK,2025-12-31,dilution,+6.1% shares
+BMNR,2022-08-31,dilution,+341.8% shares
+BMNR,2023-08-31,dilution,+13.8% shares
+BMNR,2024-08-31,buyback,-94.9% shares
+BMNR,2025-08-31,dilution,+883.0% shares
+BMRN,2010-12-31,dilution,+25.3% shares
+BMRN,2011-12-31,buyback,-10.8% shares
+BMRN,2012-12-31,dilution,+7.3% shares
+BMRN,2014-12-31,dilution,+21.7% shares
+BMRN,2015-12-31,dilution,+9.3% shares
+BMRN,2020-12-31,dilution,+7.1% shares
+BMY,1977-05-31,split,2:1
+BMY,1983-05-27,split,2:1
+BMY,1987-06-10,split,2:1
+BMY,1997-03-03,split,2:1
+BMY,1999-03-01,split,2:1
+BMY,2001-08-07,split,1.05067:1
+BMY,2010-12-31,buyback,-12.7% shares
+BMY,2020-12-31,dilution,+31.9% shares
+BNY,1983-10-11,split,2:1
+BNY,1986-11-07,split,1.5:1
+BNY,1994-05-16,split,2:1
+BNY,1996-08-09,split,2:1
+BNY,1998-08-14,split,2:1
+BNY,2007-07-02,split,0.9434:1
+BNY,2008-12-31,dilution,+23.4% shares
+BNY,2019-12-31,buyback,-6.4% shares
+BNY,2020-12-31,buyback,-5.4% shares
+BNY,2024-12-31,buyback,-5.0% shares
+BOKF,1991-12-17,split,0.01:1
+BOKF,1993-11-03,split,1.03:1
+BOKF,1994-11-02,split,1.03:1
+BOKF,1995-11-15,split,1.03:1
+BOKF,1996-11-14,split,1.03:1
+BOKF,1997-11-13,split,1.03:1
+BOKF,1998-11-10,split,1.05:1
+BOKF,1999-02-23,split,2:1
+BOKF,1999-10-06,split,1.03:1
+BOKF,2001-05-03,split,1.03:1
+BOKF,2002-05-09,split,1.03:1
+BOKF,2003-05-08,split,1.03:1
+BOKF,2004-05-06,split,1.03:1
+BOKF,2019-12-31,dilution,+6.2% shares
+BPOP,1985-09-03,split,3:1
+BPOP,1991-01-02,split,2.5:1
+BPOP,1996-07-02,split,2:1
+BPOP,1998-07-02,split,2:1
+BPOP,2004-07-09,split,2:1
+BPOP,2010-12-31,buyback,-78.3% shares
+BPOP,2011-12-31,dilution,+15.6% shares
+BPOP,2012-05-30,split,0.1:1
+BPOP,2020-12-31,buyback,-11.4% shares
+BPOP,2021-12-31,buyback,-5.3% shares
+BPOP,2022-12-31,buyback,-7.5% shares
+BPOP,2025-12-31,buyback,-5.6% shares
+BR,2011-06-30,buyback,-7.8% shares
+BRK-B,2008-12-31,dilution,+100207501.4% shares
+BRK-B,2010-01-21,split,50:1
+BRK-B,2010-12-31,buyback,-100.0% shares
+BRKR,2019-12-31,buyback,-100.0% shares
+BRKR,2023-12-31,dilution,+98527343.1% shares
+BRO,1983-03-24,split,1.5:1
+BRO,1986-05-12,split,1.5:1
+BRO,1991-05-30,split,1.25:1
+BRO,1998-03-02,split,1.5:1
+BRO,2000-08-24,split,2:1
+BRO,2001-11-23,split,2:1
+BRO,2005-11-29,split,2:1
+BRO,2016-12-31,dilution,+96.7% shares
+BRO,2018-03-29,split,2:1
+BRO,2019-12-31,buyback,-99.9% shares
+BRO,2020-12-31,dilution,+100331.1% shares
+BRO,2025-12-31,dilution,+10.2% shares
+BROS,2022-12-31,dilution,+13.1% shares
+BROS,2023-12-31,dilution,+19.7% shares
+BROS,2024-12-31,dilution,+67.7% shares
+BROS,2025-12-31,dilution,+20.8% shares
+BRX,2014-12-31,dilution,+29.4% shares
+BRX,2015-12-31,dilution,+24.7% shares
+BSX,1998-12-01,split,2:1
+BSX,2003-11-06,split,2:1
+BSX,2012-12-31,buyback,-7.4% shares
+BSY,2021-12-31,dilution,+5.1% shares
+BSY,2022-12-31,dilution,+5.5% shares
+BURL,2014-02-01,buyback,-26.8% shares
+BURL,2015-01-31,buyback,-79.5% shares
+BWA,2004-05-18,split,2:1
+BWA,2007-12-18,split,2:1
+BWA,2010-12-31,dilution,+10.8% shares
+BWA,2011-12-31,dilution,+98.3% shares
+BWA,2012-12-31,buyback,-5.5% shares
+BWA,2013-12-17,split,2:1
+BWA,2021-12-31,dilution,+11.9% shares
+BWA,2023-07-05,split,1.136:1
+BWXT,2013-12-31,buyback,-5.3% shares
+BWXT,2015-07-01,split,1.398:1
+BX,2011-12-31,dilution,+30.6% shares
+BX,2012-12-31,dilution,+13.3% shares
+BX,2013-12-31,dilution,+9.6% shares
+BX,2015-12-31,dilution,+93.8% shares
+BX,2017-12-31,buyback,-44.3% shares
+BX,2018-12-31,dilution,+81.2% shares
+BX,2019-12-31,buyback,-44.0% shares
+BXP,2009-12-31,dilution,+8.4% shares
+BXP,2010-12-31,dilution,+6.5% shares
+BYD,2013-12-31,dilution,+10.9% shares
+BYD,2014-12-31,dilution,+13.1% shares
+BYD,2023-12-31,buyback,-7.0% shares
+BYD,2024-12-31,buyback,-7.9% shares
+BYD,2025-12-31,buyback,-12.5% shares
+C,1987-03-13,split,2:1
+C,1993-03-01,split,1.5:1
+C,1993-08-30,split,1.33333:1
+C,1995-10-03,split,1.00402:1
+C,1996-05-28,split,1.5:1
+C,1996-11-25,split,1.33333:1
+C,1997-11-20,split,1.5:1
+C,1999-06-01,split,1.5:1
+C,2000-08-28,split,1.33333:1
+C,2008-12-31,dilution,+17.2% shares
+C,2009-12-31,buyback,-79.0% shares
+C,2010-12-31,dilution,+145.3% shares
+C,2011-05-09,split,0.1:1
+C,2017-12-31,buyback,-6.6% shares
+C,2018-12-31,buyback,-7.5% shares
+C,2019-12-31,buyback,-9.2% shares
+C,2020-12-31,buyback,-7.3% shares
+CACC,1993-03-18,split,2:1
+CACC,1993-12-27,split,1.5:1
+CACC,1994-12-21,split,2:1
+CACC,2010-12-31,buyback,-5.3% shares
+CACC,2011-12-31,buyback,-11.3% shares
+CACC,2013-12-31,buyback,-6.2% shares
+CACC,2014-12-31,buyback,-7.0% shares
+CACC,2015-12-31,buyback,-6.0% shares
+CACC,2020-12-31,buyback,-5.5% shares
+CACC,2021-12-31,buyback,-10.2% shares
+CACC,2022-12-31,buyback,-15.4% shares
+CACC,2025-12-31,buyback,-6.6% shares
+CACI,1982-12-13,split,3:1
+CACI,1983-05-02,split,3:1
+CACI,1986-09-22,split,1.3:1
+CACI,2001-12-07,split,2:1
+CACI,2012-06-30,buyback,-10.2% shares
+CACI,2013-06-30,buyback,-15.0% shares
+CACI,2014-06-30,dilution,+5.3% shares
+CACI,2022-06-30,buyback,-5.3% shares
+CAG,1980-12-08,split,2:1
+CAG,1984-12-03,split,1.5:1
+CAG,1986-12-02,split,2:1
+CAG,1989-12-04,split,1.5:1
+CAG,1991-12-02,split,1.5:1
+CAG,1997-10-02,split,2:1
+CAG,2016-11-10,split,1.285:1
+CAG,2018-05-27,buyback,-6.6% shares
+CAG,2019-05-26,dilution,+9.4% shares
+CAG,2020-05-31,dilution,+9.6% shares
+CAI,2025-12-31,dilution,+371.0% shares
+CAR,1985-03-19,split,1.5:1
+CAR,1986-07-21,split,1.5:1
+CAR,1991-03-01,split,1.5:1
+CAR,1992-07-06,split,1.5:1
+CAR,1993-05-03,split,1.5:1
+CAR,1995-07-03,split,1.5:1
+CAR,1996-10-22,split,1.5:1
+CAR,2006-08-01,split,6.25:1
+CAR,2006-09-05,split,0.1:1
+CAR,2010-12-31,dilution,+24.0% shares
+CAR,2011-12-31,buyback,-17.0% shares
+CAR,2012-12-31,dilution,+15.6% shares
+CAR,2013-12-31,buyback,-8.4% shares
+CAR,2015-12-31,buyback,-5.1% shares
+CAR,2016-12-31,buyback,-11.1% shares
+CAR,2017-12-31,buyback,-9.1% shares
+CAR,2018-12-31,buyback,-5.5% shares
+CAR,2019-12-31,buyback,-5.5% shares
+CAR,2020-12-31,buyback,-6.9% shares
+CAR,2021-12-31,buyback,-6.2% shares
+CAR,2022-12-31,buyback,-26.8% shares
+CAR,2023-12-31,buyback,-19.8% shares
+CAR,2024-12-31,buyback,-8.5% shares
+CARR,2024-12-31,dilution,+6.9% shares
+CARR,2025-12-31,buyback,-5.4% shares
+CART,2022-12-31,dilution,+54.1% shares
+CART,2023-12-31,dilution,+28.7% shares
+CART,2024-12-31,dilution,+121.4% shares
+CASY,1985-06-25,split,1.5:1
+CASY,1986-08-05,split,2:1
+CASY,1994-02-16,split,2:1
+CASY,1998-02-17,split,2:1
+CASY,2011-04-30,buyback,-16.6% shares
+CASY,2012-04-30,buyback,-9.8% shares
+CAT,1964-07-06,split,2:1
+CAT,1976-07-26,split,1.5:1
+CAT,1994-09-06,split,2:1
+CAT,1997-07-14,split,2:1
+CAT,2005-07-14,split,2:1
+CAT,2019-12-31,buyback,-5.3% shares
+CAVA,2022-12-25,dilution,+81.4% shares
+CAVA,2023-12-31,dilution,+4677.7% shares
+CAVA,2024-12-29,dilution,+86.4% shares
+CB,1998-03-03,split,3:1
+CB,2016-12-31,dilution,+41.7% shares
+CBOE,2010-12-31,dilution,+5.5% shares
+CBOE,2011-12-31,buyback,-6.0% shares
+CBOE,2017-12-31,dilution,+32.1% shares
+CBRE,2006-06-02,split,3:1
+CBRE,2009-12-31,dilution,+33.0% shares
+CBRE,2010-12-31,dilution,+13.9% shares
+CBSH,1986-05-27,split,2:1
+CBSH,1989-05-30,split,2:1
+CBSH,1993-06-01,split,1.5:1
+CBSH,1996-11-26,split,1.05:1
+CBSH,1997-11-25,split,1.05:1
+CBSH,1998-03-31,split,1.5:1
+CBSH,1998-11-25,split,1.05:1
+CBSH,1999-11-26,split,1.05:1
+CBSH,2000-11-28,split,1.05:1
+CBSH,2001-11-28,split,1.05:1
+CBSH,2002-11-26,split,1.05:1
+CBSH,2003-11-25,split,1.05:1
+CBSH,2004-11-24,split,1.05:1
+CBSH,2005-11-25,split,1.05:1
+CBSH,2006-11-27,split,1.05:1
+CBSH,2007-11-27,split,1.05:1
+CBSH,2008-11-12,split,1.05:1
+CBSH,2009-11-25,split,1.05:1
+CBSH,2012-11-28,split,1.05:1
+CBSH,2013-11-26,split,1.05:1
+CBSH,2014-11-25,split,1.05:1
+CBSH,2015-11-24,split,1.05:1
+CBSH,2018-11-29,split,1.05:1
+CBSH,2020-12-01,split,1.05:1
+CBSH,2021-12-01,split,1.05:1
+CBSH,2024-12-03,split,1.05:1
+CBSH,2025-12-02,split,1.05:1
+CCC,2021-12-31,dilution,+7.8% shares
+CCC,2022-12-31,dilution,+18.3% shares
+CCI,2014-12-31,dilution,+11.4% shares
+CCI,2017-12-31,dilution,+12.3% shares
+CCI,2018-12-31,dilution,+8.4% shares
+CCK,1988-10-03,split,3:1
+CCK,1992-06-01,split,3:1
+CCK,2013-12-31,buyback,-5.2% shares
+CCK,2022-12-31,buyback,-6.9% shares
+CCL,1994-12-15,split,2:1
+CCL,1998-06-15,split,2:1
+CCL,2020-11-30,dilution,+12.0% shares
+CCL,2021-11-30,dilution,+44.9% shares
+CCL,2022-11-30,dilution,+5.1% shares
+CCL,2023-11-30,dilution,+6.9% shares
+CCL,2024-11-30,dilution,+10.8% shares
+CDE,1981-01-26,split,1.25:1
+CDE,2009-05-27,split,0.1:1
+CDE,2009-12-31,dilution,+29.9% shares
+CDE,2010-12-31,dilution,+21.8% shares
+CDE,2013-12-31,dilution,+9.2% shares
+CDE,2015-12-31,dilution,+26.5% shares
+CDE,2016-12-31,dilution,+26.1% shares
+CDE,2017-12-31,dilution,+12.7% shares
+CDE,2019-12-31,dilution,+16.0% shares
+CDE,2020-12-31,dilution,+10.8% shares
+CDE,2022-12-31,dilution,+10.1% shares
+CDE,2023-12-31,dilution,+24.7% shares
+CDE,2024-12-31,dilution,+15.8% shares
+CDE,2025-12-31,dilution,+54.7% shares
+CDNS,1995-10-31,split,1.5:1
+CDNS,1996-06-03,split,1.5:1
+CDNS,1997-11-17,split,2:1
+CDNS,2016-12-31,buyback,-6.7% shares
+CDW,2013-12-31,dilution,+8.8% shares
+CDW,2014-12-31,dilution,+8.9% shares
+CE,2017-12-31,buyback,-5.0% shares
+CE,2019-12-31,buyback,-7.9% shares
+CE,2021-12-31,buyback,-5.4% shares
+CELH,2009-12-24,split,0.05:1
+CELH,2019-12-31,dilution,+28.2% shares
+CELH,2020-12-31,dilution,+16.0% shares
+CELH,2021-12-31,dilution,+213.1% shares
+CELH,2023-11-15,split,3:1
+CELH,2025-12-31,dilution,+7.4% shares
+CF,2009-12-31,buyback,-12.8% shares
+CF,2010-12-31,dilution,+32.9% shares
+CF,2011-12-31,dilution,+7.0% shares
+CF,2012-12-31,buyback,-7.6% shares
+CF,2013-12-31,dilution,+357.5% shares
+CF,2014-12-31,buyback,-13.3% shares
+CF,2015-06-18,split,5:1
+CF,2015-12-31,buyback,-8.0% shares
+CF,2019-12-31,buyback,-5.2% shares
+CF,2022-12-31,buyback,-5.6% shares
+CF,2023-12-31,buyback,-5.1% shares
+CF,2024-12-31,buyback,-6.8% shares
+CF,2025-12-31,buyback,-10.2% shares
+CFG,2019-12-31,buyback,-6.1% shares
+CFG,2020-12-31,buyback,-5.1% shares
+CFG,2022-12-31,dilution,+11.8% shares
+CFR,1981-02-25,split,1.33333:1
+CFR,1981-12-01,split,1.33333:1
+CFR,1996-06-24,split,2:1
+CFR,1999-06-23,split,2:1
+CG,2013-12-31,dilution,+7.1% shares
+CG,2014-12-31,buyback,-75.4% shares
+CG,2015-12-31,dilution,+336.4% shares
+CG,2017-12-31,buyback,-67.6% shares
+CG,2018-12-31,dilution,+13.3% shares
+CG,2019-12-31,dilution,+8.2% shares
+CG,2020-12-31,dilution,+192.2% shares
+CGNX,1992-02-18,split,2:1
+CGNX,1993-10-01,split,2:1
+CGNX,1995-12-19,split,2:1
+CGNX,2011-12-31,dilution,+112.2% shares
+CGNX,2013-09-17,split,2:1
+CGNX,2015-12-31,dilution,+97.6% shares
+CGNX,2017-12-04,split,2:1
+CHD,1981-06-22,split,3:1
+CHD,1983-06-09,split,1.5:1
+CHD,1984-09-04,split,1.5:1
+CHD,1986-03-06,split,2:1
+CHD,1999-09-02,split,2:1
+CHD,2004-09-02,split,1.5:1
+CHD,2009-12-31,dilution,+101.1% shares
+CHD,2011-06-02,split,2:1
+CHD,2014-12-31,dilution,+94.8% shares
+CHD,2016-09-02,split,2:1
+CHDN,1998-04-15,split,2:1
+CHDN,2010-12-31,dilution,+11.6% shares
+CHDN,2011-12-31,dilution,+9.3% shares
+CHDN,2016-12-31,dilution,+186.9% shares
+CHDN,2018-12-31,buyback,-13.3% shares
+CHDN,2019-01-28,split,3:1
+CHDN,2021-12-31,dilution,+95.5% shares
+CHDN,2023-05-22,split,2:1
+CHE,1981-11-12,split,2:1
+CHE,2005-05-12,split,2:1
+CHE,2011-12-31,buyback,-9.1% shares
+CHE,2012-12-31,buyback,-7.7% shares
+CHE,2022-12-31,buyback,-5.3% shares
+CHH,2005-10-24,split,2:1
+CHH,2023-12-31,buyback,-8.0% shares
+CHH,2024-12-31,buyback,-5.2% shares
+CHRD,2014-12-31,dilution,+7.4% shares
+CHRD,2015-12-31,dilution,+29.7% shares
+CHRD,2016-12-31,dilution,+41.0% shares
+CHRD,2017-12-31,dilution,+29.6% shares
+CHRD,2018-12-31,dilution,+29.3% shares
+CHRD,2021-12-31,buyback,-93.4% shares
+CHRD,2022-12-31,dilution,+56.2% shares
+CHRD,2023-12-31,dilution,+34.6% shares
+CHRD,2024-12-31,dilution,+21.5% shares
+CHRD,2025-12-31,dilution,+9.7% shares
+CHRW,2000-12-04,split,2:1
+CHRW,2005-10-17,split,2:1
+CHRW,2014-12-31,buyback,-6.1% shares
+CHRW,2023-12-31,buyback,-5.9% shares
+CHTR,2016-12-31,dilution,+132.1% shares
+CHTR,2017-12-31,dilution,+26.4% shares
+CHTR,2018-12-31,buyback,-20.6% shares
+CHTR,2020-12-31,buyback,-6.5% shares
+CHTR,2021-12-31,buyback,-7.8% shares
+CHTR,2022-12-31,buyback,-14.8% shares
+CHTR,2023-12-31,buyback,-7.6% shares
+CHTR,2025-12-31,buyback,-5.2% shares
+CHYM,2025-12-31,dilution,+264.0% shares
+CI,1998-05-18,split,3:1
+CI,2007-06-05,split,3:1
+CI,2019-12-31,dilution,+51.8% shares
+CI,2021-12-31,buyback,-7.4% shares
+CI,2022-12-31,buyback,-8.2% shares
+CI,2023-12-31,buyback,-5.2% shares
+CI,2025-12-31,buyback,-5.2% shares
+CIEN,2000-09-19,split,2:1
+CIEN,2006-09-25,split,0.142857:1
+CIEN,2009-10-31,buyback,-17.6% shares
+CIEN,2015-10-31,dilution,+13.5% shares
+CIEN,2016-10-31,dilution,+25.5% shares
+CIEN,2017-10-31,dilution,+12.8% shares
+CIEN,2018-10-31,buyback,-15.4% shares
+CIEN,2019-10-31,dilution,+9.7% shares
+CINF,1985-05-01,split,2:1
+CINF,1992-05-18,split,3:1
+CINF,1995-03-13,split,1.05:1
+CINF,1996-03-13,split,1.05:1
+CINF,1998-05-18,split,3:1
+CINF,2004-04-28,split,1.05:1
+CINF,2005-04-04,split,1.05:1
+CL,1973-05-30,split,3:1
+CL,1991-05-16,split,2:1
+CL,1997-05-16,split,2:1
+CL,1999-07-01,split,2:1
+CL,2011-12-31,dilution,+92.6% shares
+CL,2013-05-16,split,2:1
+CLF,1975-12-16,split,2:1
+CLF,1978-09-18,split,2:1
+CLF,2005-01-03,split,2:1
+CLF,2006-07-03,split,2:1
+CLF,2008-05-16,split,2:1
+CLF,2009-12-31,dilution,+16.1% shares
+CLF,2010-12-31,dilution,+8.3% shares
+CLF,2013-12-31,dilution,+22.5% shares
+CLF,2014-12-31,buyback,-12.2% shares
+CLF,2016-12-31,dilution,+30.3% shares
+CLF,2017-12-31,dilution,+46.4% shares
+CLF,2019-12-31,buyback,-6.6% shares
+CLF,2020-12-31,dilution,+33.5% shares
+CLF,2021-12-31,dilution,+47.2% shares
+CLF,2022-12-31,buyback,-6.1% shares
+CLF,2024-12-31,buyback,-6.1% shares
+CLF,2025-12-31,dilution,+5.8% shares
+CLH,2009-12-31,dilution,+118.1% shares
+CLH,2010-12-31,dilution,+6.1% shares
+CLH,2011-07-27,split,2:1
+CLH,2013-12-31,dilution,+12.3% shares
+CLX,1987-06-02,split,2:1
+CLX,1997-09-03,split,2:1
+CLX,1999-08-24,split,2:1
+CMCSA,1980-05-16,split,1.5:1
+CMCSA,1981-04-13,split,1.5:1
+CMCSA,1983-01-06,split,1.5:1
+CMCSA,1984-09-19,split,1.5:1
+CMCSA,1985-06-28,split,1.5:1
+CMCSA,1986-12-19,split,1.5:1
+CMCSA,1988-04-11,split,1.5:1
+CMCSA,1989-10-25,split,1.5:1
+CMCSA,1994-02-03,split,1.5:1
+CMCSA,1999-05-06,split,2:1
+CMCSA,2007-02-22,split,1.5:1
+CMCSA,2015-12-31,dilution,+92.2% shares
+CMCSA,2017-02-21,split,2:1
+CMCSA,2023-12-31,buyback,-6.4% shares
+CMCSA,2024-12-31,buyback,-5.8% shares
+CMCSA,2025-12-31,buyback,-5.1% shares
+CMCSA,2026-01-05,split,1.067:1
+CME,2008-12-31,dilution,+33.7% shares
+CME,2009-12-31,dilution,+12.9% shares
+CME,2010-12-31,dilution,+399.6% shares
+CME,2012-07-23,split,5:1
+CMG,2016-12-31,buyback,-5.5% shares
+CMG,2022-12-31,dilution,+4821.2% shares
+CMG,2024-06-26,split,50:1
+CMI,1993-11-12,split,2:1
+CMI,2007-04-10,split,2:1
+CMI,2008-01-03,split,2:1
+CMI,2016-12-31,buyback,-5.1% shares
+CMS,2010-12-31,dilution,+6.3% shares
+CNA,1998-06-02,split,3:1
+CNC,2003-07-14,split,1.5:1
+CNC,2004-12-20,split,2:1
+CNC,2010-12-31,dilution,+13.8% shares
+CNC,2012-12-31,dilution,+104.7% shares
+CNC,2014-12-31,dilution,+7.0% shares
+CNC,2015-02-20,split,2:1
+CNC,2016-12-31,dilution,+166.5% shares
+CNC,2017-12-31,dilution,+7.8% shares
+CNC,2018-12-31,dilution,+12.8% shares
+CNC,2019-02-07,split,2:1
+CNC,2019-12-31,dilution,+5.5% shares
+CNC,2020-12-31,dilution,+37.8% shares
+CNC,2023-12-31,buyback,-6.2% shares
+CNC,2025-12-31,buyback,-5.8% shares
+CNH,2014-12-31,dilution,+8.2% shares
+CNH,2024-12-31,buyback,-6.7% shares
+CNM,2024-01-28,buyback,-7.5% shares
+CNM,2025-02-02,buyback,-11.6% shares
+CNP,1963-05-20,split,3:1
+CNP,1981-06-15,split,1.5:1
+CNP,1995-12-11,split,2:1
+CNP,2002-10-01,split,1.18624:1
+CNP,2009-12-31,dilution,+7.0% shares
+CNP,2010-12-31,dilution,+12.3% shares
+CNP,2019-12-31,dilution,+11.6% shares
+CNP,2020-12-31,dilution,+5.1% shares
+CNP,2021-12-31,dilution,+14.9% shares
+COF,1999-06-02,split,3:1
+COF,2009-12-31,dilution,+14.0% shares
+COF,2010-12-31,dilution,+5.8% shares
+COF,2012-12-31,dilution,+23.4% shares
+COF,2016-12-31,buyback,-7.0% shares
+COF,2022-12-31,buyback,-11.5% shares
+COF,2025-12-31,dilution,+41.1% shares
+COHR,1995-09-08,split,2:1
+COHR,2000-09-21,split,2:1
+COHR,2005-03-23,split,2:1
+COHR,2010-06-30,dilution,+102127.2% shares
+COHR,2011-06-27,split,2:1
+COHR,2020-06-30,dilution,+28.9% shares
+COHR,2021-06-30,dilution,+35.6% shares
+COHR,2023-06-30,dilution,+18.1% shares
+COHR,2024-06-30,dilution,+10.2% shares
+COIN,2020-12-31,dilution,+48.7% shares
+COIN,2021-12-31,dilution,+141.2% shares
+COIN,2023-12-31,dilution,+14.4% shares
+COIN,2024-12-31,dilution,+7.5% shares
+COIN,2025-12-31,dilution,+5.1% shares
+COKE,1984-03-21,split,2:1
+COKE,2025-05-27,split,10:1
+COLB,1996-05-06,split,1.05:1
+COLB,1997-05-06,split,1.05:1
+COLB,1998-05-21,split,1.5:1
+COLB,1999-05-10,split,1.05:1
+COLB,2000-05-08,split,1.1:1
+COLB,2001-05-24,split,1.1:1
+COLB,2002-04-12,split,1.05:1
+COLB,2004-05-10,split,1.05:1
+COLB,2010-12-31,dilution,+61.9% shares
+COLB,2011-12-31,dilution,+10.7% shares
+COLB,2013-12-31,dilution,+24.9% shares
+COLB,2014-12-31,dilution,+8.4% shares
+COLB,2015-12-31,dilution,+7.2% shares
+COLB,2018-12-31,dilution,+20.9% shares
+COLB,2021-12-31,dilution,+84.9% shares
+COLB,2023-12-31,dilution,+51.0% shares
+COLB,2024-12-31,dilution,+6.9% shares
+COLB,2025-12-31,dilution,+14.2% shares
+COLD,2018-12-31,dilution,+106.1% shares
+COLD,2019-12-31,dilution,+27.4% shares
+COLD,2020-12-31,dilution,+12.5% shares
+COLD,2021-12-31,dilution,+25.2% shares
+COLM,2001-06-05,split,1.5:1
+COLM,2012-12-31,dilution,+99.6% shares
+COLM,2014-09-29,split,2:1
+COLM,2022-12-31,buyback,-5.2% shares
+COLM,2025-12-31,buyback,-6.4% shares
+COO,1995-09-22,split,0.333333:1
+COO,2002-11-25,split,2:1
+COO,2022-10-31,dilution,+299.2% shares
+COO,2024-02-20,split,4:1
+COP,1985-07-05,split,3:1
+COP,2005-06-02,split,2:1
+COP,2008-12-31,buyback,-7.4% shares
+COP,2009-12-31,dilution,+98204.9% shares
+COP,2010-12-31,buyback,-100.0% shares
+COP,2011-12-31,buyback,-7.0% shares
+COP,2012-05-01,split,1.31179:1
+COP,2012-12-31,buyback,-9.7% shares
+COP,2020-12-31,dilution,+95849.8% shares
+COP,2021-12-31,dilution,+23.2% shares
+COP,2023-12-31,buyback,-5.7% shares
+COP,2025-12-31,dilution,+6.1% shares
+COR,1999-03-25,split,2:1
+COR,2005-12-29,split,2:1
+COR,2008-09-30,buyback,-13.5% shares
+COR,2009-06-16,split,2:1
+COR,2009-09-30,buyback,-6.8% shares
+COR,2010-09-30,buyback,-5.1% shares
+COR,2012-09-30,buyback,-7.5% shares
+COR,2013-09-30,buyback,-99.9% shares
+COR,2014-09-30,dilution,+99925.5% shares
+COR,2015-09-30,buyback,-7.5% shares
+CORT,2015-12-31,dilution,+5.8% shares
+CORT,2016-12-31,dilution,+8.7% shares
+CORT,2017-12-31,dilution,+7.2% shares
+CORT,2022-12-31,buyback,-7.9% shares
+CORT,2025-12-31,dilution,+5.7% shares
+COST,1993-10-22,split,2:1
+COST,2000-01-14,split,2:1
+CPAY,2011-12-31,dilution,+103495.0% shares
+CPAY,2015-12-31,dilution,+8.2% shares
+CPAY,2022-12-31,buyback,-8.6% shares
+CPB,1985-08-01,split,2:1
+CPB,1987-12-23,split,2:1
+CPB,1991-12-24,split,2:1
+CPB,1997-03-18,split,2:1
+CPB,2009-08-02,buyback,-6.1% shares
+CPNG,2020-12-31,dilution,+49.1% shares
+CPNG,2021-12-31,dilution,+4808.3% shares
+CPNG,2022-12-31,dilution,+23.9% shares
+CPRT,1999-01-29,split,2:1
+CPRT,2000-01-25,split,2:1
+CPRT,2002-01-22,split,1.5:1
+CPRT,2010-07-31,dilution,+100.2% shares
+CPRT,2011-07-31,buyback,-9.8% shares
+CPRT,2012-03-29,split,2:1
+CPRT,2012-07-31,buyback,-99.9% shares
+CPRT,2013-07-31,dilution,+98646.8% shares
+CPRT,2015-07-31,dilution,+100.3% shares
+CPRT,2016-07-31,buyback,-7.1% shares
+CPRT,2017-04-11,split,2:1
+CPRT,2021-07-31,dilution,+302.7% shares
+CPRT,2022-11-04,split,2:1
+CPRT,2023-08-22,split,2:1
+CPT,2009-12-31,dilution,+12.8% shares
+CPT,2010-12-31,dilution,+10.0% shares
+CPT,2011-12-31,dilution,+7.1% shares
+CPT,2012-12-31,dilution,+16.5% shares
+CPT,2022-12-31,dilution,+5.4% shares
+CRBG,2024-12-31,buyback,-7.1% shares
+CRBG,2025-12-31,buyback,-10.0% shares
+CRCL,2024-12-31,dilution,+8.1% shares
+CRCL,2025-12-31,dilution,+117.3% shares
+CRDO,2022-04-30,dilution,+27.9% shares
+CRDO,2023-04-29,dilution,+65.8% shares
+CRDO,2024-04-27,dilution,+5.8% shares
+CRDO,2025-05-03,dilution,+16.8% shares
+CRH,1998-08-24,split,5:1
+CRH,2024-12-31,buyback,-5.4% shares
+CRL,2011-12-31,buyback,-18.0% shares
+CRL,2012-12-29,buyback,-5.7% shares
+CRM,2011-01-31,dilution,+6.6% shares
+CRM,2012-01-31,dilution,+296.2% shares
+CRM,2013-04-18,split,4:1
+CRM,2014-01-31,dilution,+5.8% shares
+CRM,2016-01-31,dilution,+6.0% shares
+CRM,2017-01-31,dilution,+5.8% shares
+CRM,2018-01-31,dilution,+5.0% shares
+CRM,2019-01-31,dilution,+5.4% shares
+CRM,2020-01-31,dilution,+9.7% shares
+CRM,2021-01-31,dilution,+9.4% shares
+CROX,2007-06-15,split,2:1
+CROX,2012-12-31,buyback,-99.9% shares
+CROX,2013-12-31,dilution,+98245.3% shares
+CROX,2015-12-31,buyback,-11.2% shares
+CROX,2018-12-31,buyback,-5.3% shares
+CROX,2021-12-31,buyback,-7.0% shares
+CROX,2025-12-31,buyback,-9.4% shares
+CRS,1977-09-22,split,2:1
+CRS,1995-09-18,split,2:1
+CRS,2007-11-16,split,2:1
+CRS,2012-06-30,dilution,+6.3% shares
+CRS,2013-06-30,dilution,+12.0% shares
+CRS,2016-06-30,buyback,-8.5% shares
+CRUS,1995-07-18,split,2:1
+CRUS,2011-03-26,dilution,+9.9% shares
+CRUS,2012-03-31,buyback,-5.6% shares
+CRUS,2019-03-30,buyback,-6.6% shares
+CRWD,2021-01-31,dilution,+47.1% shares
+CRWD,2026-07-02,split,4:1
+CRWV,2024-12-31,dilution,+13.5% shares
+CRWV,2025-12-31,dilution,+100.0% shares
+CSCO,1991-03-18,split,2:1
+CSCO,1992-03-23,split,2:1
+CSCO,1993-03-22,split,2:1
+CSCO,1994-03-21,split,2:1
+CSCO,1996-02-20,split,2:1
+CSCO,1997-12-17,split,1.5:1
+CSCO,1998-09-16,split,1.5:1
+CSCO,1999-06-22,split,2:1
+CSCO,2000-03-23,split,2:1
+CSCO,2019-07-27,buyback,-8.8% shares
+CSGP,2011-12-31,dilution,+13.6% shares
+CSGP,2012-12-31,dilution,+14.5% shares
+CSGP,2014-12-31,dilution,+8.6% shares
+CSGP,2018-12-31,dilution,+8.6% shares
+CSGP,2019-12-31,dilution,+905.0% shares
+CSGP,2021-06-28,split,10:1
+CSL,1979-05-11,split,2:1
+CSL,1981-05-11,split,2:1
+CSL,1993-06-02,split,2:1
+CSL,1997-01-16,split,2:1
+CSL,2007-03-20,split,2:1
+CSL,2019-12-31,buyback,-5.4% shares
+CSL,2024-12-31,buyback,-6.5% shares
+CSL,2025-12-31,buyback,-8.3% shares
+CSX,1983-10-26,split,3:1
+CSX,1995-12-22,split,2:1
+CSX,2006-08-16,split,2:1
+CSX,2008-12-26,dilution,+91040.4% shares
+CSX,2009-12-25,dilution,+190.5% shares
+CSX,2011-06-16,split,3:1
+CSX,2011-12-30,buyback,-5.6% shares
+CSX,2018-12-31,buyback,-5.8% shares
+CSX,2019-12-31,dilution,+178.2% shares
+CSX,2021-06-29,split,3:1
+CSX,2022-12-31,buyback,-5.1% shares
+CSX,2023-12-31,buyback,-6.0% shares
+CTAS,1987-04-03,split,2:1
+CTAS,1991-04-03,split,1.5:1
+CTAS,1992-04-03,split,2:1
+CTAS,1997-11-19,split,2:1
+CTAS,2000-03-08,split,1.5:1
+CTAS,2012-05-31,buyback,-11.3% shares
+CTAS,2016-05-31,buyback,-6.5% shares
+CTAS,2023-05-31,dilution,+291.9% shares
+CTAS,2024-09-12,split,4:1
+CTSH,2000-03-17,split,2:1
+CTSH,2003-04-02,split,3:1
+CTSH,2004-06-18,split,2:1
+CTSH,2007-10-17,split,2:1
+CTSH,2012-12-31,dilution,+97.1% shares
+CTSH,2014-03-10,split,2:1
+CUBE,2010-12-31,dilution,+32.4% shares
+CUBE,2011-12-31,dilution,+9.6% shares
+CUBE,2012-12-31,dilution,+20.9% shares
+CUBE,2013-12-31,dilution,+10.6% shares
+CUBE,2014-12-31,dilution,+9.5% shares
+CUBE,2015-12-31,dilution,+12.8% shares
+CUBE,2016-12-31,dilution,+5.5% shares
+CUBE,2021-12-31,dilution,+5.2% shares
+CUBE,2022-12-31,dilution,+10.2% shares
+CUZ,1980-05-27,split,1.25:1
+CUZ,1981-03-30,split,1.25:1
+CUZ,1983-06-21,split,1.25:1
+CUZ,1984-06-19,split,1.25:1
+CUZ,1986-05-28,split,1.5:1
+CUZ,1987-05-29,split,1.5:1
+CUZ,2000-10-03,split,1.5:1
+CUZ,2010-12-31,dilution,+54.9% shares
+CUZ,2013-12-31,dilution,+38.7% shares
+CUZ,2014-12-31,dilution,+41.6% shares
+CUZ,2015-12-31,dilution,+5.6% shares
+CUZ,2016-10-07,split,1.417:1
+CUZ,2016-12-31,dilution,+18.5% shares
+CUZ,2017-12-31,buyback,-58.7% shares
+CUZ,2019-06-17,split,0.25:1
+CUZ,2019-12-31,dilution,+21.5% shares
+CUZ,2020-12-31,dilution,+14.5% shares
+CUZ,2025-12-31,dilution,+9.5% shares
+CVNA,2020-12-31,dilution,+38.7% shares
+CVNA,2021-12-31,dilution,+27.4% shares
+CVNA,2022-12-31,dilution,+21.8% shares
+CVNA,2023-12-31,dilution,+98.9% shares
+CVNA,2024-12-31,buyback,-34.1% shares
+CVNA,2025-12-31,dilution,+69.6% shares
+CVNA,2026-05-08,split,5:1
+CVS,1983-05-03,split,2:1
+CVS,1989-03-15,split,2:1
+CVS,1998-06-16,split,2:1
+CVS,2005-06-07,split,2:1
+CVS,2008-12-31,dilution,+7.1% shares
+CVS,2010-12-31,buyback,-5.0% shares
+CVS,2017-12-31,buyback,-5.1% shares
+CVS,2019-12-31,dilution,+25.0% shares
+CVX,1962-12-17,split,1.05:1
+CVX,1973-12-11,split,2:1
+CVX,1981-03-11,split,2:1
+CVX,1994-06-13,split,2:1
+CVX,2004-09-13,split,2:1
+CW,1997-12-24,split,2:1
+CW,2003-12-18,split,2:1
+CW,2006-04-24,split,2:1
+CW,2016-12-31,buyback,-5.4% shares
+CZR,2014-12-31,dilution,+28.3% shares
+CZR,2015-12-31,dilution,+57.2% shares
+CZR,2017-12-31,dilution,+42.8% shares
+CZR,2018-12-31,dilution,+14.5% shares
+CZR,2020-12-31,dilution,+64.6% shares
+CZR,2021-12-31,dilution,+62.3% shares
+D,1992-01-24,split,1.5:1
+D,2007-11-20,split,2:1
+D,2019-12-31,dilution,+23.5% shares
+DAL,2009-12-31,dilution,+176709301.7% shares
+DAL,2016-12-31,buyback,-6.1% shares
+DAL,2019-12-31,buyback,-5.9% shares
+DAR,1997-11-10,split,3:1
+DAR,2011-12-31,dilution,+38.8% shares
+DAR,2015-01-03,dilution,+37.6% shares
+DASH,2020-12-31,dilution,+44.2% shares
+DASH,2021-12-31,dilution,+439.9% shares
+DASH,2022-12-31,dilution,+10.3% shares
+DASH,2023-12-31,dilution,+5.8% shares
+DASH,2024-12-31,dilution,+9.5% shares
+DBX,2022-12-31,buyback,-8.2% shares
+DBX,2024-12-31,buyback,-6.4% shares
+DBX,2025-12-31,buyback,-15.6% shares
+DCI,1988-05-03,split,2:1
+DCI,1992-07-13,split,1.5:1
+DCI,1994-04-07,split,2:1
+DCI,1998-01-14,split,2:1
+DCI,2004-03-22,split,2:1
+DCI,2010-07-31,dilution,+99.9% shares
+DCI,2012-03-26,split,2:1
+DCI,2015-07-31,buyback,-5.6% shares
+DD,1973-05-10,split,2:1
+DD,1976-06-08,split,2:1
+DD,1989-11-21,split,1.5:1
+DD,2000-06-19,split,3:1
+DD,2016-12-31,buyback,-9.5% shares
+DD,2017-12-31,buyback,-52.6% shares
+DD,2018-12-31,dilution,+44.0% shares
+DD,2019-04-02,split,1.487:1
+DD,2019-06-03,split,0.4725:1
+DD,2021-12-31,buyback,-26.0% shares
+DD,2022-12-31,buyback,-8.2% shares
+DD,2023-12-31,buyback,-9.9% shares
+DD,2024-12-31,buyback,-6.8% shares
+DD,2025-11-03,split,2.39:1
+DD,2026-06-24,split,0.333333:1
+DDOG,2018-12-31,dilution,+15.7% shares
+DDOG,2019-12-31,dilution,+97.1% shares
+DDOG,2020-12-31,dilution,+114.7% shares
+DDOG,2023-12-31,dilution,+11.1% shares
+DDS,1983-03-24,split,2:1
+DDS,1984-09-17,split,2:1
+DDS,1985-12-17,split,2:1
+DDS,1992-06-08,split,3:1
+DDS,2011-01-29,buyback,-9.0% shares
+DDS,2012-01-28,buyback,-18.9% shares
+DDS,2013-02-02,buyback,-10.2% shares
+DDS,2014-02-01,buyback,-6.8% shares
+DDS,2015-01-31,buyback,-6.5% shares
+DDS,2016-01-30,buyback,-8.4% shares
+DDS,2017-01-28,buyback,-12.0% shares
+DDS,2018-02-03,buyback,-14.1% shares
+DDS,2019-02-02,buyback,-7.4% shares
+DDS,2020-02-01,buyback,-7.1% shares
+DDS,2021-01-30,buyback,-99.9% shares
+DDS,2022-01-29,buyback,-9.3% shares
+DDS,2023-01-28,buyback,-14.8% shares
+DDS,2024-02-03,buyback,-5.9% shares
+DE,1972-09-22,split,2:1
+DE,1976-09-22,split,2:1
+DE,1995-11-29,split,3:1
+DE,2007-12-04,split,2:1
+DE,2014-10-31,buyback,-5.9% shares
+DE,2015-10-31,buyback,-8.2% shares
+DE,2016-10-30,buyback,-5.8% shares
+DE,2024-10-27,buyback,-5.6% shares
+DECK,2010-07-06,split,3:1
+DECK,2013-12-31,buyback,-6.7% shares
+DECK,2019-03-31,buyback,-6.5% shares
+DECK,2023-03-31,dilution,+476.2% shares
+DECK,2024-09-17,split,6:1
+DELL,2018-12-28,split,1.806:1
+DELL,2021-11-02,split,1.973:1
+DELL,2026-01-30,buyback,-5.0% shares
+DG,2011-01-28,dilution,+6.1% shares
+DG,2015-01-30,buyback,-5.6% shares
+DG,2022-01-28,buyback,-5.7% shares
+DGX,2001-06-01,split,2:1
+DGX,2005-06-21,split,2:1
+DGX,2010-12-31,buyback,-5.6% shares
+DGX,2011-12-31,buyback,-9.8% shares
+DGX,2014-12-31,buyback,-5.2% shares
+DGX,2021-12-31,buyback,-5.9% shares
+DGX,2022-12-31,buyback,-7.8% shares
+DHI,1993-08-25,split,1.05:1
+DHI,1994-05-24,split,1.06:1
+DHI,1995-05-24,split,1.09:1
+DHI,1995-09-18,split,1.4:1
+DHI,1996-05-06,split,1.08:1
+DHI,2000-09-14,split,1.09:1
+DHI,2001-03-07,split,1.11:1
+DHI,2002-04-10,split,1.5:1
+DHI,2004-01-13,split,1.5:1
+DHI,2005-03-17,split,1.33333:1
+DHI,2012-09-30,dilution,+12.7% shares
+DHI,2025-09-30,buyback,-6.5% shares
+DHR,1987-09-09,split,2:1
+DHR,1995-01-23,split,2:1
+DHR,1998-06-01,split,2:1
+DHR,2004-05-21,split,2:1
+DHR,2008-12-31,dilution,+103.9% shares
+DHR,2010-06-14,split,2:1
+DHR,2016-07-05,split,1.319:1
+DHR,2023-10-02,split,1.128:1
+DINO,1985-12-23,split,2:1
+DINO,1988-07-21,split,2:1
+DINO,2001-07-09,split,2:1
+DINO,2004-08-31,split,2:1
+DINO,2006-06-02,split,2:1
+DINO,2011-09-01,split,2:1
+DINO,2022-12-31,dilution,+24.6% shares
+DINO,2023-12-31,buyback,-6.2% shares
+DIS,1962-12-18,split,1.03:1
+DIS,1967-11-16,split,2:1
+DIS,1971-03-01,split,2:1
+DIS,1973-01-16,split,2:1
+DIS,1986-03-06,split,4:1
+DIS,1992-05-18,split,4:1
+DIS,1998-07-10,split,3:1
+DIS,2007-06-13,split,1.01368:1
+DIS,2019-09-28,dilution,+10.6% shares
+DIS,2020-10-03,dilution,+8.5% shares
+DKNG,2021-12-31,dilution,+31.7% shares
+DKNG,2022-12-31,dilution,+8.5% shares
+DKNG,2023-12-31,dilution,+6.0% shares
+DKS,2004-04-06,split,2:1
+DKS,2007-10-22,split,2:1
+DKS,2010-01-30,dilution,+5.6% shares
+DKS,2019-02-02,buyback,-8.2% shares
+DKS,2020-02-01,buyback,-9.8% shares
+DKS,2022-01-29,dilution,+18.3% shares
+DKS,2023-01-28,buyback,-9.4% shares
+DKS,2024-02-03,buyback,-13.4% shares
+DLR,2010-12-31,dilution,+11.7% shares
+DLR,2011-12-31,dilution,+15.3% shares
+DLR,2012-12-31,dilution,+17.0% shares
+DLR,2013-12-31,dilution,+10.4% shares
+DLR,2016-12-31,dilution,+8.5% shares
+DLR,2017-12-31,dilution,+16.1% shares
+DLR,2018-12-31,dilution,+18.2% shares
+DLR,2020-12-31,buyback,-99.9% shares
+DLR,2021-12-31,dilution,+107784.6% shares
+DLR,2022-12-31,dilution,+5.2% shares
+DLR,2024-12-31,dilution,+7.3% shares
+DLTR,1996-04-22,split,1.5:1
+DLTR,1997-07-22,split,1.5:1
+DLTR,1998-06-30,split,1.5:1
+DLTR,2000-06-20,split,1.5:1
+DLTR,2010-06-25,split,1.5:1
+DLTR,2011-01-29,dilution,+89.6% shares
+DLTR,2012-01-28,buyback,-5.3% shares
+DLTR,2012-06-27,split,2:1
+DLTR,2014-02-01,buyback,-5.0% shares
+DLTR,2015-01-31,buyback,-5.5% shares
+DLTR,2016-01-30,dilution,+8.0% shares
+DLTR,2017-01-28,dilution,+6.0% shares
+DOC,1992-05-21,split,2:1
+DOC,2004-03-02,split,2:1
+DOC,2008-12-31,dilution,+13.9% shares
+DOC,2009-12-31,dilution,+15.4% shares
+DOC,2010-12-31,dilution,+11.7% shares
+DOC,2011-12-31,dilution,+30.4% shares
+DOC,2012-12-31,dilution,+7.0% shares
+DOC,2013-12-31,dilution,+6.4% shares
+DOC,2016-11-01,split,1.098:1
+DOC,2020-12-31,dilution,+8.5% shares
+DOC,2024-12-31,dilution,+23.6% shares
+DOCN,2020-12-31,dilution,+9.6% shares
+DOCN,2021-12-31,dilution,+123.8% shares
+DOCN,2022-12-31,dilution,+8.1% shares
+DOCN,2025-12-31,dilution,+11.5% shares
+DOCS,2021-03-31,dilution,+16.4% shares
+DOCS,2022-03-31,dilution,+100.8% shares
+DOCS,2023-03-31,dilution,+11.7% shares
+DOCU,2021-01-31,dilution,+5.1% shares
+DOCU,2022-01-31,dilution,+5.9% shares
+DOV,1981-09-28,split,2:1
+DOV,1988-09-26,split,2:1
+DOV,1995-09-18,split,2:1
+DOV,1997-12-16,split,2:1
+DOV,2008-12-31,buyback,-6.7% shares
+DOV,2009-12-31,buyback,-99.9% shares
+DOV,2010-12-31,dilution,+101203.4% shares
+DOV,2013-12-31,buyback,-5.7% shares
+DOV,2014-03-03,split,1.205:1
+DOV,2015-12-31,buyback,-5.7% shares
+DOV,2018-05-09,split,1.238:1
+DOW,2017-12-31,dilution,+7.8% shares
+DPZ,2011-01-02,dilution,+5.2% shares
+DPZ,2017-01-01,buyback,-10.1% shares
+DPZ,2018-12-30,buyback,-9.1% shares
+DPZ,2021-01-03,buyback,-5.4% shares
+DRI,2002-05-02,split,1.5:1
+DRI,2012-05-27,buyback,-5.1% shares
+DRI,2015-11-10,split,1.11869:1
+DRI,2021-05-30,dilution,+7.4% shares
+DRS,1990-10-23,split,0.4:1
+DRS,2001-04-04,split,0.4:1
+DRS,2007-02-14,split,0.333333:1
+DRS,2016-09-14,split,0.5:1
+DRS,2023-12-31,dilution,+22.8% shares
+DT,2021-03-31,dilution,+8.1% shares
+DTE,1963-01-15,split,2:1
+DTE,2021-07-01,split,1.175:1
+DTE,2023-12-31,dilution,+5.1% shares
+DUK,1990-10-01,split,2:1
+DUK,2001-01-29,split,2:1
+DUK,2007-01-03,split,1.72087:1
+DUK,2010-12-31,buyback,-66.0% shares
+DUK,2012-07-03,split,0.333333:1
+DUK,2012-12-31,dilution,+29.5% shares
+DUK,2013-12-31,dilution,+22.8% shares
+DUOL,2021-12-31,dilution,+84.0% shares
+DUOL,2022-12-31,dilution,+68.4% shares
+DUOL,2023-12-31,dilution,+17.9% shares
+DVA,1997-10-21,split,1.66667:1
+DVA,2004-06-16,split,1.5:1
+DVA,2011-12-31,dilution,+87.3% shares
+DVA,2013-09-09,split,2:1
+DVA,2013-12-31,dilution,+9.6% shares
+DVA,2016-12-31,buyback,-5.2% shares
+DVA,2017-12-31,buyback,-6.6% shares
+DVA,2018-12-31,buyback,-9.9% shares
+DVA,2019-12-31,buyback,-10.8% shares
+DVA,2020-12-31,buyback,-20.3% shares
+DVA,2021-12-31,buyback,-10.3% shares
+DVA,2022-12-31,buyback,-12.8% shares
+DVA,2024-12-31,buyback,-6.3% shares
+DVA,2025-12-31,buyback,-13.0% shares
+DVN,2004-11-16,split,2:1
+DVN,2016-12-31,dilution,+24.6% shares
+DVN,2019-12-31,buyback,-19.3% shares
+DVN,2020-12-31,buyback,-6.0% shares
+DVN,2021-12-31,dilution,+76.4% shares
+DXCM,2020-12-31,dilution,+355.5% shares
+DXCM,2022-06-13,split,4:1
+EA,1992-03-27,split,2:1
+EA,1993-02-22,split,2:1
+EA,2000-09-11,split,2:1
+EA,2003-11-18,split,2:1
+EA,2013-03-31,buyback,-6.8% shares
+EBAY,1999-03-02,split,3:1
+EBAY,2000-05-25,split,2:1
+EBAY,2003-08-29,split,2:1
+EBAY,2005-02-17,split,2:1
+EBAY,2015-07-20,split,2.376:1
+EBAY,2016-12-31,buyback,-6.2% shares
+EBAY,2017-12-31,buyback,-7.0% shares
+EBAY,2018-12-31,buyback,-6.9% shares
+EBAY,2019-12-31,buyback,-13.6% shares
+EBAY,2020-12-31,buyback,-16.1% shares
+EBAY,2021-12-31,buyback,-7.7% shares
+EBAY,2022-12-31,buyback,-15.8% shares
+EBAY,2024-12-31,buyback,-6.0% shares
+EBAY,2025-12-31,buyback,-6.6% shares
+ECHO,2019-09-11,split,1.234:1
+ECHO,2021-12-31,dilution,+219.8% shares
+ECHO,2023-12-31,buyback,-12.0% shares
+ECL,1986-07-16,split,2:1
+ECL,1994-01-19,split,2:1
+ECL,1998-01-16,split,2:1
+ECL,2003-06-09,split,2:1
+ECL,2012-12-31,dilution,+23.5% shares
+ED,1965-03-02,split,2:1
+ED,1982-07-01,split,2:1
+ED,1989-07-03,split,2:1
+ED,2019-12-31,dilution,+5.3% shares
+EEFT,2024-12-31,buyback,-6.8% shares
+EFX,1982-09-16,split,2:1
+EFX,1985-03-21,split,1.5:1
+EFX,1986-03-27,split,2:1
+EFX,1989-12-19,split,2:1
+EFX,1995-12-18,split,2:1
+EFX,2010-12-31,buyback,-100.0% shares
+EFX,2011-12-31,dilution,+97786461.3% shares
+EG,2010-12-31,buyback,-99.9% shares
+EG,2011-12-31,buyback,-5.1% shares
+EG,2013-12-31,buyback,-5.8% shares
+EG,2014-12-31,buyback,-6.6% shares
+EG,2020-12-31,dilution,+98860.9% shares
+EG,2023-12-31,dilution,+6.4% shares
+EGP,1997-04-08,split,1.5:1
+EGP,2012-12-31,dilution,+6.3% shares
+EGP,2013-12-31,dilution,+5.6% shares
+EGP,2019-12-31,dilution,+5.7% shares
+EGP,2022-12-31,dilution,+5.8% shares
+EGP,2023-12-31,dilution,+6.1% shares
+EGP,2024-12-31,dilution,+7.9% shares
+EGP,2025-12-31,dilution,+8.0% shares
+EHC,1992-01-02,split,1.5:1
+EHC,1995-04-18,split,2:1
+EHC,1997-03-18,split,2:1
+EHC,2006-10-26,split,0.2:1
+EHC,2009-12-31,dilution,+7.2% shares
+EHC,2010-12-31,dilution,+5.0% shares
+EHC,2013-12-31,buyback,-5.6% shares
+EHC,2022-07-01,split,1.257:1
+EIX,1984-08-13,split,2:1
+EIX,1993-06-22,split,2:1
+EIX,2020-12-31,dilution,+9.7% shares
+EL,1999-06-03,split,2:1
+EL,2010-06-30,dilution,+103.1% shares
+EL,2012-01-23,split,2:1
+ELAN,2018-12-31,dilution,+7.0% shares
+ELAN,2019-12-31,dilution,+18.0% shares
+ELAN,2020-12-31,dilution,+19.2% shares
+ELAN,2021-12-31,dilution,+10.4% shares
+ELF,2015-12-31,dilution,+10.6% shares
+ELF,2016-12-31,dilution,+41201.7% shares
+ELF,2017-12-31,dilution,+291.7% shares
+ELS,1994-04-25,split,2:1
+ELS,2009-12-31,dilution,+107920.2% shares
+ELS,2010-12-31,dilution,+7.8% shares
+ELS,2011-12-31,dilution,+127.1% shares
+ELS,2012-12-31,dilution,+12.6% shares
+ELS,2013-07-16,split,2:1
+ELS,2017-12-31,dilution,+101.8% shares
+ELS,2019-10-16,split,2:1
+ELV,2005-06-01,split,2:1
+ELV,2009-12-31,buyback,-8.1% shares
+ELV,2010-12-31,buyback,-13.5% shares
+ELV,2011-12-31,buyback,-12.2% shares
+ELV,2012-12-31,buyback,-11.0% shares
+ELV,2013-12-31,buyback,-6.5% shares
+ELV,2014-12-31,buyback,-5.9% shares
+EME,2006-02-13,split,2:1
+EME,2007-07-10,split,2:1
+EME,2015-12-31,buyback,-5.6% shares
+EME,2022-12-31,buyback,-7.7% shares
+EME,2023-12-31,buyback,-5.1% shares
+EMN,2011-10-04,split,2:1
+EMN,2022-12-31,buyback,-8.9% shares
+EMR,1973-08-21,split,2:1
+EMR,1987-09-11,split,3:1
+EMR,1997-03-11,split,2:1
+EMR,2006-12-12,split,2:1
+ENPH,2018-12-31,dilution,+20.1% shares
+ENPH,2019-12-31,dilution,+32.1% shares
+ENPH,2020-12-31,dilution,+7.8% shares
+ENTG,2010-12-31,dilution,+13.5% shares
+ENTG,2023-12-31,dilution,+5.4% shares
+EOG,1994-06-16,split,2:1
+EOG,2005-03-02,split,2:1
+EOG,2012-12-31,dilution,+103.4% shares
+EOG,2014-04-01,split,2:1
+EPAM,2012-12-31,dilution,+213942.9% shares
+EPAM,2013-12-31,dilution,+10.4% shares
+EPR,2009-12-31,dilution,+16.2% shares
+EPR,2010-12-31,dilution,+25.7% shares
+EPR,2014-12-31,dilution,+12.9% shares
+EPR,2015-12-31,dilution,+7.1% shares
+EPR,2016-12-31,dilution,+8.8% shares
+EPR,2017-12-31,dilution,+12.3% shares
+EQH,2019-12-31,buyback,-11.3% shares
+EQH,2020-12-31,buyback,-8.8% shares
+EQH,2021-12-31,buyback,-6.5% shares
+EQH,2022-12-31,buyback,-9.8% shares
+EQH,2023-12-31,buyback,-7.4% shares
+EQH,2024-12-31,buyback,-7.6% shares
+EQH,2025-12-31,buyback,-8.2% shares
+EQIX,2002-12-31,split,0.03125:1
+EQIX,2010-12-31,dilution,+12.9% shares
+EQIX,2011-12-31,dilution,+6.9% shares
+EQIX,2012-12-31,dilution,+8.2% shares
+EQIX,2015-12-31,dilution,+11.7% shares
+EQIX,2016-12-31,dilution,+21.1% shares
+EQIX,2017-12-31,dilution,+9.5% shares
+EQIX,2019-12-31,dilution,+5.6% shares
+EQR,2001-10-12,split,2:1
+EQR,2012-12-31,dilution,+8.4% shares
+EQR,2013-12-31,dilution,+10.8% shares
+EQR,2014-12-31,dilution,+6.6% shares
+EQT,1981-04-07,split,1.5:1
+EQT,1984-02-01,split,1.5:1
+EQT,1987-04-01,split,1.5:1
+EQT,1993-01-26,split,1.5:1
+EQT,2001-06-12,split,2:1
+EQT,2005-09-02,split,2:1
+EQT,2010-12-31,dilution,+10.5% shares
+EQT,2016-12-31,dilution,+9.2% shares
+EQT,2017-12-31,dilution,+12.4% shares
+EQT,2018-11-13,split,1.837:1
+EQT,2018-12-31,dilution,+39.0% shares
+EQT,2021-12-31,dilution,+24.0% shares
+EQT,2022-12-31,dilution,+25.8% shares
+EQT,2024-12-31,dilution,+24.5% shares
+EQT,2025-12-31,dilution,+19.7% shares
+ERIE,1996-05-13,split,3:1
+ES,2012-12-31,dilution,+56.3% shares
+ES,2013-12-31,dilution,+13.7% shares
+ES,2020-12-31,dilution,+5.2% shares
+ESI,2014-12-31,dilution,+46.1% shares
+ESI,2015-12-31,dilution,+50.2% shares
+ESI,2016-12-31,dilution,+34.0% shares
+ESI,2017-12-31,dilution,+5.1% shares
+ESI,2019-12-31,buyback,-9.8% shares
+ESS,2009-12-31,dilution,+17.4% shares
+ESS,2011-12-31,dilution,+9.7% shares
+ESS,2012-12-31,dilution,+7.7% shares
+ESS,2013-12-31,dilution,+6.3% shares
+ESS,2014-12-31,dilution,+51.9% shares
+ESS,2015-12-31,dilution,+14.8% shares
+ESTC,2021-04-30,dilution,+10.7% shares
+ESTC,2022-04-30,dilution,+6.1% shares
+ESTC,2024-04-30,dilution,+8.6% shares
+ETN,1979-10-03,split,1.5:1
+ETN,1988-09-20,split,1.5:1
+ETN,1993-06-29,split,2:1
+ETN,2001-01-02,split,1.15247:1
+ETN,2004-02-24,split,2:1
+ETN,2011-03-01,split,2:1
+ETN,2013-12-31,dilution,+35.9% shares
+ETR,2011-12-31,buyback,-5.0% shares
+ETR,2019-12-31,dilution,+7.4% shares
+ETR,2022-12-31,dilution,+103.6% shares
+ETR,2024-12-13,split,2:1
+ETSY,2016-12-31,dilution,+24.6% shares
+ETSY,2017-12-31,dilution,+7.7% shares
+ETSY,2020-12-31,dilution,+8.5% shares
+ETSY,2021-12-31,dilution,+7.5% shares
+ETSY,2022-12-31,buyback,-13.6% shares
+ETSY,2023-12-31,dilution,+10.5% shares
+ETSY,2024-12-31,buyback,-6.0% shares
+ETSY,2025-12-31,buyback,-5.8% shares
+EVR,2010-12-31,dilution,+47.8% shares
+EVR,2011-12-31,dilution,+28.0% shares
+EVR,2012-12-31,dilution,+10.7% shares
+EVR,2013-12-31,dilution,+18.2% shares
+EVR,2014-12-31,dilution,+8.7% shares
+EVR,2022-12-31,buyback,-5.3% shares
+EVRG,1987-05-22,split,2:1
+EVRG,2018-12-31,dilution,+50.1% shares
+EVRG,2019-12-31,dilution,+12.1% shares
+EVRG,2020-12-31,buyback,-5.2% shares
+EW,2010-05-28,split,2:1
+EW,2013-12-31,dilution,+92.4% shares
+EW,2015-12-14,split,2:1
+EW,2018-12-31,dilution,+196.9% shares
+EW,2020-06-01,split,3:1
+EWBC,2004-06-22,split,2:1
+EWBC,2010-12-31,dilution,+74.0% shares
+EWBC,2013-12-31,buyback,-5.2% shares
+EXC,2004-05-06,split,2:1
+EXC,2012-12-31,dilution,+23.2% shares
+EXC,2013-12-31,dilution,+5.0% shares
+EXC,2022-02-02,split,1.402:1
+EXE,2008-12-31,dilution,+11.9% shares
+EXE,2009-12-31,dilution,+12.3% shares
+EXE,2010-12-31,dilution,+15.4% shares
+EXE,2011-12-31,dilution,+6.5% shares
+EXE,2012-12-31,buyback,-14.5% shares
+EXE,2014-12-31,dilution,+18.2% shares
+EXE,2015-12-31,buyback,-14.2% shares
+EXE,2016-12-31,dilution,+15.4% shares
+EXE,2017-12-31,buyback,-99.4% shares
+EXE,2019-12-31,dilution,+83.1% shares
+EXE,2020-12-31,dilution,+17.4% shares
+EXE,2022-12-31,dilution,+1393.5% shares
+EXE,2024-12-31,dilution,+9.8% shares
+EXE,2025-12-31,dilution,+53.1% shares
+EXEL,2011-12-31,dilution,+20.2% shares
+EXEL,2012-12-31,dilution,+22.7% shares
+EXEL,2013-12-31,dilution,+14.9% shares
+EXEL,2016-01-01,dilution,+13.7% shares
+EXEL,2016-12-30,dilution,+19.7% shares
+EXEL,2017-12-29,dilution,+24.5% shares
+EXEL,2025-01-03,buyback,-7.9% shares
+EXLS,2012-12-31,dilution,+5.2% shares
+EXLS,2021-12-31,dilution,+395.5% shares
+EXLS,2023-08-02,split,5:1
+EXP,2006-02-27,split,3:1
+EXP,2013-03-31,dilution,+6.3% shares
+EXP,2014-03-31,dilution,+5.5% shares
+EXP,2020-03-31,buyback,-9.9% shares
+EXP,2023-03-31,buyback,-9.5% shares
+EXP,2024-03-31,buyback,-5.3% shares
+EXPD,1986-09-26,split,1.5:1
+EXPD,1993-11-12,split,2:1
+EXPD,1996-12-12,split,2:1
+EXPD,1999-06-01,split,2:1
+EXPD,2002-06-25,split,2:1
+EXPD,2006-06-26,split,2:1
+EXPD,2023-12-31,buyback,-8.7% shares
+EXPD,2024-12-31,buyback,-5.6% shares
+EXPE,2009-12-31,buyback,-49.0% shares
+EXPE,2011-12-21,split,0.5:1
+EXPE,2016-12-31,dilution,+15.3% shares
+EXPE,2020-12-31,buyback,-5.7% shares
+EXPE,2021-12-31,dilution,+5.9% shares
+EXPE,2022-12-31,dilution,+8.0% shares
+EXPE,2023-12-31,buyback,-7.1% shares
+EXPE,2024-12-31,buyback,-8.2% shares
+EXR,2009-12-31,dilution,+10.6% shares
+EXR,2012-12-31,dilution,+10.8% shares
+EXR,2013-12-31,dilution,+9.0% shares
+EXR,2014-12-31,dilution,+7.4% shares
+EXR,2017-12-31,dilution,+6.5% shares
+EXR,2020-12-31,buyback,-5.0% shares
+EXR,2021-12-31,dilution,+8.0% shares
+EXR,2023-12-31,dilution,+19.4% shares
+EXR,2024-12-31,dilution,+25.0% shares
+F,1977-06-27,split,1.25:1
+F,1983-12-02,split,1.5:1
+F,1986-06-03,split,1.5:1
+F,1988-01-13,split,2:1
+F,1994-07-06,split,2:1
+F,1998-04-08,split,1.5058:1
+F,2000-06-29,split,1.04091:1
+F,2000-08-03,split,1.74818:1
+F,2009-12-31,dilution,+45.8% shares
+F,2010-12-31,dilution,+26.1% shares
+FANG,2014-12-31,dilution,+26.1% shares
+FANG,2015-12-31,dilution,+18.2% shares
+FANG,2016-12-31,dilution,+19.1% shares
+FANG,2017-12-31,dilution,+30.1% shares
+FANG,2018-12-31,dilution,+7.4% shares
+FANG,2019-12-31,dilution,+56.1% shares
+FANG,2021-12-31,dilution,+11.8% shares
+FANG,2024-12-31,dilution,+18.6% shares
+FANG,2025-12-31,dilution,+35.4% shares
+FAST,1988-09-19,split,1.5:1
+FAST,1990-02-26,split,2:1
+FAST,1992-03-31,split,2:1
+FAST,1995-03-30,split,2:1
+FAST,2002-05-13,split,2:1
+FAST,2005-11-14,split,2:1
+FAST,2009-12-31,dilution,+99.4% shares
+FAST,2011-05-23,split,2:1
+FAST,2017-12-31,dilution,+99.4% shares
+FAST,2019-05-23,split,2:1
+FAST,2023-12-31,dilution,+99.1% shares
+FAST,2025-05-22,split,2:1
+FBIN,2012-12-31,dilution,+7.0% shares
+FBIN,2018-12-31,buyback,-6.0% shares
+FBIN,2022-12-15,split,1.17:1
+FBIN,2022-12-31,buyback,-5.9% shares
+FCN,2002-01-17,split,1.5:1
+FCN,2003-06-05,split,1.5:1
+FCN,2010-12-31,buyback,-10.3% shares
+FCN,2011-12-31,buyback,-8.8% shares
+FCN,2012-12-31,buyback,-7.3% shares
+FCN,2017-12-31,buyback,-6.0% shares
+FCN,2025-12-31,buyback,-8.3% shares
+FCNCA,2022-12-31,dilution,+58.4% shares
+FCNCA,2023-12-31,buyback,-6.5% shares
+FCNCA,2025-12-31,buyback,-9.3% shares
+FCX,2008-12-31,dilution,+92.2% shares
+FCX,2009-12-31,dilution,+22.9% shares
+FCX,2011-02-02,split,2:1
+FCX,2013-12-31,dilution,+5.5% shares
+FCX,2016-12-31,dilution,+21.8% shares
+FCX,2017-12-31,dilution,+10.3% shares
+FDS,1999-02-08,split,1.5:1
+FDS,2000-02-07,split,2:1
+FDS,2005-02-07,split,1.5:1
+FDX,1978-09-26,split,2:1
+FDX,1980-11-03,split,2:1
+FDX,1983-11-01,split,2:1
+FDX,1996-11-05,split,2:1
+FDX,1999-05-07,split,2:1
+FDX,2015-05-31,buyback,-7.4% shares
+FDX,2026-06-01,split,1.241:1
+FE,2011-12-31,dilution,+31.5% shares
+FE,2018-12-31,dilution,+11.3% shares
+FE,2019-12-31,dilution,+9.7% shares
+FERG,2018-06-11,split,0.947:1
+FERG,2023-07-31,buyback,-5.3% shares
+FFIV,2007-08-21,split,2:1
+FFIV,2016-09-30,buyback,-6.3% shares
+FHN,1985-11-22,split,1.5:1
+FHN,1992-05-26,split,1.5:1
+FHN,1996-02-20,split,2:1
+FHN,1998-02-23,split,2:1
+FHN,2008-09-10,split,1.0306:1
+FHN,2009-09-09,split,1.0159:1
+FHN,2009-12-31,dilution,+13.4% shares
+FHN,2011-12-31,dilution,+11.5% shares
+FHN,2012-12-31,buyback,-5.5% shares
+FHN,2018-12-31,dilution,+34.0% shares
+FHN,2020-12-31,dilution,+37.4% shares
+FHN,2021-12-31,dilution,+27.1% shares
+FHN,2025-12-31,buyback,-6.1% shares
+FICO,1995-06-27,split,2:1
+FICO,2001-06-05,split,1.5:1
+FICO,2002-06-06,split,1.5:1
+FICO,2004-03-11,split,1.5:1
+FICO,2010-09-30,buyback,-7.1% shares
+FICO,2011-09-30,buyback,-11.7% shares
+FICO,2012-09-30,buyback,-9.8% shares
+FICO,2015-09-30,buyback,-6.5% shares
+FICO,2022-09-30,buyback,-10.0% shares
+FIGR,2024-12-31,dilution,+41.6% shares
+FIGR,2025-12-31,dilution,+95.2% shares
+FIS,2009-12-31,dilution,+23.7% shares
+FIS,2010-12-31,dilution,+47.0% shares
+FIS,2011-12-31,buyback,-12.8% shares
+FIS,2016-12-31,dilution,+14.2% shares
+FIS,2019-12-31,dilution,+35.8% shares
+FIS,2020-12-31,dilution,+39.0% shares
+FIS,2024-12-31,buyback,-6.1% shares
+FIS,2025-12-31,buyback,-5.4% shares
+FISV,1991-07-02,split,1.5:1
+FISV,1992-06-01,split,1.5:1
+FISV,1993-05-03,split,1.5:1
+FISV,1998-06-01,split,1.5:1
+FISV,1999-05-03,split,1.5:1
+FISV,2001-09-04,split,1.5:1
+FISV,2011-12-31,dilution,+90.1% shares
+FISV,2013-12-17,split,2:1
+FISV,2014-12-31,buyback,-5.0% shares
+FISV,2015-12-31,buyback,-5.8% shares
+FISV,2016-12-31,dilution,+88.2% shares
+FISV,2018-03-20,split,2:1
+FISV,2019-12-31,dilution,+26.3% shares
+FISV,2020-12-31,dilution,+30.8% shares
+FISV,2024-12-31,buyback,-5.5% shares
+FISV,2025-12-31,buyback,-5.7% shares
+FITB,1983-03-28,split,2:1
+FITB,1985-04-01,split,1.5:1
+FITB,1986-04-28,split,1.5:1
+FITB,1987-10-16,split,1.5:1
+FITB,1990-01-16,split,1.5:1
+FITB,1992-04-16,split,1.5:1
+FITB,1996-01-16,split,1.5:1
+FITB,1997-07-16,split,1.5:1
+FITB,1998-04-16,split,1.5:1
+FITB,2000-07-17,split,1.5:1
+FITB,2009-12-31,buyback,-100.0% shares
+FITB,2010-12-31,dilution,+110107496.8% shares
+FITB,2011-12-31,dilution,+18.8% shares
+FITB,2013-12-31,buyback,-5.4% shares
+FITB,2014-12-31,buyback,-5.8% shares
+FITB,2016-12-31,buyback,-5.3% shares
+FITB,2018-12-31,buyback,-7.5% shares
+FITB,2019-12-31,dilution,+5.0% shares
+FIVE,2012-01-28,dilution,+64.4% shares
+FIVE,2013-02-02,dilution,+122.9% shares
+FIVE,2014-02-01,dilution,+51.6% shares
+FLEX,1999-01-12,split,2:1
+FLEX,1999-12-23,split,2:1
+FLEX,2000-10-17,split,2:1
+FLEX,2009-03-31,dilution,+13.9% shares
+FLEX,2012-03-31,buyback,-7.9% shares
+FLEX,2013-03-31,buyback,-7.3% shares
+FLEX,2014-03-31,buyback,-7.6% shares
+FLEX,2015-03-31,buyback,-5.1% shares
+FLEX,2024-01-03,split,1.327:1
+FLEX,2025-03-31,buyback,-9.8% shares
+FLEX,2026-03-31,buyback,-5.0% shares
+FLS,1981-03-30,split,1.5:1
+FLS,1989-03-21,split,1.5:1
+FLS,1994-03-28,split,1.5:1
+FLS,2011-12-31,dilution,+198.3% shares
+FLS,2012-12-31,buyback,-6.1% shares
+FLS,2013-06-24,split,3:1
+FLS,2013-12-31,buyback,-9.8% shares
+FMC,1986-05-29,split,5:1
+FMC,2007-09-14,split,2:1
+FMC,2010-12-31,dilution,+99.4% shares
+FMC,2012-05-25,split,2:1
+FMC,2019-03-04,split,1.153:1
+FNB,1986-09-02,split,3:1
+FNB,1993-05-04,split,1.05:1
+FNB,1994-05-04,split,1.05:1
+FNB,1995-05-04,split,1.05:1
+FNB,1996-04-29,split,1.05:1
+FNB,1997-04-29,split,1.05:1
+FNB,1998-04-16,split,1.05:1
+FNB,1999-05-04,split,1.05:1
+FNB,2000-04-26,split,1.05:1
+FNB,2001-05-01,split,1.05:1
+FNB,2002-05-15,split,1.05:1
+FNB,2003-05-13,split,1.05:1
+FNB,2010-12-31,dilution,+11.1% shares
+FNB,2011-12-31,dilution,+9.4% shares
+FNB,2012-12-31,dilution,+12.5% shares
+FNB,2013-12-31,dilution,+5.1% shares
+FNB,2014-12-31,dilution,+14.4% shares
+FNB,2016-12-31,dilution,+17.8% shares
+FNB,2017-12-31,dilution,+46.2% shares
+FNB,2018-12-31,dilution,+7.2% shares
+FNB,2022-12-31,dilution,+9.5% shares
+FND,2017-12-28,dilution,+12.7% shares
+FNF,2009-12-31,dilution,+8.8% shares
+FNF,2014-07-01,split,1.216:1
+FNF,2017-10-02,split,1.385:1
+FNF,2018-12-31,dilution,+18.3% shares
+FNF,2022-12-01,split,1.04:1
+FNF,2025-12-17,split,1.037:1
+FOUR,2023-12-31,buyback,-49.7% shares
+FOUR,2024-12-31,buyback,-14.1% shares
+FOUR,2025-12-31,buyback,-20.1% shares
+FOX,2023-06-30,buyback,-6.8% shares
+FOX,2024-06-30,buyback,-9.6% shares
+FOXA,2023-06-30,buyback,-6.8% shares
+FOXA,2024-06-30,buyback,-9.6% shares
+FR,2013-12-31,dilution,+17.0% shares
+FRHC,2019-03-31,dilution,+74.4% shares
+FRHC,2021-03-31,dilution,+100228.5% shares
+FRHC,2023-03-31,buyback,-99.9% shares
+FRPT,2014-12-31,dilution,+30.9% shares
+FRPT,2015-12-31,dilution,+145.7% shares
+FRPT,2019-12-31,buyback,-99.9% shares
+FRPT,2020-12-31,dilution,+110492.5% shares
+FRPT,2021-12-31,dilution,+8.0% shares
+FRPT,2022-12-31,dilution,+7.6% shares
+FRPT,2025-12-31,dilution,+11.5% shares
+FRT,1982-09-01,split,2:1
+FRT,1985-11-06,split,1.5:1
+FSLR,2008-12-27,dilution,+5.3% shares
+FSLR,2013-12-31,dilution,+9.9% shares
+FSLR,2014-12-31,dilution,+6.5% shares
+FTAI,2015-12-31,dilution,+25.3% shares
+FTAI,2016-12-31,dilution,+13.0% shares
+FTAI,2018-12-31,dilution,+10.4% shares
+FTAI,2022-08-02,split,1.171:1
+FTAI,2022-12-31,dilution,+10.6% shares
+FTI,2007-09-04,split,2:1
+FTI,2011-04-01,split,2:1
+FTI,2017-12-31,dilution,+258.1% shares
+FTI,2021-02-16,split,1.344:1
+FTNT,2010-12-31,dilution,+19.9% shares
+FTNT,2011-06-02,split,2:1
+FTNT,2020-12-31,dilution,+379.0% shares
+FTNT,2022-06-23,split,5:1
+FTV,2020-10-09,split,1.195:1
+FTV,2020-12-31,dilution,+5.6% shares
+FTV,2025-06-30,split,1.327:1
+FTV,2025-12-31,buyback,-5.2% shares
+FWONA,2012-12-31,dilution,+322.7% shares
+FWONA,2014-07-24,split,2.865:1
+FWONA,2014-11-05,split,1.321:1
+FWONA,2016-04-18,split,1.42399:1
+FWONA,2023-07-20,split,1.018:1
+FWONK,2012-12-31,dilution,+322.7% shares
+FWONK,2014-11-05,split,1.323:1
+FWONK,2016-04-18,split,1.36594:1
+FWONK,2023-07-20,split,1.017:1
+G,2017-12-31,buyback,-6.2% shares
+GAP,1983-01-31,split,1.5:1
+GAP,1986-01-03,split,2:1
+GAP,1986-08-04,split,2:1
+GAP,1990-10-23,split,2:1
+GAP,1991-07-23,split,2:1
+GAP,1996-04-11,split,2:1
+GAP,1997-12-23,split,1.5:1
+GAP,1998-12-01,split,1.5:1
+GAP,1999-06-22,split,1.5:1
+GAP,2009-01-31,buyback,-9.4% shares
+GAP,2011-01-29,buyback,-8.3% shares
+GAP,2012-01-28,buyback,-16.8% shares
+GAP,2013-02-02,buyback,-8.4% shares
+GAP,2015-01-31,buyback,-5.8% shares
+GAP,2016-01-30,buyback,-6.1% shares
+GD,1979-02-20,split,2.5:1
+GD,1980-11-17,split,2:1
+GD,1994-04-11,split,2:1
+GD,1998-04-03,split,2:1
+GD,2006-03-27,split,2:1
+GDDY,2015-12-31,dilution,+51.1% shares
+GDDY,2016-12-31,dilution,+36.1% shares
+GDDY,2023-12-31,dilution,+89.7% shares
+GE,1971-06-08,split,2:1
+GE,1983-06-02,split,2:1
+GE,1987-05-26,split,2:1
+GE,1994-05-16,split,2:1
+GE,1997-05-12,split,2:1
+GE,2000-05-08,split,3:1
+GE,2016-12-31,buyback,-8.8% shares
+GE,2019-02-26,split,1.04:1
+GE,2019-12-31,buyback,-87.4% shares
+GE,2021-08-02,split,0.125:1
+GE,2023-01-04,split,1.281:1
+GE,2024-04-02,split,1.253:1
+GEN,1991-10-28,split,2:1
+GEN,2002-02-01,split,2:1
+GEN,2003-11-20,split,2:1
+GEN,2004-12-01,split,2:1
+GEN,2017-03-31,buyback,-7.8% shares
+GEN,2018-03-30,dilution,+8.1% shares
+GEN,2019-03-29,buyback,-5.4% shares
+GEN,2021-04-02,buyback,-6.7% shares
+GEN,2023-03-31,dilution,+5.6% shares
+GGG,1981-11-13,split,1.5:1
+GGG,1983-09-29,split,1.5:1
+GGG,1988-08-04,split,1.5:1
+GGG,1994-02-03,split,1.5:1
+GGG,1996-02-08,split,1.5:1
+GGG,1998-02-05,split,1.5:1
+GGG,2001-02-07,split,1.5:1
+GGG,2002-06-07,split,1.5:1
+GGG,2004-03-31,split,1.5:1
+GGG,2013-12-27,dilution,+101648.5% shares
+GGG,2015-12-25,dilution,+186.7% shares
+GGG,2017-12-28,split,3:1
+GILD,2001-02-22,split,2:1
+GILD,2002-03-08,split,2:1
+GILD,2004-09-07,split,2:1
+GILD,2007-06-25,split,2:1
+GILD,2010-12-31,dilution,+87.0% shares
+GILD,2011-12-31,buyback,-9.5% shares
+GILD,2013-01-28,split,2:1
+GILD,2013-12-31,dilution,+7.1% shares
+GILD,2015-12-31,buyback,-7.7% shares
+GILD,2016-12-31,buyback,-10.7% shares
+GIS,1986-11-10,split,2:1
+GIS,1990-11-08,split,2:1
+GIS,1995-05-30,split,1.20992:1
+GIS,1999-11-09,split,2:1
+GIS,2010-06-09,split,2:1
+GL,1992-08-20,split,1.5:1
+GL,1997-08-04,split,2:1
+GL,2011-07-05,split,1.5:1
+GL,2011-12-31,buyback,-10.8% shares
+GL,2012-12-31,dilution,+33.7% shares
+GL,2014-07-02,split,1.5:1
+GL,2024-12-31,buyback,-7.0% shares
+GL,2025-12-31,buyback,-8.0% shares
+GLPI,2016-12-31,dilution,+52.5% shares
+GLPI,2017-12-31,dilution,+17.8% shares
+GLPI,2021-12-31,dilution,+7.5% shares
+GLPI,2022-12-31,dilution,+7.5% shares
+GLW,1985-02-13,split,2:1
+GLW,1989-02-15,split,2:1
+GLW,1992-02-11,split,2:1
+GLW,2000-10-04,split,3:1
+GLW,2015-12-31,buyback,-5.9% shares
+GLW,2016-12-31,buyback,-14.8% shares
+GLW,2017-12-31,buyback,-21.8% shares
+GLW,2018-12-31,dilution,+5.1% shares
+GLW,2020-12-31,buyback,-14.1% shares
+GLW,2021-12-31,dilution,+9.3% shares
+GM,2023-12-31,buyback,-5.8% shares
+GM,2024-12-31,buyback,-17.5% shares
+GM,2025-12-31,buyback,-13.8% shares
+GME,2007-03-19,split,2:1
+GME,2011-01-29,buyback,-8.3% shares
+GME,2012-01-28,buyback,-8.4% shares
+GME,2013-02-02,buyback,-10.4% shares
+GME,2014-02-01,buyback,-6.3% shares
+GME,2016-01-30,buyback,-5.7% shares
+GME,2020-02-01,buyback,-14.3% shares
+GME,2021-01-30,dilution,+197.1% shares
+GME,2022-01-29,dilution,+11.7% shares
+GME,2022-07-22,split,4:1
+GME,2025-02-01,dilution,+29.3% shares
+GME,2026-01-31,dilution,+39.1% shares
+GMED,2023-12-31,dilution,+11.7% shares
+GMED,2024-12-31,dilution,+20.3% shares
+GNRC,2016-12-31,buyback,-5.5% shares
+GNTX,1993-06-21,split,2:1
+GNTX,1996-06-24,split,2:1
+GNTX,1998-06-22,split,2:1
+GNTX,2005-05-09,split,2:1
+GNTX,2012-12-31,dilution,+99.6% shares
+GNTX,2015-01-02,split,2:1
+GNTX,2018-12-31,buyback,-6.4% shares
+GNTX,2019-12-31,buyback,-6.2% shares
+GOOG,2014-03-27,split,2.002:1
+GOOG,2015-04-27,split,1.00275:1
+GOOG,2022-07-18,split,20:1
+GOOGL,2014-04-03,split,1.998:1
+GOOGL,2022-07-18,split,20:1
+GPC,1984-04-10,split,1.5:1
+GPC,1987-05-28,split,1.5:1
+GPC,1992-04-20,split,1.5:1
+GPC,1997-04-15,split,1.5:1
+GPC,2010-12-31,buyback,-99.9% shares
+GPC,2011-12-31,dilution,+99394.5% shares
+GPK,1995-09-19,split,2:1
+GPK,2000-01-03,split,1.8:1
+GPK,2011-12-31,dilution,+9.9% shares
+GPK,2013-12-31,buyback,-11.7% shares
+GPK,2014-12-31,buyback,-5.5% shares
+GPK,2020-12-31,buyback,-5.2% shares
+GPK,2021-12-31,dilution,+6.5% shares
+GPN,2005-10-31,split,2:1
+GPN,2013-05-31,dilution,+97.0% shares
+GPN,2014-05-31,buyback,-7.1% shares
+GPN,2015-05-31,buyback,-7.2% shares
+GPN,2015-11-03,split,2:1
+GPN,2017-12-31,dilution,+16.8% shares
+GPN,2019-12-31,dilution,+25.0% shares
+GPN,2020-12-31,dilution,+50.9% shares
+GPN,2022-12-31,buyback,-6.2% shares
+GPN,2023-12-31,buyback,-5.0% shares
+GPN,2025-12-31,buyback,-5.0% shares
+GRMN,2006-08-16,split,2:1
+GRMN,2011-12-31,buyback,-99.9% shares
+GRMN,2017-12-30,dilution,+99577.3% shares
+GRMN,2020-12-26,buyback,-99.9% shares
+GRMN,2022-12-31,dilution,+99899.5% shares
+GS,2009-12-31,dilution,+20.8% shares
+GS,2010-12-31,dilution,+6.2% shares
+GS,2012-12-31,buyback,-7.3% shares
+GS,2014-12-31,buyback,-5.3% shares
+GS,2016-12-31,buyback,-5.1% shares
+GS,2017-12-31,buyback,-6.0% shares
+GTES,2018-12-29,dilution,+16.5% shares
+GTLB,2021-01-31,dilution,+6.4% shares
+GTLB,2022-01-31,dilution,+58.4% shares
+GTLB,2023-01-31,dilution,+86.1% shares
+GTM,2024-12-31,buyback,-8.9% shares
+GTM,2025-12-31,buyback,-10.5% shares
+GWRE,2011-07-31,dilution,+11.5% shares
+GWRE,2012-07-31,dilution,+135.1% shares
+GWRE,2013-07-31,dilution,+47.4% shares
+GWRE,2014-07-31,dilution,+12.3% shares
+GWRE,2019-07-31,dilution,+6.4% shares
+GWW,1985-06-10,split,2:1
+GWW,1991-06-10,split,2:1
+GWW,1998-06-15,split,2:1
+GWW,2008-12-31,buyback,-7.5% shares
+GWW,2016-12-31,buyback,-7.5% shares
+H,2010-12-31,dilution,+15.1% shares
+H,2015-12-31,buyback,-6.7% shares
+H,2016-12-31,buyback,-7.0% shares
+H,2017-12-31,buyback,-5.7% shares
+H,2018-12-31,buyback,-8.9% shares
+H,2019-12-31,buyback,-7.7% shares
+H,2022-12-31,dilution,+7.0% shares
+H,2025-12-31,buyback,-6.8% shares
+HAL,1976-04-30,split,3:1
+HAL,1980-12-26,split,2:1
+HAL,1996-01-24,split,1.04931:1
+HAL,1997-07-22,split,2:1
+HAL,2006-07-17,split,2:1
+HAL,2014-12-31,buyback,-5.5% shares
+HALO,2017-12-31,dilution,+8.7% shares
+HAS,1982-08-20,split,1.5:1
+HAS,1983-02-23,split,1.5:1
+HAS,1983-08-22,split,1.5:1
+HAS,1985-01-28,split,2.5:1
+HAS,1986-08-15,split,2:1
+HAS,1992-03-17,split,1.5:1
+HAS,1997-03-24,split,1.5:1
+HAS,1999-03-16,split,1.5:1
+HAS,2011-12-25,buyback,-6.2% shares
+HAS,2020-12-27,dilution,+7.1% shares
+HAYW,2021-12-31,dilution,+8024.0% shares
+HAYW,2022-12-31,dilution,+14.5% shares
+HBAN,1981-08-25,split,1.5:1
+HBAN,1985-08-01,split,2:1
+HBAN,1987-07-06,split,1.1:1
+HBAN,1988-08-01,split,1.25:1
+HBAN,1989-07-03,split,1.15:1
+HBAN,1990-07-03,split,1.1:1
+HBAN,1992-08-03,split,1.25:1
+HBAN,1994-08-01,split,1.25:1
+HBAN,1996-07-12,split,1.1:1
+HBAN,1997-07-11,split,1.1:1
+HBAN,1998-07-13,split,1.1:1
+HBAN,1999-07-12,split,1.1:1
+HBAN,2000-07-12,split,1.1:1
+HBAN,2009-12-31,dilution,+45.5% shares
+HBAN,2010-12-31,dilution,+36.9% shares
+HBAN,2011-12-31,dilution,+18.9% shares
+HBAN,2016-12-31,dilution,+12.4% shares
+HBAN,2017-12-31,dilution,+23.7% shares
+HBAN,2021-12-31,dilution,+24.6% shares
+HBAN,2022-12-31,dilution,+13.9% shares
+HCA,2011-12-31,dilution,+13.4% shares
+HCA,2012-12-31,buyback,-7.4% shares
+HCA,2015-12-31,buyback,-5.2% shares
+HCA,2016-12-31,buyback,-7.2% shares
+HCA,2017-12-31,buyback,-6.0% shares
+HCA,2022-12-31,buyback,-10.4% shares
+HCA,2023-12-31,buyback,-6.2% shares
+HCA,2024-12-31,buyback,-5.3% shares
+HCA,2025-12-31,buyback,-8.5% shares
+HD,1982-01-20,split,1.5:1
+HD,1982-05-11,split,1.25:1
+HD,1982-12-08,split,2:1
+HD,1983-06-09,split,2:1
+HD,1987-09-22,split,1.5:1
+HD,1989-07-03,split,1.5:1
+HD,1990-07-06,split,1.5:1
+HD,1991-06-26,split,1.5:1
+HD,1992-07-02,split,1.5:1
+HD,1993-04-14,split,1.33333:1
+HD,1997-07-07,split,1.5:1
+HD,1998-07-06,split,2:1
+HD,1999-12-31,split,1.5:1
+HD,2009-02-01,buyback,-9.2% shares
+HD,2012-01-29,buyback,-5.3% shares
+HD,2014-02-02,buyback,-5.1% shares
+HD,2015-02-01,buyback,-6.1% shares
+HEI,1989-02-01,split,1.5:1
+HEI,1995-07-05,split,1.1:1
+HEI,1996-01-11,split,1.1:1
+HEI,1996-04-25,split,1.5:1
+HEI,1996-07-10,split,1.1:1
+HEI,1997-01-06,split,1.1:1
+HEI,1997-12-17,split,1.5:1
+HEI,1998-04-24,split,1.5:1
+HEI,2000-07-06,split,1.1:1
+HEI,2001-08-08,split,1.1:1
+HEI,2004-01-02,split,1.1:1
+HEI,2009-10-31,dilution,+24.0% shares
+HEI,2010-04-27,split,1.25:1
+HEI,2010-10-31,dilution,+25.0% shares
+HEI,2011-04-26,split,1.25:1
+HEI,2011-10-31,dilution,+25.9% shares
+HEI,2012-04-25,split,1.25:1
+HEI,2013-10-23,split,1.25:1
+HEI,2015-10-31,dilution,+25.7% shares
+HEI,2016-10-31,dilution,+57.1% shares
+HEI,2017-04-19,split,1.25:1
+HEI,2018-01-18,split,1.25:1
+HEI,2018-06-28,split,1.25:1
+HEI-A,2000-07-06,split,1.1:1
+HEI-A,2001-08-08,split,1.1:1
+HEI-A,2004-01-02,split,1.1:1
+HEI-A,2009-10-31,dilution,+24.0% shares
+HEI-A,2010-04-27,split,1.25:1
+HEI-A,2010-10-31,dilution,+25.0% shares
+HEI-A,2011-04-26,split,1.25:1
+HEI-A,2011-10-31,dilution,+25.9% shares
+HEI-A,2012-04-25,split,1.25:1
+HEI-A,2013-10-23,split,1.25:1
+HEI-A,2015-10-31,dilution,+25.7% shares
+HEI-A,2016-10-31,dilution,+57.1% shares
+HEI-A,2017-04-19,split,1.25:1
+HEI-A,2018-01-18,split,1.25:1
+HEI-A,2018-06-28,split,1.25:1
+HHH,2022-12-31,buyback,-7.5% shares
+HHH,2024-08-01,split,1.049:1
+HHH,2025-12-31,dilution,+12.3% shares
+HIG,1998-07-16,split,2:1
+HIG,2009-12-31,dilution,+12.9% shares
+HIG,2010-12-31,dilution,+39.0% shares
+HIG,2013-12-31,dilution,+5.3% shares
+HIG,2014-12-31,buyback,-6.2% shares
+HIG,2015-12-31,buyback,-7.6% shares
+HIG,2016-12-31,buyback,-7.1% shares
+HIG,2017-12-31,buyback,-7.9% shares
+HIG,2022-12-31,buyback,-6.9% shares
+HIG,2023-12-31,buyback,-5.5% shares
+HII,2019-12-31,buyback,-5.5% shares
+HIW,2009-12-31,dilution,+13.5% shares
+HIW,2013-12-31,dilution,+11.5% shares
+HIW,2014-12-31,dilution,+5.6% shares
+HLI,2016-03-31,dilution,+5.6% shares
+HLT,2014-12-31,buyback,-64.4% shares
+HLT,2017-01-04,split,0.487329:1
+HLT,2018-12-31,buyback,-6.7% shares
+HLT,2024-12-31,buyback,-5.3% shares
+HOG,1990-06-18,split,2:1
+HOG,1992-06-29,split,2:1
+HOG,1994-09-13,split,2:1
+HOG,1997-09-29,split,2:1
+HOG,2000-04-10,split,2:1
+HOG,2015-12-31,buyback,-6.4% shares
+HOG,2016-12-31,buyback,-11.4% shares
+HOG,2019-12-31,buyback,-5.2% shares
+HOG,2024-12-31,buyback,-8.8% shares
+HOG,2025-12-31,buyback,-8.3% shares
+HON,1965-02-04,split,1.02:1
+HON,1966-02-03,split,1.02:1
+HON,1967-02-03,split,1.02:1
+HON,1984-05-30,split,1.5:1
+HON,1994-03-15,split,2:1
+HON,1997-09-16,split,2:1
+HON,2016-10-03,split,1.00533:1
+HON,2018-10-01,split,1.011:1
+HON,2018-10-29,split,1.032:1
+HON,2025-10-30,split,1.061:1
+HON,2026-06-29,split,0.9535:1
+HOOD,2020-12-31,dilution,+10.5% shares
+HOOD,2021-12-31,dilution,+101.0% shares
+HOOD,2022-12-31,dilution,+78.4% shares
+HPE,2016-10-31,buyback,-5.2% shares
+HPE,2017-04-03,split,1.3348:1
+HPE,2017-09-01,split,1.289:1
+HPE,2018-10-31,buyback,-7.2% shares
+HPE,2019-10-31,buyback,-12.0% shares
+HPE,2020-10-31,buyback,-5.3% shares
+HPQ,1970-03-20,split,2:1
+HPQ,1979-07-31,split,2:1
+HPQ,1981-07-20,split,2:1
+HPQ,1983-08-26,split,2:1
+HPQ,1995-04-17,split,2:1
+HPQ,1996-07-16,split,2:1
+HPQ,2000-10-30,split,2:1
+HPQ,2008-10-31,buyback,-5.5% shares
+HPQ,2009-10-31,buyback,-5.1% shares
+HPQ,2011-10-31,buyback,-10.3% shares
+HPQ,2012-10-31,buyback,-7.2% shares
+HPQ,2015-11-02,split,2.202:1
+HPQ,2016-10-31,buyback,-5.1% shares
+HPQ,2019-10-31,buyback,-6.7% shares
+HPQ,2020-10-31,buyback,-6.8% shares
+HPQ,2021-10-31,buyback,-14.1% shares
+HPQ,2022-10-31,buyback,-13.9% shares
+HR,2010-12-31,dilution,+47.1% shares
+HR,2011-12-31,dilution,+35.2% shares
+HR,2012-12-31,buyback,-50.4% shares
+HR,2014-12-16,split,0.5:1
+HR,2014-12-31,dilution,+5.4% shares
+HR,2015-12-31,dilution,+5.6% shares
+HR,2016-12-31,dilution,+9.6% shares
+HR,2017-12-31,dilution,+32.1% shares
+HR,2018-12-31,dilution,+13.4% shares
+HR,2020-12-31,buyback,-36.1% shares
+HR,2021-12-31,dilution,+6.5% shares
+HR,2022-12-31,dilution,+77.9% shares
+HR,2023-12-31,dilution,+49.3% shares
+HRB,1985-10-02,split,2:1
+HRB,1987-10-02,split,2:1
+HRB,1991-10-02,split,2:1
+HRB,2001-08-02,split,2:1
+HRB,2005-08-23,split,2:1
+HRB,2011-04-30,buyback,-7.0% shares
+HRB,2013-04-30,buyback,-8.1% shares
+HRB,2016-04-30,buyback,-9.5% shares
+HRB,2017-04-30,buyback,-14.6% shares
+HRB,2022-06-30,buyback,-9.2% shares
+HRB,2023-06-30,buyback,-8.3% shares
+HRB,2024-06-30,buyback,-8.5% shares
+HRL,1985-09-04,split,2:1
+HRL,1987-06-02,split,2:1
+HRL,1990-02-21,split,2:1
+HRL,2000-02-16,split,2:1
+HRL,2009-10-25,dilution,+97.6% shares
+HRL,2011-02-15,split,2:1
+HRL,2014-10-26,dilution,+100.0% shares
+HRL,2016-02-10,split,2:1
+HSIC,2005-03-01,split,2:1
+HSIC,2015-12-26,dilution,+96.2% shares
+HSIC,2017-09-15,split,2:1
+HSIC,2019-02-08,split,1.275:1
+HST,1986-06-23,split,5:1
+HST,1996-01-02,split,1.12233:1
+HST,2009-11-04,split,1.0215:1
+HST,2014-12-31,dilution,+5.2% shares
+HST,2017-12-31,buyback,-100.0% shares
+HST,2021-12-31,dilution,+100623217.8% shares
+HSY,1983-09-16,split,2:1
+HSY,1986-09-16,split,3:1
+HSY,1996-09-16,split,2:1
+HSY,2004-06-16,split,2:1
+HSY,2010-12-31,dilution,+100475.6% shares
+HUBB,1977-08-08,split,1.33333:1
+HUBB,1981-02-11,split,2:1
+HUBB,1985-08-12,split,2:1
+HUBB,1989-01-09,split,1.05:1
+HUBB,1990-01-08,split,1.05:1
+HUBB,1991-01-07,split,1.05:1
+HUBB,1992-01-06,split,1.05:1
+HUBB,1995-01-09,split,1.05:1
+HUBB,1996-08-12,split,2:1
+HUBB,2010-12-31,dilution,+5.8% shares
+HUBS,2013-12-31,dilution,+8.8% shares
+HUBS,2014-12-31,dilution,+126.1% shares
+HUBS,2015-12-31,dilution,+187.3% shares
+HUBS,2016-12-31,dilution,+5.9% shares
+HUBS,2019-12-31,dilution,+9.1% shares
+HUBS,2020-12-31,dilution,+6.5% shares
+HUM,1982-02-01,split,1.5:1
+HUM,1983-02-01,split,1.33333:1
+HUM,1984-02-01,split,1.2:1
+HUM,1991-08-01,split,1.5:1
+HUN,2022-12-31,buyback,-8.3% shares
+HUN,2023-12-31,buyback,-12.6% shares
+HWM,2009-12-31,dilution,+15.0% shares
+HWM,2010-12-31,dilution,+9.6% shares
+HWM,2011-12-31,dilution,+13.3% shares
+HWM,2012-12-31,buyback,-7.3% shares
+HWM,2014-12-31,buyback,-63.3% shares
+HWM,2015-12-31,dilution,+6.9% shares
+HWM,2018-12-31,dilution,+11.5% shares
+HWM,2019-12-31,buyback,-8.0% shares
+HWM,2020-12-31,buyback,-5.2% shares
+HXL,1988-05-23,split,1.5:1
+IBKR,2012-12-31,dilution,+6.1% shares
+IBKR,2013-12-31,dilution,+8.2% shares
+IBKR,2014-12-31,dilution,+13.3% shares
+IBKR,2015-12-31,dilution,+8.3% shares
+IBKR,2016-12-31,dilution,+7.7% shares
+IBKR,2017-12-31,dilution,+5.4% shares
+IBKR,2021-12-31,dilution,+17.8% shares
+IBKR,2022-12-31,dilution,+6.6% shares
+IBKR,2023-12-31,dilution,+318.0% shares
+IBKR,2025-06-18,split,4:1
+IBM,1964-05-18,split,1.25:1
+IBM,1966-05-18,split,1.5:1
+IBM,1968-04-23,split,2:1
+IBM,1973-05-29,split,1.25:1
+IBM,1979-06-01,split,4:1
+IBM,1997-05-28,split,2:1
+IBM,1999-05-27,split,2:1
+IBM,2011-12-31,buyback,-5.7% shares
+IBM,2014-12-31,buyback,-8.4% shares
+IBM,2021-11-04,split,1.046:1
+ICE,2013-12-31,dilution,+8.2% shares
+ICE,2014-12-31,dilution,+625.3% shares
+ICE,2016-11-04,split,5:1
+ICE,2016-12-31,dilution,+7.2% shares
+IDA,1985-06-07,split,2:1
+IDXX,1993-10-04,split,2:1
+IDXX,1995-06-06,split,2:1
+IDXX,2007-11-27,split,2:1
+IDXX,2013-12-31,dilution,+92.3% shares
+IDXX,2014-12-31,buyback,-6.0% shares
+IDXX,2015-06-16,split,2:1
+IDXX,2015-12-31,buyback,-7.7% shares
+IEX,1995-02-01,split,1.5:1
+IEX,1997-02-03,split,1.5:1
+IEX,2004-06-01,split,1.5:1
+IEX,2007-05-22,split,1.5:1
+IFF,1974-12-17,split,1.02:1
+IFF,1994-01-20,split,3:1
+IFF,2018-12-31,dilution,+11.0% shares
+IFF,2019-12-31,dilution,+28.2% shares
+IFF,2021-12-31,dilution,+113.2% shares
+ILMN,2008-09-23,split,2:1
+ILMN,2014-12-28,dilution,+6.5% shares
+ILMN,2024-06-25,split,1.028:1
+INCY,1997-11-10,split,2:1
+INCY,2000-09-01,split,2:1
+INCY,2010-12-31,dilution,+18.2% shares
+INCY,2013-12-31,dilution,+18.4% shares
+INCY,2014-12-31,dilution,+13.2% shares
+INCY,2015-12-31,dilution,+11.5% shares
+INCY,2017-12-31,dilution,+5.4% shares
+INCY,2018-12-31,dilution,+5.4% shares
+INCY,2024-12-31,buyback,-6.8% shares
+INGR,2005-01-26,split,2:1
+INGR,2019-12-31,buyback,-6.1% shares
+INSM,2000-07-31,split,0.25:1
+INSM,2010-12-31,dilution,+104009.4% shares
+INSM,2011-03-03,split,0.1:1
+INSM,2011-12-31,dilution,+76.2% shares
+INSM,2012-12-31,dilution,+13.7% shares
+INSM,2013-12-31,dilution,+31.8% shares
+INSM,2014-12-31,dilution,+23.2% shares
+INSM,2015-12-31,dilution,+36.1% shares
+INSM,2016-12-31,dilution,+5.6% shares
+INSM,2017-12-31,dilution,+7.6% shares
+INSM,2018-12-31,dilution,+15.5% shares
+INSM,2019-12-31,dilution,+10.0% shares
+INSM,2020-12-31,dilution,+15.4% shares
+INSM,2021-12-31,dilution,+14.9% shares
+INSM,2022-12-31,dilution,+9.7% shares
+INSM,2023-12-31,dilution,+14.1% shares
+INSM,2024-12-31,dilution,+16.8% shares
+INSM,2025-12-31,dilution,+21.3% shares
+INSP,2020-12-31,dilution,+9.5% shares
+INTC,1980-10-09,split,2:1
+INTC,1983-07-01,split,2:1
+INTC,1987-10-29,split,1.5:1
+INTC,1993-06-07,split,2:1
+INTC,1995-06-19,split,2:1
+INTC,1997-07-14,split,2:1
+INTC,1999-04-12,split,2:1
+INTC,2000-07-31,split,2:1
+INTC,2011-12-31,buyback,-5.0% shares
+INTC,2020-12-26,buyback,-5.4% shares
+INTC,2025-12-27,dilution,+5.8% shares
+INTU,1995-08-22,split,2:1
+INTU,1999-10-01,split,3:1
+INTU,2006-07-07,split,2:1
+INTU,2016-07-31,buyback,-7.3% shares
+INVH,2018-12-31,dilution,+53.3% shares
+INVH,2022-12-31,dilution,+5.5% shares
+IONS,2013-12-31,dilution,+9.9% shares
+IONS,2015-12-31,dilution,+8.3% shares
+IONS,2018-12-31,dilution,+6.3% shares
+IONS,2019-12-31,dilution,+14.3% shares
+IONS,2020-12-31,buyback,-8.8% shares
+IONS,2025-12-31,dilution,+7.0% shares
+IOT,2022-01-29,dilution,+16.0% shares
+IOT,2023-01-28,dilution,+85.3% shares
+IP,1962-11-19,split,1.02:1
+IP,1987-05-20,split,2:1
+IP,1995-09-18,split,2:1
+IP,2014-07-02,split,1.014:1
+IP,2021-10-01,split,1.056:1
+IP,2022-12-31,buyback,-6.5% shares
+IP,2025-12-31,dilution,+42.8% shares
+IPGP,2012-12-31,dilution,+5.9% shares
+IPGP,2022-12-31,buyback,-5.6% shares
+IPGP,2023-12-31,buyback,-7.1% shares
+IPGP,2024-12-31,buyback,-6.3% shares
+IQV,2013-12-31,dilution,+8.5% shares
+IQV,2016-12-31,dilution,+21.0% shares
+IQV,2017-12-31,dilution,+46.4% shares
+IQV,2018-12-31,buyback,-6.5% shares
+IQV,2025-12-31,buyback,-5.4% shares
+IR,2017-12-31,dilution,+26.3% shares
+IR,2018-12-31,dilution,+11.0% shares
+IR,2020-12-31,dilution,+83.2% shares
+IR,2021-12-31,dilution,+10.0% shares
+IRDM,2010-12-31,dilution,+35.2% shares
+IRDM,2012-12-31,dilution,+6.3% shares
+IRDM,2013-12-31,dilution,+11.9% shares
+IRDM,2014-12-31,dilution,+25.0% shares
+IRDM,2015-12-31,buyback,-13.1% shares
+IRDM,2016-12-31,dilution,+31.3% shares
+IRDM,2018-12-31,buyback,-14.9% shares
+IRDM,2019-12-31,dilution,+14.9% shares
+IRDM,2020-12-31,dilution,+6.7% shares
+IRDM,2024-12-31,buyback,-5.8% shares
+IRDM,2025-12-31,buyback,-10.0% shares
+IRM,1998-08-03,split,1.5:1
+IRM,2002-01-02,split,1.5:1
+IRM,2004-07-01,split,1.5:1
+IRM,2007-01-03,split,1.5:1
+IRM,2012-12-31,buyback,-10.8% shares
+IRM,2013-12-31,dilution,+10.0% shares
+IRM,2014-09-26,split,1.082:1
+IRM,2015-12-31,dilution,+7.8% shares
+IRM,2016-12-31,dilution,+16.6% shares
+IRM,2017-12-31,dilution,+7.9% shares
+IRM,2018-12-31,dilution,+7.4% shares
+ISRG,2003-07-01,split,0.5:1
+ISRG,2014-12-31,buyback,-6.0% shares
+ISRG,2015-12-31,dilution,+201.6% shares
+ISRG,2017-10-06,split,3:1
+ISRG,2019-12-31,dilution,+201.7% shares
+ISRG,2021-10-05,split,3:1
+IT,1994-08-29,split,2:1
+IT,1995-06-29,split,2:1
+IT,1996-04-01,split,2:1
+IT,2015-12-31,buyback,-6.2% shares
+IT,2017-12-31,dilution,+7.1% shares
+IT,2022-12-31,buyback,-5.9% shares
+ITT,2006-02-22,split,2:1
+ITT,2009-12-31,buyback,-50.4% shares
+ITT,2011-11-01,split,3.01568:1
+ITW,1984-05-23,split,2:1
+ITW,1987-05-27,split,2:1
+ITW,1993-06-21,split,2:1
+ITW,1997-05-28,split,2:1
+ITW,2006-05-26,split,2:1
+ITW,2013-12-31,buyback,-5.1% shares
+ITW,2014-12-31,buyback,-9.9% shares
+ITW,2015-12-31,buyback,-8.5% shares
+IVZ,1998-04-27,split,2:1
+IVZ,2000-11-08,split,2.5:1
+IVZ,2010-12-31,dilution,+9.3% shares
+IVZ,2019-12-31,dilution,+6.8% shares
+J,1981-03-17,split,1.5:1
+J,1990-04-03,split,2:1
+J,1991-05-29,split,2:1
+J,2002-04-02,split,2:1
+J,2007-03-16,split,2:1
+J,2018-09-28,dilution,+14.5% shares
+J,2024-09-30,split,1.197:1
+J,2025-05-16,split,1.01:1
+JAZZ,2010-12-31,dilution,+31.3% shares
+JAZZ,2011-12-31,dilution,+18.7% shares
+JAZZ,2012-12-31,dilution,+28.6% shares
+JAZZ,2019-12-31,buyback,-6.0% shares
+JAZZ,2021-12-31,dilution,+5.6% shares
+JAZZ,2023-12-31,dilution,+15.2% shares
+JAZZ,2024-12-31,buyback,-8.4% shares
+JAZZ,2025-12-31,buyback,-7.6% shares
+JBHT,1986-07-08,split,2:1
+JBHT,1992-03-16,split,1.5:1
+JBHT,2003-09-02,split,2:1
+JBHT,2005-05-24,split,2:1
+JBL,1997-07-23,split,2:1
+JBL,1999-02-18,split,2:1
+JBL,2000-03-31,split,2:1
+JBL,2010-08-31,dilution,+5.1% shares
+JBL,2015-08-31,buyback,-99.9% shares
+JBL,2016-08-31,dilution,+98239.3% shares
+JBL,2018-08-31,buyback,-5.8% shares
+JBL,2019-08-31,buyback,-9.4% shares
+JBL,2022-08-31,buyback,-5.1% shares
+JBL,2023-08-31,buyback,-5.9% shares
+JBL,2024-08-31,buyback,-8.5% shares
+JBL,2025-08-31,buyback,-10.8% shares
+JCI,1987-09-28,split,2:1
+JCI,1995-11-15,split,2:1
+JCI,1997-10-23,split,2:1
+JCI,1999-10-22,split,2:1
+JCI,2007-07-02,split,0.25:1
+JCI,2012-10-01,split,2.01167:1
+JCI,2014-09-30,dilution,+45.7% shares
+JCI,2015-09-25,buyback,-36.7% shares
+JCI,2015-09-30,dilution,+54.9% shares
+JCI,2016-09-06,split,0.955:1
+JCI,2017-09-30,dilution,+40.4% shares
+JCI,2019-09-30,buyback,-6.2% shares
+JCI,2020-09-30,buyback,-13.8% shares
+JEF,1983-04-07,split,2:1
+JEF,1985-02-15,split,1.5:1
+JEF,1987-01-07,split,2:1
+JEF,1993-01-11,split,2:1
+JEF,1995-11-16,split,2:1
+JEF,2005-01-03,split,1.5:1
+JEF,2006-06-15,split,2:1
+JEF,2009-12-31,dilution,+7.5% shares
+JEF,2013-02-26,split,1.027:1
+JEF,2013-12-31,dilution,+39.7% shares
+JEF,2014-12-31,dilution,+7.4% shares
+JEF,2018-11-30,buyback,-5.2% shares
+JEF,2019-09-27,split,1.068:1
+JEF,2019-11-30,buyback,-9.7% shares
+JEF,2020-11-30,buyback,-8.4% shares
+JEF,2021-11-30,buyback,-6.5% shares
+JEF,2022-11-30,buyback,-5.9% shares
+JEF,2023-01-17,split,1.046:1
+JEF,2023-11-30,buyback,-7.4% shares
+JEF,2024-11-30,buyback,-5.5% shares
+JHX,2015-09-22,split,5:1
+JHX,2026-03-31,dilution,+26.2% shares
+JKHY,1992-03-04,split,1.5:1
+JKHY,1993-03-09,split,1.5:1
+JKHY,1994-03-11,split,1.33333:1
+JKHY,1997-03-14,split,1.5:1
+JKHY,2000-03-03,split,2:1
+JKHY,2001-03-05,split,2:1
+JLL,2009-12-31,dilution,+12.7% shares
+JLL,2010-12-31,dilution,+14.4% shares
+JLL,2019-12-31,dilution,+7.0% shares
+JLL,2020-12-31,dilution,+6.4% shares
+JLL,2022-12-31,buyback,-5.2% shares
+JNJ,1967-06-19,split,3:1
+JNJ,1970-05-18,split,3:1
+JNJ,1981-05-19,split,3:1
+JNJ,1989-05-11,split,2:1
+JNJ,1992-06-10,split,2:1
+JNJ,1996-06-12,split,2:1
+JNJ,2001-06-13,split,2:1
+JNJ,2024-12-29,buyback,-5.1% shares
+JPM,1982-04-16,split,1.5:1
+JPM,1984-04-16,split,1.5:1
+JPM,1998-06-15,split,2:1
+JPM,2000-06-12,split,1.5:1
+JPM,2009-12-31,dilution,+10.2% shares
+JPM,2019-12-31,buyback,-5.4% shares
+KBR,2022-12-31,dilution,+10.6% shares
+KBR,2023-12-29,buyback,-13.5% shares
+KDP,2011-12-31,buyback,-8.8% shares
+KDP,2017-09-30,dilution,+323.6% shares
+KDP,2017-12-31,buyback,-76.9% shares
+KDP,2018-12-31,dilution,+500.4% shares
+KDP,2019-12-31,dilution,+29.3% shares
+KEX,1981-05-12,split,10:1
+KEX,2006-06-01,split,2:1
+KEX,2018-12-31,dilution,+7.8% shares
+KEX,2019-12-31,buyback,-99.9% shares
+KEX,2020-12-31,dilution,+99905.0% shares
+KEY,1992-04-15,split,1.5:1
+KEY,1994-03-02,split,1.205:1
+KEY,1998-03-09,split,2:1
+KEY,2008-12-31,dilution,+13.7% shares
+KEY,2009-12-31,dilution,+54.9% shares
+KEY,2010-12-31,dilution,+26.0% shares
+KEY,2011-12-31,dilution,+6.6% shares
+KEY,2016-12-31,dilution,+11.1% shares
+KEY,2017-12-31,dilution,+16.0% shares
+KEY,2025-12-31,dilution,+16.7% shares
+KEYS,2017-10-31,dilution,+5.8% shares
+KHC,2014-12-28,buyback,-37.0% shares
+KHC,2016-01-03,dilution,+108.5% shares
+KHC,2016-12-31,dilution,+56.0% shares
+KIM,1995-12-22,split,1.5:1
+KIM,2001-12-24,split,1.5:1
+KIM,2005-08-24,split,2:1
+KIM,2009-12-31,dilution,+35.2% shares
+KIM,2010-12-31,dilution,+16.0% shares
+KIM,2021-12-31,dilution,+18.5% shares
+KIM,2022-12-31,dilution,+20.8% shares
+KIM,2024-12-31,dilution,+8.7% shares
+KLAC,1983-01-10,split,2:1
+KLAC,1983-12-09,split,2:1
+KLAC,1984-12-17,split,1.5:1
+KLAC,1995-10-02,split,2:1
+KLAC,2000-01-19,split,2:1
+KLAC,2023-06-30,buyback,-7.5% shares
+KLAC,2026-06-12,split,10:1
+KMB,1984-05-25,split,2:1
+KMB,1987-05-26,split,2:1
+KMB,1992-01-03,split,2:1
+KMB,1997-04-03,split,2:1
+KMB,2014-11-03,split,1.043:1
+KMI,2014-12-31,dilution,+9.7% shares
+KMI,2015-12-31,dilution,+92.9% shares
+KMPR,1999-03-29,split,2:1
+KMPR,2014-12-31,buyback,-5.5% shares
+KMPR,2018-12-31,dilution,+13.9% shares
+KMPR,2019-12-31,dilution,+13.3% shares
+KMX,2007-03-27,split,2:1
+KMX,2016-02-29,buyback,-6.0% shares
+KMX,2017-02-28,buyback,-6.5% shares
+KMX,2020-02-29,buyback,-5.2% shares
+KMX,2026-02-28,buyback,-5.4% shares
+KNX,1998-05-19,split,1.5:1
+KNX,2001-06-04,split,1.5:1
+KNX,2001-12-31,split,1.5:1
+KNX,2004-07-21,split,1.5:1
+KNX,2005-12-27,split,1.5:1
+KNX,2010-12-31,dilution,+5.4% shares
+KNX,2011-12-31,dilution,+120.5% shares
+KNX,2015-12-31,buyback,-42.5% shares
+KNX,2017-12-31,dilution,+37.5% shares
+KNX,2018-12-31,dilution,+59.4% shares
+KO,1965-02-19,split,2:1
+KO,1968-06-03,split,2:1
+KO,1977-06-01,split,2:1
+KO,1986-07-01,split,3:1
+KO,1990-05-14,split,2:1
+KO,1992-05-12,split,2:1
+KO,1996-05-13,split,2:1
+KO,2010-12-31,dilution,+100.4% shares
+KO,2012-08-13,split,2:1
+KR,1979-05-29,split,2:1
+KR,1986-10-01,split,2:1
+KR,1997-04-23,split,2:1
+KR,1999-06-29,split,2:1
+KR,2009-01-31,buyback,-5.6% shares
+KR,2012-01-28,buyback,-7.1% shares
+KR,2013-02-02,buyback,-9.4% shares
+KR,2014-02-01,dilution,+93.7% shares
+KR,2015-07-14,split,2:1
+KR,2018-02-03,buyback,-5.6% shares
+KR,2019-02-02,buyback,-9.5% shares
+KR,2026-01-31,buyback,-9.0% shares
+KRC,2009-12-31,dilution,+19.0% shares
+KRC,2010-12-31,dilution,+27.8% shares
+KRC,2011-12-31,dilution,+14.6% shares
+KRC,2012-12-31,dilution,+22.8% shares
+KRC,2013-12-31,dilution,+11.1% shares
+KRC,2014-12-31,dilution,+9.9% shares
+KRC,2015-12-31,dilution,+6.4% shares
+KRC,2017-12-31,dilution,+6.1% shares
+KRC,2020-12-31,dilution,+9.5% shares
+KRMN,2025-12-31,buyback,-20.6% shares
+KVUE,2023-12-31,dilution,+7.8% shares
+L,1984-04-17,split,2.5:1
+L,1985-03-04,split,3:1
+L,1995-12-04,split,2:1
+L,2001-03-21,split,2:1
+L,2006-05-09,split,3:1
+L,2015-12-31,buyback,-5.2% shares
+L,2016-12-31,buyback,-6.7% shares
+L,2018-12-31,buyback,-5.2% shares
+L,2019-12-31,buyback,-5.2% shares
+L,2020-12-31,buyback,-7.6% shares
+L,2021-12-31,buyback,-7.2% shares
+L,2022-12-31,buyback,-6.5% shares
+L,2023-12-31,buyback,-6.4% shares
+L,2025-12-31,buyback,-5.2% shares
+LAD,2010-12-31,dilution,+18.5% shares
+LAD,2021-12-31,dilution,+20.3% shares
+LAD,2025-12-31,buyback,-6.3% shares
+LAMR,1998-03-02,split,1.5:1
+LAMR,2010-12-31,dilution,+100478.9% shares
+LAMR,2012-12-31,buyback,-99.9% shares
+LAZ,2009-12-31,dilution,+28.6% shares
+LAZ,2010-12-31,dilution,+76.8% shares
+LAZ,2012-12-31,buyback,-6.0% shares
+LAZ,2019-12-31,buyback,-10.5% shares
+LAZ,2022-12-31,buyback,-11.2% shares
+LAZ,2023-12-31,buyback,-11.9% shares
+LAZ,2024-12-31,dilution,+15.1% shares
+LBRDA,2014-12-11,split,1.045:1
+LBRDA,2015-12-31,dilution,+16.0% shares
+LBRDA,2016-12-31,dilution,+48.4% shares
+LBRDA,2017-12-31,dilution,+19.8% shares
+LBRDA,2022-12-31,buyback,-15.1% shares
+LBRDA,2023-12-31,buyback,-7.0% shares
+LBRDA,2025-07-15,split,1.067:1
+LBRDK,2014-12-11,split,1.046:1
+LBRDK,2015-12-31,dilution,+16.0% shares
+LBRDK,2016-12-31,dilution,+48.4% shares
+LBRDK,2017-12-31,dilution,+19.8% shares
+LBRDK,2022-12-31,buyback,-15.1% shares
+LBRDK,2023-12-31,buyback,-7.0% shares
+LBRDK,2025-07-15,split,1.068:1
+LBTYA,2014-03-04,split,1.957:1
+LBTYA,2015-07-02,split,1.058:1
+LBTYA,2016-06-21,split,1.146:1
+LBTYA,2017-12-31,buyback,-5.8% shares
+LBTYA,2018-12-31,buyback,-8.2% shares
+LBTYA,2019-12-31,buyback,-9.4% shares
+LBTYA,2020-12-31,buyback,-14.7% shares
+LBTYA,2021-12-31,buyback,-5.5% shares
+LBTYA,2022-12-31,buyback,-12.7% shares
+LBTYA,2023-12-31,buyback,-14.3% shares
+LBTYA,2024-11-13,split,1.941:1
+LBTYA,2024-12-31,buyback,-11.9% shares
+LBTYA,2025-12-31,buyback,-8.8% shares
+LBTYK,2014-03-04,split,2:1
+LBTYK,2015-07-02,split,1.073:1
+LBTYK,2016-06-21,split,1.152:1
+LBTYK,2017-12-31,buyback,-5.8% shares
+LBTYK,2018-12-31,buyback,-8.2% shares
+LBTYK,2019-12-31,buyback,-9.4% shares
+LBTYK,2020-12-31,buyback,-14.7% shares
+LBTYK,2021-12-31,buyback,-5.5% shares
+LBTYK,2022-12-31,buyback,-12.7% shares
+LBTYK,2023-12-31,buyback,-14.3% shares
+LBTYK,2024-11-13,split,1.91:1
+LBTYK,2024-12-31,buyback,-11.9% shares
+LBTYK,2025-12-31,buyback,-8.8% shares
+LCID,2020-12-31,dilution,+20.5% shares
+LCID,2021-12-31,dilution,+2882.3% shares
+LCID,2022-12-31,dilution,+128.7% shares
+LCID,2023-12-31,buyback,-87.7% shares
+LCID,2024-12-31,dilution,+17.5% shares
+LCID,2025-09-02,split,0.1:1
+LCID,2025-12-31,dilution,+28.2% shares
+LDOS,2011-01-31,buyback,-6.2% shares
+LDOS,2012-01-31,buyback,-77.0% shares
+LDOS,2013-09-30,split,0.405:1
+LDOS,2015-01-02,buyback,-10.8% shares
+LDOS,2016-12-30,dilution,+40.5% shares
+LDOS,2017-12-29,dilution,+48.1% shares
+LDOS,2020-01-03,buyback,-5.2% shares
+LEA,2011-03-18,split,2:1
+LEA,2012-12-31,buyback,-6.1% shares
+LEA,2013-12-31,buyback,-13.4% shares
+LEA,2014-12-31,buyback,-5.4% shares
+LEA,2016-12-31,buyback,-6.0% shares
+LEA,2017-12-31,buyback,-5.3% shares
+LEA,2019-12-31,buyback,-6.4% shares
+LEA,2025-12-31,buyback,-5.1% shares
+LECO,1998-06-16,split,2:1
+LECO,2009-12-31,dilution,+98.0% shares
+LECO,2011-06-01,split,2:1
+LECO,2015-12-31,buyback,-6.5% shares
+LECO,2016-12-31,buyback,-8.9% shares
+LEN,1980-10-31,split,2:1
+LEN,1992-02-26,split,2:1
+LEN,1994-04-21,split,1.5:1
+LEN,2004-01-21,split,2:1
+LEN,2010-11-30,dilution,+110642.5% shares
+LEN,2012-11-30,dilution,+12.0% shares
+LEN,2017-11-09,split,1.017:1
+LEN,2018-11-30,dilution,+30.1% shares
+LEN,2022-11-30,buyback,-5.5% shares
+LEN,2025-01-21,split,1.033:1
+LEN-B,2004-01-21,split,2:1
+LEN-B,2010-11-30,dilution,+110642.5% shares
+LEN-B,2012-11-30,dilution,+12.0% shares
+LEN-B,2017-11-09,split,1.02:1
+LEN-B,2018-11-30,dilution,+30.1% shares
+LEN-B,2022-11-30,buyback,-5.5% shares
+LEN-B,2025-01-21,split,1.052:1
+LFUS,1997-06-11,split,2:1
+LFUS,2018-12-29,dilution,+10.0% shares
+LH,2000-05-04,split,0.1:1
+LH,2001-06-12,split,2:1
+LH,2002-05-13,split,2:1
+LH,2013-12-31,buyback,-5.7% shares
+LH,2014-12-31,buyback,-5.9% shares
+LH,2015-12-31,dilution,+16.4% shares
+LH,2022-12-31,buyback,-6.1% shares
+LH,2023-07-03,split,1.164:1
+LHX,1997-09-29,split,2:1
+LHX,2005-03-31,split,2:1
+LHX,2009-05-11,split,1.05843:1
+LHX,2012-06-29,buyback,-9.1% shares
+LHX,2016-07-01,dilution,+17.0% shares
+LHX,2020-01-03,dilution,+40.2% shares
+LHX,2021-01-01,dilution,+27.8% shares
+LHX,2021-12-31,buyback,-5.9% shares
+LII,2015-12-31,buyback,-6.2% shares
+LIN,2003-12-16,split,2:1
+LIN,2018-12-31,dilution,+15.6% shares
+LIN,2019-12-31,dilution,+63.2% shares
+LINE,2023-12-31,dilution,+6.6% shares
+LINE,2024-12-31,dilution,+17.9% shares
+LINE,2025-12-31,dilution,+19.4% shares
+LITE,2019-06-29,dilution,+11.7% shares
+LITE,2020-06-27,dilution,+9.8% shares
+LITE,2022-07-02,buyback,-5.4% shares
+LITE,2023-07-01,buyback,-8.0% shares
+LKQ,2006-01-17,split,2:1
+LKQ,2007-12-04,split,2:1
+LKQ,2010-12-31,dilution,+102.6% shares
+LKQ,2012-09-19,split,2:1
+LKQ,2022-12-31,buyback,-6.6% shares
+LLY,1986-01-30,split,2:1
+LLY,1989-05-01,split,2:1
+LLY,1995-12-21,split,2:1
+LLY,1997-10-16,split,2:1
+LLY,2019-12-31,buyback,-9.5% shares
+LMT,1983-09-09,split,3:1
+LMT,1995-03-16,split,1.63:1
+LMT,1999-01-04,split,2:1
+LMT,2009-12-31,buyback,-5.0% shares
+LMT,2010-12-31,buyback,-5.3% shares
+LMT,2011-12-31,buyback,-7.7% shares
+LMT,2023-12-31,buyback,-5.1% shares
+LNC,1993-06-28,split,2:1
+LNC,1999-06-22,split,2:1
+LNC,2009-12-31,dilution,+10.1% shares
+LNC,2010-12-31,dilution,+11.8% shares
+LNC,2012-12-31,buyback,-8.7% shares
+LNC,2016-12-31,buyback,-7.1% shares
+LNC,2019-12-31,buyback,-7.9% shares
+LNC,2022-12-31,buyback,-8.9% shares
+LNC,2025-12-31,dilution,+7.5% shares
+LNG,1994-07-19,split,0.166667:1
+LNG,2000-10-18,split,0.25:1
+LNG,2005-04-25,split,2:1
+LNG,2018-12-31,dilution,+6.4% shares
+LNG,2024-12-31,buyback,-5.6% shares
+LNT,1988-09-26,split,2:1
+LNT,2016-05-20,split,2:1
+LNT,2017-12-31,dilution,+107.4% shares
+LOAR,2024-12-31,dilution,+44843.1% shares
+LOPE,2021-12-31,buyback,-6.8% shares
+LOPE,2022-12-31,buyback,-26.7% shares
+LOPE,2023-12-31,buyback,-6.5% shares
+LOW,1992-06-29,split,2:1
+LOW,1994-04-04,split,2:1
+LOW,1998-06-29,split,2:1
+LOW,2001-07-02,split,2:1
+LOW,2006-07-03,split,2:1
+LOW,2012-02-03,buyback,-9.3% shares
+LOW,2013-02-01,buyback,-9.5% shares
+LOW,2014-01-31,buyback,-7.9% shares
+LOW,2015-01-30,buyback,-6.7% shares
+LOW,2016-01-29,buyback,-6.2% shares
+LOW,2017-02-03,buyback,-5.2% shares
+LOW,2022-01-28,buyback,-6.8% shares
+LOW,2023-02-03,buyback,-9.7% shares
+LOW,2024-02-02,buyback,-7.4% shares
+LPLA,2010-12-31,buyback,-9.2% shares
+LPLA,2011-12-31,dilution,+25.4% shares
+LPLA,2016-12-31,buyback,-7.0% shares
+LPLA,2019-12-31,buyback,-6.6% shares
+LPX,1992-06-08,split,1.5:1
+LPX,1993-06-09,split,2:1
+LPX,2010-12-31,dilution,+19.0% shares
+LPX,2012-12-31,dilution,+7.1% shares
+LPX,2019-12-31,buyback,-14.6% shares
+LPX,2020-12-31,buyback,-8.9% shares
+LPX,2021-12-31,buyback,-12.5% shares
+LPX,2022-12-31,buyback,-20.4% shares
+LPX,2023-12-31,buyback,-7.7% shares
+LRCX,1993-09-16,split,1.5:1
+LRCX,2000-03-17,split,3:1
+LRCX,2013-06-30,dilution,+38.5% shares
+LRCX,2019-06-30,buyback,-11.5% shares
+LRCX,2020-06-28,buyback,-6.8% shares
+LRCX,2023-06-25,dilution,+865.9% shares
+LRCX,2024-10-03,split,10:1
+LSCC,1993-07-07,split,1.5:1
+LSCC,1999-09-17,split,2:1
+LSCC,2000-10-12,split,2:1
+LSCC,2019-12-28,dilution,+8.5% shares
+LSTR,2002-08-13,split,2:1
+LSTR,2003-11-14,split,2:1
+LSTR,2005-01-10,split,2:1
+LULU,2010-01-31,dilution,+100.0% shares
+LULU,2011-07-12,split,2:1
+LUV,1980-09-23,split,1.5:1
+LUV,1981-10-23,split,1.25:1
+LUV,1983-01-24,split,2:1
+LUV,1984-01-30,split,1.25:1
+LUV,1990-08-30,split,1.5:1
+LUV,1992-07-16,split,2:1
+LUV,1993-07-16,split,1.5:1
+LUV,1997-11-28,split,1.5:1
+LUV,1998-08-21,split,1.5:1
+LUV,1999-07-20,split,1.5:1
+LUV,2001-02-16,split,1.5:1
+LUV,2009-12-31,dilution,+100270536.0% shares
+LUV,2013-12-31,buyback,-5.2% shares
+LUV,2016-12-31,buyback,-5.4% shares
+LUV,2019-12-31,buyback,-6.1% shares
+LUV,2021-12-31,dilution,+7.8% shares
+LUV,2022-12-31,dilution,+5.4% shares
+LUV,2025-12-31,buyback,-13.2% shares
+LVS,2009-12-31,dilution,+67.5% shares
+LVS,2010-12-31,dilution,+20.5% shares
+LVS,2025-12-31,buyback,-6.0% shares
+LYFT,2020-12-31,dilution,+37.2% shares
+LYFT,2021-12-31,dilution,+7.2% shares
+LYFT,2022-12-31,dilution,+6.0% shares
+LYFT,2023-12-31,dilution,+8.6% shares
+LYFT,2024-12-31,dilution,+7.3% shares
+LYV,2010-12-31,dilution,+98.9% shares
+LYV,2011-12-31,dilution,+10.9% shares
+LYV,2020-12-31,dilution,+13.5% shares
+LYV,2022-12-31,dilution,+6.6% shares
+M,2006-06-12,split,2:1
+M,2014-02-01,buyback,-6.6% shares
+M,2015-01-31,buyback,-6.0% shares
+M,2016-01-30,buyback,-7.9% shares
+M,2017-01-28,buyback,-6.7% shares
+M,2023-01-28,buyback,-10.5% shares
+MA,2011-12-31,dilution,+880.2% shares
+MA,2014-01-22,split,10:1
+MAA,2010-12-31,dilution,+12.5% shares
+MAA,2011-12-31,dilution,+22.2% shares
+MAA,2012-12-31,dilution,+9.8% shares
+MAA,2017-12-31,dilution,+164.8% shares
+MAN,2016-12-31,buyback,-8.9% shares
+MAN,2019-12-31,buyback,-7.4% shares
+MANH,2011-12-31,dilution,+282.9% shares
+MANH,2012-12-31,buyback,-5.7% shares
+MANH,2014-01-13,split,4:1
+MAR,2006-06-12,split,2:1
+MAR,2009-06-23,split,1.004:1
+MAR,2009-08-18,split,1.004:1
+MAR,2009-11-17,split,1.003:1
+MAR,2010-12-31,dilution,+6.1% shares
+MAR,2011-11-22,split,1.061:1
+MAR,2012-12-28,buyback,-8.1% shares
+MAR,2013-12-31,buyback,-6.0% shares
+MAR,2014-12-31,buyback,-5.2% shares
+MAR,2015-12-31,buyback,-8.1% shares
+MAR,2016-12-31,dilution,+8.4% shares
+MAR,2017-12-31,dilution,+28.5% shares
+MAR,2018-12-31,buyback,-6.8% shares
+MAR,2019-12-31,buyback,-5.3% shares
+MAR,2023-12-31,buyback,-7.0% shares
+MAR,2024-12-31,buyback,-5.8% shares
+MAS,1982-12-30,split,2:1
+MAS,1986-05-20,split,2:1
+MAS,1998-07-13,split,2:1
+MAS,2015-07-01,split,1.138:1
+MAS,2019-12-31,buyback,-6.2% shares
+MAS,2020-12-31,buyback,-8.3% shares
+MAS,2022-12-31,buyback,-7.6% shares
+MAT,1991-11-18,split,1.25:1
+MAT,1992-06-03,split,1.5:1
+MAT,1994-01-10,split,1.25:1
+MAT,1995-01-23,split,1.25:1
+MAT,1996-03-04,split,1.25:1
+MAT,2008-12-31,buyback,-6.9% shares
+MAT,2025-12-31,buyback,-6.3% shares
+MCD,1971-06-14,split,1.5:1
+MCD,1972-06-06,split,2:1
+MCD,1982-10-07,split,1.5:1
+MCD,1984-09-25,split,1.5:1
+MCD,1986-06-26,split,1.5:1
+MCD,1987-06-23,split,1.5:1
+MCD,1989-06-19,split,2:1
+MCD,1994-06-27,split,2:1
+MCD,1999-03-08,split,2:1
+MCD,2008-12-31,buyback,-5.4% shares
+MCD,2016-12-31,buyback,-8.8% shares
+MCD,2017-12-31,buyback,-5.3% shares
+MCD,2021-12-31,buyback,-100.0% shares
+MCHP,1993-09-14,split,2:1
+MCHP,1994-04-05,split,1.5:1
+MCHP,1994-11-09,split,1.5:1
+MCHP,1997-01-07,split,1.5:1
+MCHP,2000-02-08,split,1.5:1
+MCHP,2000-09-27,split,1.5:1
+MCHP,2002-05-09,split,1.5:1
+MCHP,2009-03-31,buyback,-11.9% shares
+MCHP,2014-03-31,dilution,+5.8% shares
+MCHP,2017-03-31,dilution,+8.0% shares
+MCHP,2018-03-31,dilution,+6.0% shares
+MCHP,2020-03-31,dilution,+105.0% shares
+MCHP,2021-03-31,dilution,+5.6% shares
+MCHP,2021-10-13,split,2:1
+MCK,1998-01-05,split,2:1
+MCK,2009-03-31,buyback,-6.4% shares
+MCK,2018-03-31,buyback,-6.3% shares
+MCK,2019-03-31,buyback,-5.6% shares
+MCK,2020-03-31,buyback,-8.0% shares
+MCK,2021-03-31,buyback,-11.6% shares
+MCK,2023-03-31,buyback,-7.7% shares
+MCK,2024-03-31,buyback,-5.7% shares
+MCO,2005-05-19,split,2:1
+MCO,2008-12-31,buyback,-9.9% shares
+MCO,2015-12-31,buyback,-5.3% shares
+MDB,2022-01-31,dilution,+9.5% shares
+MDB,2023-01-31,dilution,+6.3% shares
+MDB,2026-01-31,dilution,+9.0% shares
+MDLZ,2010-12-31,dilution,+15.7% shares
+MDT,1980-08-01,split,2:1
+MDT,1989-08-31,split,2:1
+MDT,1991-08-30,split,2:1
+MDT,1994-09-30,split,2:1
+MDT,1995-09-29,split,2:1
+MDT,1997-09-15,split,2:1
+MDT,1999-09-27,split,2:1
+MDT,2015-04-24,dilution,+9.4% shares
+MDT,2016-04-29,dilution,+28.6% shares
+MDU,1978-02-01,split,2:1
+MDU,1986-07-16,split,2:1
+MDU,1995-10-16,split,1.5:1
+MDU,1998-07-14,split,1.5:1
+MDU,2003-10-30,split,1.5:1
+MDU,2006-07-27,split,1.5:1
+MDU,2009-12-31,dilution,+100644.3% shares
+MDU,2023-06-01,split,1.457:1
+MDU,2024-11-01,split,1.805:1
+MEDP,2016-12-31,dilution,+15.9% shares
+MEDP,2017-12-31,dilution,+9.7% shares
+MEDP,2018-12-31,buyback,-7.3% shares
+MEDP,2022-12-31,buyback,-10.7% shares
+MEDP,2023-12-31,buyback,-5.4% shares
+MEDP,2025-12-31,buyback,-7.8% shares
+MET,2009-12-31,dilution,+9.9% shares
+MET,2010-12-31,dilution,+8.7% shares
+MET,2011-12-31,dilution,+20.1% shares
+MET,2017-08-07,split,1.122:1
+MET,2018-12-31,buyback,-6.0% shares
+MET,2019-12-31,buyback,-6.9% shares
+MET,2022-12-31,buyback,-7.0% shares
+MET,2023-12-31,buyback,-5.8% shares
+MET,2024-12-31,buyback,-6.7% shares
+MET,2025-12-31,buyback,-5.3% shares
+META,2011-12-31,dilution,+6.6% shares
+META,2012-12-31,dilution,+43.6% shares
+META,2013-12-31,dilution,+16.2% shares
+META,2014-12-31,dilution,+5.8% shares
+META,2015-12-31,dilution,+7.1% shares
+META,2022-12-31,buyback,-5.5% shares
+MGM,2000-02-28,split,2:1
+MGM,2005-05-19,split,2:1
+MGM,2010-12-31,dilution,+19.0% shares
+MGM,2011-12-31,dilution,+24.5% shares
+MGM,2012-12-31,buyback,-12.8% shares
+MGM,2015-12-31,dilution,+10.6% shares
+MGM,2016-12-31,dilution,+5.6% shares
+MGM,2018-12-31,buyback,-5.1% shares
+MGM,2020-12-31,buyback,-6.3% shares
+MGM,2022-12-31,buyback,-15.3% shares
+MGM,2023-12-31,buyback,-13.2% shares
+MGM,2024-12-31,buyback,-13.5% shares
+MGM,2025-12-31,buyback,-10.6% shares
+MHK,1993-08-25,split,1.5:1
+MHK,1997-12-05,split,1.5:1
+MHK,2022-12-31,buyback,-7.3% shares
+MIDD,1988-06-02,split,1.25:1
+MIDD,2007-06-18,split,2:1
+MIDD,2010-01-02,dilution,+9.1% shares
+MIDD,2012-12-29,dilution,+195.7% shares
+MIDD,2014-06-27,split,3:1
+MIDD,2026-07-07,split,1.243:1
+MKC,1977-03-22,split,2:1
+MKC,1988-04-28,split,2:1
+MKC,1990-01-22,split,2:1
+MKC,1992-01-21,split,2:1
+MKC,2002-04-09,split,2:1
+MKC,2018-11-30,dilution,+107.6% shares
+MKC,2020-12-01,split,2:1
+MKL,2013-12-31,dilution,+30.2% shares
+MKL,2014-12-31,dilution,+11.7% shares
+MKSI,2022-12-31,dilution,+7.5% shares
+MKSI,2023-12-31,dilution,+11.5% shares
+MLI,1995-10-02,split,2:1
+MLI,1998-05-28,split,2:1
+MLI,2012-12-29,dilution,+87.2% shares
+MLI,2013-12-28,buyback,-21.0% shares
+MLI,2014-03-31,split,2:1
+MLI,2021-12-25,dilution,+101.4% shares
+MLI,2023-10-23,split,2:1
+MLI,2026-07-01,split,2:1
+MLM,2009-12-31,dilution,+6.2% shares
+MLM,2014-12-31,dilution,+23.3% shares
+MLM,2015-12-31,dilution,+17.4% shares
+MMM,1972-06-16,split,2:1
+MMM,1987-06-16,split,2:1
+MMM,1994-04-11,split,2:1
+MMM,2003-09-30,split,2:1
+MMM,2024-04-01,split,1.196:1
+MNST,1988-02-29,split,0.02:1
+MNST,2005-08-09,split,2:1
+MNST,2006-07-10,split,4:1
+MNST,2009-12-31,dilution,+94.1% shares
+MNST,2012-02-16,split,2:1
+MNST,2013-12-31,buyback,-5.3% shares
+MNST,2014-12-31,dilution,+201.6% shares
+MNST,2015-12-31,dilution,+10.5% shares
+MNST,2016-11-10,split,3:1
+MNST,2021-12-31,dilution,+100.3% shares
+MNST,2023-03-28,split,2:1
+MO,1966-05-19,split,3:1
+MO,1969-05-22,split,2:1
+MO,1974-06-03,split,2:1
+MO,1979-06-01,split,2:1
+MO,1986-04-11,split,2:1
+MO,1989-10-11,split,4:1
+MO,1997-04-11,split,3:1
+MOH,2010-12-31,buyback,-99.9% shares
+MOH,2011-05-23,split,1.5:1
+MOH,2011-12-31,dilution,+111415.5% shares
+MOH,2015-12-31,dilution,+16.7% shares
+MOH,2018-12-31,dilution,+18.1% shares
+MOH,2020-12-31,buyback,-6.7% shares
+MOH,2025-12-31,buyback,-8.3% shares
+MORN,2013-12-31,buyback,-5.4% shares
+MOS,1995-12-01,split,2:1
+MOS,2014-12-31,buyback,-12.0% shares
+MOS,2018-12-31,dilution,+10.1% shares
+MOS,2022-12-31,buyback,-6.7% shares
+MOS,2023-12-31,buyback,-6.4% shares
+MP,2020-12-31,dilution,+19.7% shares
+MP,2021-12-31,dilution,+138.2% shares
+MP,2023-12-31,buyback,-7.9% shares
+MPC,2013-12-31,dilution,+85.4% shares
+MPC,2014-12-31,buyback,-9.5% shares
+MPC,2015-06-11,split,2:1
+MPC,2015-12-31,buyback,-5.6% shares
+MPC,2019-12-31,dilution,+26.2% shares
+MPC,2022-12-31,buyback,-19.1% shares
+MPC,2023-12-31,buyback,-20.7% shares
+MPC,2024-12-31,buyback,-16.6% shares
+MPC,2025-12-31,buyback,-10.3% shares
+MPT,2010-12-31,dilution,+28.9% shares
+MPT,2011-12-31,dilution,+9.9% shares
+MPT,2012-12-31,dilution,+19.6% shares
+MPT,2013-12-31,dilution,+15.3% shares
+MPT,2014-12-31,dilution,+11.8% shares
+MPT,2015-12-31,dilution,+28.0% shares
+MPT,2016-12-31,dilution,+19.6% shares
+MPT,2017-12-31,dilution,+34.2% shares
+MPT,2019-12-31,dilution,+16.9% shares
+MPT,2020-12-31,dilution,+23.9% shares
+MPT,2021-12-31,dilution,+11.3% shares
+MPWR,2010-12-31,buyback,-99.9% shares
+MPWR,2011-12-31,dilution,+92851.9% shares
+MPWR,2013-12-31,dilution,+6.5% shares
+MRK,1964-05-27,split,3:1
+MRK,1972-06-01,split,2:1
+MRK,1986-05-27,split,2:1
+MRK,1988-05-26,split,3:1
+MRK,1992-05-26,split,3:1
+MRK,1999-02-17,split,2:1
+MRK,2009-12-31,dilution,+6.1% shares
+MRK,2010-12-31,buyback,-100.0% shares
+MRK,2011-12-31,dilution,+99166566.7% shares
+MRK,2021-06-03,split,1.048:1
+MRNA,2020-12-31,dilution,+15.1% shares
+MRNA,2021-12-31,dilution,+13.1% shares
+MRNA,2023-12-31,buyback,-8.2% shares
+MRSH,1986-05-15,split,2:1
+MRSH,1997-06-30,split,2:1
+MRSH,1998-06-29,split,1.5:1
+MRSH,2002-07-01,split,2:1
+MRVL,2004-06-29,split,2:1
+MRVL,2006-07-25,split,2:1
+MRVL,2022-01-29,dilution,+19.2% shares
+MRVL,2023-01-28,dilution,+6.8% shares
+MS,1997-01-15,split,2:1
+MS,2000-01-27,split,2:1
+MS,2009-12-31,dilution,+10.4% shares
+MS,2010-12-31,dilution,+19.1% shares
+MS,2011-12-31,dilution,+18.7% shares
+MS,2012-12-31,dilution,+14.5% shares
+MS,2019-12-31,buyback,-5.6% shares
+MS,2021-12-31,dilution,+11.7% shares
+MS,2022-12-31,buyback,-5.6% shares
+MSA,1977-04-26,split,2:1
+MSA,1980-05-16,split,2:1
+MSA,1985-09-11,split,2:1
+MSA,2000-05-25,split,3:1
+MSA,2004-01-29,split,3:1
+MSCI,2010-11-30,dilution,+12.4% shares
+MSCI,2011-12-31,dilution,+7.9% shares
+MSCI,2015-12-31,buyback,-5.8% shares
+MSCI,2016-12-31,buyback,-12.2% shares
+MSFT,1987-09-21,split,2:1
+MSFT,1990-04-16,split,2:1
+MSFT,1991-06-27,split,1.5:1
+MSFT,1992-06-15,split,1.5:1
+MSFT,1994-05-23,split,2:1
+MSFT,1996-12-09,split,2:1
+MSFT,1998-02-23,split,2:1
+MSFT,1999-03-29,split,2:1
+MSFT,2003-02-18,split,2:1
+MSFT,2009-06-30,buyback,-5.0% shares
+MSGS,2020-04-20,split,1.402:1
+MSI,1965-05-26,split,1.5:1
+MSI,1970-05-26,split,2:1
+MSI,1973-06-04,split,2:1
+MSI,1984-06-04,split,3:1
+MSI,1993-01-19,split,2:1
+MSI,1994-04-19,split,2:1
+MSI,2000-06-02,split,3:1
+MSI,2004-12-03,split,1.11732:1
+MSI,2008-12-31,buyback,-86.0% shares
+MSI,2011-01-04,split,0.247372:1
+MSI,2012-12-31,buyback,-12.5% shares
+MSI,2013-12-31,buyback,-9.0% shares
+MSI,2014-12-31,buyback,-9.2% shares
+MSI,2015-12-31,buyback,-17.8% shares
+MSI,2016-12-31,buyback,-14.2% shares
+MSI,2017-12-31,buyback,-5.9% shares
+MSI,2018-12-31,dilution,+5.6% shares
+MSM,1998-05-26,split,2:1
+MSM,2017-09-02,buyback,-6.7% shares
+MSTR,2000-01-27,split,2:1
+MSTR,2002-07-31,split,0.1:1
+MSTR,2011-12-31,buyback,-6.1% shares
+MSTR,2019-12-31,buyback,-9.5% shares
+MSTR,2020-12-31,buyback,-6.2% shares
+MSTR,2022-12-31,dilution,+1029.8% shares
+MSTR,2023-12-31,dilution,+46.3% shares
+MSTR,2024-08-08,split,10:1
+MSTR,2024-12-31,dilution,+16.2% shares
+MSTR,2025-12-31,dilution,+44.2% shares
+MTB,1987-09-25,split,2:1
+MTB,2000-10-06,split,10:1
+MTB,2016-12-31,dilution,+14.4% shares
+MTB,2018-12-31,buyback,-5.5% shares
+MTB,2019-12-31,buyback,-6.7% shares
+MTB,2022-12-31,dilution,+27.3% shares
+MTB,2025-12-31,buyback,-5.1% shares
+MTCH,1998-03-27,split,2:1
+MTCH,2000-02-25,split,2:1
+MTCH,2005-08-09,split,0.9:1
+MTCH,2008-08-21,split,1.146:1
+MTCH,2010-12-31,buyback,-23.3% shares
+MTCH,2011-12-31,buyback,-11.2% shares
+MTCH,2013-12-31,buyback,-6.8% shares
+MTCH,2016-12-31,buyback,-9.3% shares
+MTCH,2017-12-31,dilution,+6.6% shares
+MTCH,2018-12-31,dilution,+138.9% shares
+MTCH,2020-07-01,split,3.502:1
+MTCH,2020-12-31,dilution,+26.9% shares
+MTCH,2021-12-31,dilution,+19.1% shares
+MTCH,2025-12-31,buyback,-5.9% shares
+MTDR,2012-12-31,dilution,+26.3% shares
+MTDR,2013-12-31,dilution,+9.2% shares
+MTDR,2014-12-31,dilution,+20.3% shares
+MTDR,2015-12-31,dilution,+15.0% shares
+MTDR,2016-12-31,dilution,+11.9% shares
+MTDR,2017-12-31,dilution,+12.3% shares
+MTDR,2018-12-31,dilution,+10.9% shares
+MTG,1993-12-03,split,2:1
+MTG,1997-06-03,split,2:1
+MTG,2009-12-31,dilution,+108891.6% shares
+MTG,2010-12-31,dilution,+42.0% shares
+MTG,2011-12-31,dilution,+14.0% shares
+MTG,2013-12-31,dilution,+54.4% shares
+MTG,2014-12-31,dilution,+32.6% shares
+MTG,2015-12-31,dilution,+13.2% shares
+MTG,2016-12-31,buyback,-7.7% shares
+MTG,2017-12-31,buyback,-8.6% shares
+MTG,2022-12-31,buyback,-11.4% shares
+MTG,2023-12-31,buyback,-7.7% shares
+MTG,2024-12-31,buyback,-8.1% shares
+MTG,2025-12-31,buyback,-10.9% shares
+MTN,2017-07-31,dilution,+8.2% shares
+MTSI,2011-09-30,buyback,-88.0% shares
+MTSI,2012-09-28,dilution,+1545.0% shares
+MTSI,2013-09-27,dilution,+90.4% shares
+MTSI,2015-10-02,dilution,+8.8% shares
+MTSI,2017-09-29,dilution,+13.8% shares
+MTSI,2018-09-28,dilution,+7.6% shares
+MTSI,2021-10-01,dilution,+5.8% shares
+MTZ,1997-03-03,split,1.5:1
+MTZ,2000-06-20,split,1.5:1
+MTZ,2010-12-31,dilution,+11.2% shares
+MTZ,2012-12-31,buyback,-5.3% shares
+MTZ,2015-12-31,buyback,-6.6% shares
+MU,1994-04-19,split,2.5:1
+MU,1995-05-23,split,2:1
+MU,2000-05-02,split,2:1
+MU,2010-09-02,dilution,+31.2% shares
+MU,2013-08-29,dilution,+6.7% shares
+MU,2014-08-28,dilution,+13.3% shares
+MU,2016-09-01,buyback,-11.5% shares
+MU,2017-08-31,dilution,+11.4% shares
+MU,2018-08-30,dilution,+6.5% shares
+MU,2019-08-29,buyback,-7.0% shares
+MUSA,2015-12-31,buyback,-5.7% shares
+MUSA,2016-12-31,buyback,-9.5% shares
+MUSA,2017-12-31,buyback,-8.8% shares
+MUSA,2018-12-31,buyback,-8.8% shares
+MUSA,2020-12-31,buyback,-7.3% shares
+MUSA,2021-12-31,buyback,-9.9% shares
+MUSA,2022-12-31,buyback,-10.0% shares
+MUSA,2023-12-31,buyback,-8.8% shares
+MUSA,2025-12-31,buyback,-6.3% shares
+NBIX,2010-12-31,dilution,+35.0% shares
+NBIX,2011-12-31,dilution,+6.7% shares
+NBIX,2012-12-31,dilution,+18.8% shares
+NBIX,2014-12-31,dilution,+11.3% shares
+NBIX,2015-12-31,dilution,+13.3% shares
+NBIX,2018-12-31,dilution,+8.3% shares
+NCLH,2013-12-31,dilution,+16.9% shares
+NCLH,2015-12-31,dilution,+8.5% shares
+NCLH,2020-12-31,dilution,+17.7% shares
+NCLH,2021-12-31,dilution,+43.5% shares
+NCLH,2022-12-31,dilution,+14.9% shares
+NCLH,2024-12-31,dilution,+20.5% shares
+NCLH,2025-12-31,buyback,-7.2% shares
+NCNO,2021-01-31,dilution,+12.0% shares
+NCNO,2022-01-31,dilution,+10.3% shares
+NCNO,2023-01-31,dilution,+14.4% shares
+NDAQ,2011-12-31,buyback,-12.8% shares
+NDAQ,2020-12-31,dilution,+199.9% shares
+NDAQ,2022-08-29,split,3:1
+NDAQ,2024-12-31,dilution,+13.9% shares
+NDSN,1984-01-04,split,1.5:1
+NDSN,1987-05-01,split,1.5:1
+NDSN,1991-09-25,split,2:1
+NDSN,2000-09-13,split,2:1
+NDSN,2009-10-31,dilution,+95.7% shares
+NDSN,2011-04-13,split,2:1
+NDSN,2016-10-31,buyback,-5.9% shares
+NEE,1985-01-31,split,2:1
+NEE,2005-03-16,split,2:1
+NEE,2018-12-31,dilution,+303.8% shares
+NEE,2020-10-27,split,4:1
+NEM,1987-06-11,split,2:1
+NEM,1987-10-09,split,1.5:1
+NEM,1994-04-22,split,1.25:1
+NEM,2009-12-31,dilution,+7.0% shares
+NEM,2019-12-31,dilution,+37.8% shares
+NEM,2020-12-31,dilution,+9.4% shares
+NEM,2023-12-31,dilution,+5.8% shares
+NEM,2024-12-31,dilution,+36.5% shares
+NET,2020-12-31,dilution,+104.9% shares
+NEU,1983-04-12,split,2:1
+NEU,1985-04-02,split,2:1
+NEU,1986-06-02,split,2:1
+NEU,1993-07-01,split,1.5:1
+NEU,2002-07-01,split,0.2:1
+NEU,2011-12-31,buyback,-6.4% shares
+NEU,2020-12-31,buyback,-17.5% shares
+NEU,2022-12-31,buyback,-6.7% shares
+NFG,1984-05-21,split,2:1
+NFG,1984-05-25,split,1.1:1
+NFG,1987-06-17,split,2:1
+NFG,2001-09-10,split,2:1
+NFLX,2004-02-12,split,2:1
+NFLX,2008-12-31,buyback,-8.8% shares
+NFLX,2009-12-31,buyback,-7.0% shares
+NFLX,2010-12-31,buyback,-7.0% shares
+NFLX,2012-12-31,dilution,+8.3% shares
+NFLX,2013-12-31,dilution,+622.1% shares
+NFLX,2015-07-15,split,7:1
+NFLX,2023-12-31,dilution,+896.0% shares
+NFLX,2025-11-17,split,10:1
+NI,1998-02-23,split,2:1
+NI,2015-07-02,split,2.545:1
+NI,2018-12-31,dilution,+7.8% shares
+NI,2019-12-31,dilution,+5.5% shares
+NI,2021-12-31,dilution,+8.6% shares
+NI,2022-12-31,dilution,+6.1% shares
+NIQ,2025-12-31,dilution,+8.9% shares
+NKE,1990-10-08,split,2:1
+NKE,1995-10-31,split,2:1
+NKE,1996-10-24,split,2:1
+NKE,2007-04-03,split,2:1
+NKE,2011-05-31,dilution,+96.7% shares
+NKE,2012-12-26,split,2:1
+NKE,2014-05-31,dilution,+97.7% shares
+NKE,2015-12-24,split,2:1
+NLY,2008-12-31,dilution,+65.6% shares
+NLY,2009-12-31,dilution,+9.1% shares
+NLY,2010-12-31,dilution,+13.0% shares
+NLY,2011-12-31,dilution,+39.9% shares
+NLY,2012-12-31,dilution,+15.0% shares
+NLY,2017-12-31,dilution,+9.9% shares
+NLY,2018-12-31,dilution,+13.4% shares
+NLY,2019-12-31,dilution,+18.6% shares
+NLY,2020-12-31,buyback,-75.4% shares
+NLY,2022-09-26,split,0.25:1
+NLY,2022-12-31,dilution,+15.3% shares
+NLY,2023-12-31,dilution,+20.1% shares
+NLY,2024-12-31,dilution,+5.7% shares
+NLY,2025-12-31,dilution,+22.6% shares
+NNN,2009-12-31,dilution,+7.5% shares
+NNN,2011-12-31,dilution,+7.2% shares
+NNN,2012-12-31,dilution,+22.8% shares
+NNN,2013-12-31,dilution,+9.8% shares
+NNN,2015-12-31,dilution,+7.8% shares
+NNN,2016-12-31,dilution,+7.6% shares
+NNN,2019-12-31,dilution,+5.6% shares
+NOC,1984-09-11,split,3:1
+NOC,2004-06-22,split,2:1
+NOC,2009-12-31,buyback,-5.4% shares
+NOC,2010-12-31,buyback,-6.9% shares
+NOC,2011-03-31,split,1.10681:1
+NOC,2011-12-31,buyback,-6.5% shares
+NOC,2012-12-31,buyback,-10.0% shares
+NOC,2013-12-31,buyback,-7.7% shares
+NOC,2014-12-31,buyback,-9.3% shares
+NOC,2015-12-31,buyback,-9.7% shares
+NOC,2016-12-31,buyback,-5.8% shares
+NOV,1997-11-19,split,2:1
+NOV,2007-10-01,split,2:1
+NOV,2008-12-31,dilution,+12.4% shares
+NOV,2014-06-02,split,1.109:1
+NOV,2015-12-31,buyback,-10.0% shares
+NOV,2025-12-31,buyback,-5.3% shares
+NOW,2011-06-30,dilution,+21.3% shares
+NOW,2012-12-31,dilution,+163.1% shares
+NOW,2013-12-31,dilution,+83.2% shares
+NOW,2017-12-31,dilution,+26.4% shares
+NOW,2019-12-31,dilution,+10.9% shares
+NOW,2023-12-31,dilution,+405.0% shares
+NOW,2025-12-18,split,5:1
+NRG,2007-06-01,split,2:1
+NRG,2010-12-31,buyback,-6.3% shares
+NRG,2011-12-31,buyback,-5.1% shares
+NRG,2013-12-31,dilution,+38.0% shares
+NRG,2019-12-31,buyback,-14.3% shares
+NRG,2020-12-31,buyback,-6.8% shares
+NRG,2024-12-31,buyback,-7.0% shares
+NRG,2025-12-31,buyback,-6.1% shares
+NSC,1987-04-07,split,3:1
+NSC,1997-10-10,split,3:1
+NSC,2014-12-31,buyback,-15.9% shares
+NSC,2019-12-31,buyback,-5.2% shares
+NSC,2022-12-31,buyback,-5.0% shares
+NTAP,1997-12-19,split,2:1
+NTAP,1998-12-22,split,2:1
+NTAP,1999-12-21,split,2:1
+NTAP,2000-03-23,split,2:1
+NTAP,2010-04-30,dilution,+5.6% shares
+NTAP,2011-04-29,dilution,+11.5% shares
+NTAP,2014-04-25,buyback,-5.4% shares
+NTAP,2015-04-24,buyback,-7.8% shares
+NTAP,2016-04-29,buyback,-7.5% shares
+NTAP,2017-04-28,buyback,-5.4% shares
+NTAP,2019-04-26,buyback,-6.2% shares
+NTAP,2020-04-24,buyback,-10.0% shares
+NTNX,2021-07-31,dilution,+6.0% shares
+NTNX,2022-07-31,dilution,+6.8% shares
+NTNX,2023-07-31,dilution,+5.8% shares
+NTNX,2025-07-31,dilution,+20.2% shares
+NTRA,2016-12-31,dilution,+96.8% shares
+NTRA,2018-12-31,dilution,+7.9% shares
+NTRA,2019-12-31,dilution,+20.2% shares
+NTRA,2020-12-31,dilution,+16.5% shares
+NTRA,2021-12-31,dilution,+11.8% shares
+NTRA,2022-12-31,dilution,+8.7% shares
+NTRA,2023-12-31,dilution,+16.9% shares
+NTRA,2024-12-31,dilution,+8.5% shares
+NTRA,2025-12-31,dilution,+9.6% shares
+NTRS,1986-05-01,split,3:1
+NTRS,1990-05-01,split,2:1
+NTRS,1992-12-10,split,1.5:1
+NTRS,1996-12-10,split,2:1
+NTRS,1999-12-10,split,2:1
+NTRS,2008-12-31,dilution,+100436628.3% shares
+NTRS,2009-12-31,buyback,-100.0% shares
+NUE,1983-09-21,split,2:1
+NUE,1986-06-18,split,1.5:1
+NUE,1992-06-22,split,2:1
+NUE,1993-09-20,split,2:1
+NUE,2004-10-18,split,2:1
+NUE,2006-06-01,split,2:1
+NUE,2022-12-31,buyback,-10.3% shares
+NVDA,2000-06-27,split,2:1
+NVDA,2001-09-10,split,2:1
+NVDA,2006-04-07,split,2:1
+NVDA,2007-09-11,split,1.5:1
+NVDA,2009-01-25,buyback,-9.7% shares
+NVDA,2010-01-31,dilution,+100164.2% shares
+NVDA,2011-01-30,dilution,+7.1% shares
+NVDA,2015-01-25,buyback,-5.4% shares
+NVDA,2017-01-29,dilution,+14.1% shares
+NVDA,2020-01-26,dilution,+295.5% shares
+NVDA,2021-07-20,split,4:1
+NVDA,2023-01-29,dilution,+889.0% shares
+NVDA,2024-06-10,split,10:1
+NVR,2011-12-31,buyback,-8.8% shares
+NVR,2012-12-31,buyback,-8.6% shares
+NVR,2013-12-31,buyback,-5.4% shares
+NVR,2014-12-31,buyback,-8.8% shares
+NVR,2022-12-31,buyback,-9.1% shares
+NVR,2025-12-31,buyback,-7.5% shares
+NVST,2019-12-31,dilution,+6.6% shares
+NVST,2020-12-31,dilution,+20.3% shares
+NVST,2021-12-31,dilution,+8.2% shares
+NVST,2023-12-31,buyback,-6.0% shares
+NWL,1983-03-21,split,2:1
+NWL,1988-08-30,split,2:1
+NWL,1989-12-04,split,2:1
+NWL,1994-09-02,split,2:1
+NWL,2009-12-31,dilution,+5.2% shares
+NWL,2016-12-31,dilution,+55.2% shares
+NWL,2017-12-31,dilution,+15.8% shares
+NWL,2019-12-31,buyback,-10.5% shares
+NXPI,2016-12-31,dilution,+39.0% shares
+NXPI,2019-12-31,buyback,-13.0% shares
+NXST,2011-12-31,dilution,+100575.2% shares
+NXST,2012-12-31,dilution,+7.4% shares
+NXST,2014-12-31,dilution,+7.0% shares
+NXST,2017-12-31,dilution,+48.9% shares
+NXST,2021-12-31,buyback,-5.9% shares
+NXST,2022-12-31,buyback,-8.6% shares
+NXST,2023-12-31,buyback,-10.8% shares
+NXST,2024-12-31,buyback,-8.5% shares
+NXST,2025-12-31,buyback,-6.4% shares
+NYT,1983-12-22,split,3:1
+NYT,1986-10-06,split,2:1
+NYT,1998-07-02,split,2:1
+O,2005-01-03,split,2:1
+O,2011-12-31,dilution,+19.1% shares
+O,2012-12-31,dilution,+5.3% shares
+O,2013-12-31,dilution,+44.3% shares
+O,2014-12-31,dilution,+14.1% shares
+O,2015-12-31,dilution,+8.0% shares
+O,2016-12-31,dilution,+8.2% shares
+O,2017-12-31,dilution,+7.2% shares
+O,2018-12-31,dilution,+5.8% shares
+O,2019-12-31,dilution,+9.0% shares
+O,2020-12-31,dilution,+9.3% shares
+O,2021-11-15,split,1.032:1
+O,2021-12-31,dilution,+20.1% shares
+O,2022-12-31,dilution,+47.6% shares
+O,2023-12-31,dilution,+13.2% shares
+O,2024-12-31,dilution,+24.6% shares
+O,2025-12-31,dilution,+5.2% shares
+OC,2022-12-31,buyback,-6.3% shares
+OC,2023-12-31,buyback,-6.9% shares
+ODFL,2003-06-17,split,1.5:1
+ODFL,2004-05-21,split,1.5:1
+ODFL,2005-12-01,split,1.5:1
+ODFL,2010-08-24,split,1.5:1
+ODFL,2010-12-31,dilution,+50.0% shares
+ODFL,2012-09-10,split,1.5:1
+ODFL,2018-12-31,dilution,+49.3% shares
+ODFL,2020-03-25,split,1.5:1
+ODFL,2022-12-31,dilution,+94.3% shares
+ODFL,2024-03-28,split,2:1
+OGE,1998-06-16,split,2:1
+OGE,2009-12-31,dilution,+104741279.3% shares
+OGE,2011-12-31,dilution,+100.7% shares
+OGE,2013-07-02,split,2:1
+OHI,2009-12-31,dilution,+11.2% shares
+OHI,2010-12-31,dilution,+12.7% shares
+OHI,2011-12-31,dilution,+8.4% shares
+OHI,2012-12-31,dilution,+5.7% shares
+OHI,2013-12-31,buyback,-99.9% shares
+OHI,2014-12-31,dilution,+107684.9% shares
+OHI,2015-12-31,dilution,+41.8% shares
+OHI,2016-12-31,dilution,+11.7% shares
+OHI,2019-12-31,dilution,+5.9% shares
+OHI,2020-12-31,dilution,+5.8% shares
+OHI,2024-12-31,dilution,+8.0% shares
+OHI,2025-12-31,dilution,+12.8% shares
+OKE,1990-03-01,split,2:1
+OKE,2001-06-12,split,2:1
+OKE,2008-12-31,buyback,-99.9% shares
+OKE,2010-12-31,dilution,+202655.8% shares
+OKE,2012-06-04,split,2:1
+OKE,2014-02-03,split,1.1422:1
+OKE,2017-12-31,dilution,+41.2% shares
+OKE,2018-12-31,dilution,+38.2% shares
+OKE,2023-12-31,dilution,+8.3% shares
+OKE,2024-12-31,dilution,+20.8% shares
+OKE,2025-12-31,dilution,+6.7% shares
+OKTA,2021-01-31,dilution,+8.5% shares
+OKTA,2022-01-31,dilution,+16.4% shares
+OKTA,2023-01-31,dilution,+6.7% shares
+OKTA,2025-01-31,dilution,+7.0% shares
+OLED,2011-12-31,dilution,+20.2% shares
+OLLI,2016-01-30,dilution,+14.8% shares
+OLLI,2017-01-28,dilution,+11.9% shares
+OLN,1977-09-09,split,2:1
+OLN,1996-10-31,split,2:1
+OLN,1999-02-09,split,1.575:1
+OLN,2009-12-31,dilution,+102890833.0% shares
+OLN,2015-12-31,dilution,+29.7% shares
+OLN,2016-12-31,dilution,+59.8% shares
+OLN,2022-12-31,buyback,-8.9% shares
+OLN,2023-12-31,buyback,-13.3% shares
+OLN,2024-12-31,buyback,-7.2% shares
+OMC,1981-01-16,split,2:1
+OMC,1995-12-28,split,2:1
+OMC,1997-12-30,split,2:1
+OMC,2007-06-26,split,2:1
+OMC,2011-12-31,buyback,-6.7% shares
+OMF,2014-12-31,dilution,+12.0% shares
+OMF,2015-12-31,dilution,+11.0% shares
+OMF,2016-12-31,dilution,+5.6% shares
+OMF,2022-12-31,buyback,-6.5% shares
+ON,2009-12-31,dilution,+14.0% shares
+ON,2021-12-31,dilution,+6.0% shares
+ONTO,2011-01-01,dilution,+23.4% shares
+ONTO,2018-12-31,dilution,+5.3% shares
+ONTO,2019-12-31,dilution,+92.2% shares
+ORCL,1987-03-25,split,2:1
+ORCL,1987-12-21,split,2:1
+ORCL,1989-07-03,split,2:1
+ORCL,1993-11-09,split,2:1
+ORCL,1995-02-23,split,1.5:1
+ORCL,1996-04-17,split,1.5:1
+ORCL,1997-08-18,split,1.5:1
+ORCL,1999-03-01,split,1.5:1
+ORCL,2000-01-19,split,2:1
+ORCL,2000-10-13,split,2:1
+ORCL,2019-05-31,buyback,-11.9% shares
+ORCL,2020-05-31,buyback,-11.7% shares
+ORCL,2021-05-31,buyback,-8.3% shares
+ORCL,2022-05-31,buyback,-7.8% shares
+ORI,1982-03-30,split,1.05:1
+ORI,1983-03-28,split,1.05:1
+ORI,1984-04-02,split,1.05:1
+ORI,1985-05-16,split,1.25:1
+ORI,1987-08-31,split,1.1:1
+ORI,1988-03-31,split,1.05:1
+ORI,1989-02-13,split,1.05:1
+ORI,1990-04-30,split,1.05:1
+ORI,1991-04-02,split,1.1:1
+ORI,1992-05-01,split,2:1
+ORI,1996-05-01,split,1.5:1
+ORI,1998-05-05,split,1.5:1
+ORI,2003-12-31,split,1.5:1
+ORI,2006-01-03,split,1.25:1
+ORI,2011-12-31,dilution,+5.7% shares
+ORI,2013-12-31,dilution,+14.8% shares
+ORI,2023-12-31,buyback,-5.9% shares
+ORI,2024-12-31,buyback,-7.9% shares
+ORLY,1997-09-02,split,2:1
+ORLY,1999-12-01,split,2:1
+ORLY,2005-06-16,split,2:1
+ORLY,2009-12-31,dilution,+9.9% shares
+ORLY,2012-12-31,buyback,-10.0% shares
+ORLY,2013-12-31,buyback,-9.9% shares
+ORLY,2017-12-31,buyback,-7.5% shares
+ORLY,2018-12-31,buyback,-8.1% shares
+ORLY,2019-12-31,buyback,-5.5% shares
+ORLY,2021-12-31,buyback,-6.5% shares
+ORLY,2022-12-31,buyback,-6.7% shares
+ORLY,2023-12-31,dilution,+1308.5% shares
+ORLY,2025-06-10,split,15:1
+OSK,1999-08-20,split,1.5:1
+OSK,2003-08-14,split,2:1
+OSK,2005-08-29,split,2:1
+OSK,2010-09-30,dilution,+18.9% shares
+OSK,2015-09-30,buyback,-7.6% shares
+OSK,2016-09-30,buyback,-5.8% shares
+OSK,2019-09-30,buyback,-5.9% shares
+OVV,2005-05-23,split,2:1
+OVV,2019-12-31,dilution,+36.0% shares
+OVV,2020-01-27,split,0.2:1
+OWL,2023-12-31,dilution,+10.3% shares
+OWL,2024-12-31,dilution,+16.8% shares
+OWL,2025-12-31,dilution,+18.5% shares
+OXY,2006-08-16,split,2:1
+OXY,2014-12-01,split,1.042:1
+OXY,2016-02-25,split,1.0017:1
+OXY,2019-12-31,dilution,+6.1% shares
+OXY,2020-12-31,dilution,+13.5% shares
+P,2021-01-31,dilution,+5.9% shares
+P,2022-02-06,dilution,+6.7% shares
+P,2023-02-05,dilution,+18.6% shares
+PAG,2006-06-02,split,2:1
+PAG,2022-12-31,buyback,-6.7% shares
+PAG,2023-12-31,buyback,-8.6% shares
+PANW,2021-07-31,dilution,+198.3% shares
+PANW,2022-09-14,split,3:1
+PANW,2023-07-31,dilution,+131.6% shares
+PANW,2024-12-16,split,2:1
+PATH,2021-01-31,dilution,+10.4% shares
+PATH,2022-01-31,dilution,+170.2% shares
+PATH,2023-01-31,dilution,+20.5% shares
+PAYC,2013-12-31,dilution,+7.3% shares
+PAYC,2014-12-31,dilution,+7.9% shares
+PAYC,2015-12-31,dilution,+11.7% shares
+PAYX,1986-06-13,split,1.5:1
+PAYX,1987-11-16,split,1.5:1
+PAYX,1992-05-21,split,1.5:1
+PAYX,1993-08-27,split,1.5:1
+PAYX,1995-05-26,split,1.5:1
+PAYX,1996-05-24,split,1.5:1
+PAYX,1997-05-30,split,1.5:1
+PAYX,1998-05-26,split,1.5:1
+PAYX,1999-05-24,split,1.5:1
+PAYX,2000-05-23,split,1.5:1
+PB,2002-06-03,split,2:1
+PB,2012-12-31,dilution,+10.5% shares
+PB,2013-12-31,dilution,+16.6% shares
+PB,2014-12-31,dilution,+13.8% shares
+PB,2019-12-31,dilution,+5.3% shares
+PB,2020-12-31,dilution,+26.6% shares
+PCAR,1982-01-11,split,1.1:1
+PCAR,1983-12-28,split,2:1
+PCAR,1988-08-01,split,2:1
+PCAR,1997-05-22,split,2:1
+PCAR,2002-05-29,split,1.5:1
+PCAR,2004-02-06,split,1.5:1
+PCAR,2006-08-11,split,1.5:1
+PCAR,2007-10-10,split,1.5:1
+PCAR,2016-12-31,buyback,-100.0% shares
+PCAR,2017-12-31,dilution,+100312577.7% shares
+PCAR,2020-12-31,dilution,+50.0% shares
+PCAR,2023-02-08,split,1.5:1
+PCG,1983-07-18,split,2:1
+PCG,2009-12-31,dilution,+7.8% shares
+PCG,2012-12-31,dilution,+5.7% shares
+PCG,2014-12-31,dilution,+5.6% shares
+PCG,2020-12-31,dilution,+138.1% shares
+PCG,2021-12-31,dilution,+57.9% shares
+PCG,2022-12-31,dilution,+7.4% shares
+PCOR,2021-12-31,dilution,+232.2% shares
+PCOR,2022-12-31,dilution,+47.3% shares
+PCTY,2013-06-30,buyback,-27.8% shares
+PCTY,2014-06-30,dilution,+14.8% shares
+PCTY,2015-06-30,dilution,+36.6% shares
+PCTY,2017-06-30,dilution,+6.2% shares
+PEG,1987-07-27,split,1.5:1
+PEG,2008-02-05,split,2:1
+PEGA,2011-12-31,dilution,+6.4% shares
+PEGA,2012-12-31,dilution,+97.2% shares
+PEGA,2014-04-02,split,2:1
+PEGA,2023-12-31,dilution,+107.2% shares
+PEGA,2024-12-31,dilution,+5.6% shares
+PEGA,2025-06-23,split,2:1
+PEN,2014-12-31,buyback,-29.1% shares
+PEN,2015-12-31,dilution,+208.5% shares
+PEN,2016-12-31,dilution,+135.4% shares
+PEN,2017-12-31,dilution,+5.5% shares
+PEN,2021-12-31,dilution,+5.9% shares
+PENN,1996-05-24,split,1.5:1
+PENN,1996-12-23,split,2:1
+PENN,2002-06-26,split,2:1
+PENN,2005-03-08,split,2:1
+PENN,2013-11-04,split,4.423:1
+PENN,2013-12-31,buyback,-24.8% shares
+PENN,2015-12-31,dilution,+15.9% shares
+PENN,2018-12-31,dilution,+7.4% shares
+PENN,2019-12-31,dilution,+17.4% shares
+PENN,2020-12-31,dilution,+13.8% shares
+PENN,2021-12-31,dilution,+31.0% shares
+PENN,2023-12-31,buyback,-13.9% shares
+PEP,1977-05-31,split,3:1
+PEP,1986-05-29,split,3:1
+PEP,1990-09-05,split,3:1
+PEP,1996-05-29,split,2:1
+PFE,1983-07-01,split,2:1
+PFE,1991-04-01,split,2:1
+PFE,1995-07-03,split,2:1
+PFE,1997-07-01,split,2:1
+PFE,1999-07-01,split,3:1
+PFE,2010-12-31,dilution,+14.6% shares
+PFE,2013-12-31,buyback,-8.2% shares
+PFE,2014-12-31,buyback,-6.8% shares
+PFE,2019-12-31,buyback,-5.1% shares
+PFE,2020-11-17,split,1.054:1
+PFG,2009-12-31,dilution,+14.5% shares
+PFG,2010-12-31,dilution,+8.1% shares
+PFG,2012-12-31,buyback,-5.4% shares
+PFG,2022-12-31,buyback,-6.4% shares
+PFGC,2016-07-02,dilution,+12.0% shares
+PFGC,2020-06-27,dilution,+7.4% shares
+PFGC,2021-07-03,dilution,+18.1% shares
+PFGC,2022-07-02,dilution,+13.4% shares
+PG,1970-05-19,split,2:1
+PG,1983-02-22,split,2:1
+PG,1989-11-20,split,2:1
+PG,1992-06-15,split,2:1
+PG,1997-09-22,split,2:1
+PG,2004-06-21,split,2:1
+PGR,1980-09-23,split,1.5:1
+PGR,1981-06-08,split,1.5:1
+PGR,1983-05-16,split,1.5:1
+PGR,1985-05-28,split,1.5:1
+PGR,1986-05-27,split,2.25:1
+PGR,1992-12-09,split,3:1
+PGR,2002-04-23,split,3:1
+PGR,2006-05-19,split,4:1
+PGR,2008-12-31,buyback,-6.2% shares
+PH,1986-06-09,split,1.5:1
+PH,1995-06-02,split,1.5:1
+PH,1997-09-08,split,1.5:1
+PH,2007-10-02,split,1.5:1
+PH,2009-06-30,buyback,-5.2% shares
+PH,2012-06-30,buyback,-6.1% shares
+PH,2016-06-30,buyback,-5.7% shares
+PHM,1980-09-08,split,2:1
+PHM,1982-12-16,split,2:1
+PHM,1983-05-31,split,2:1
+PHM,1998-06-02,split,2:1
+PHM,2004-01-05,split,2:1
+PHM,2005-09-02,split,2:1
+PHM,2009-12-31,dilution,+18.4% shares
+PHM,2010-12-31,dilution,+26.1% shares
+PHM,2017-12-31,buyback,-10.3% shares
+PHM,2018-12-31,buyback,-7.2% shares
+PHM,2022-12-31,buyback,-9.1% shares
+PHM,2023-12-31,buyback,-6.4% shares
+PHM,2024-12-31,buyback,-5.1% shares
+PINS,2020-12-31,dilution,+41.8% shares
+PINS,2021-12-31,dilution,+16.0% shares
+PK,2017-12-31,dilution,+8.1% shares
+PK,2020-12-31,dilution,+10.8% shares
+PK,2023-12-31,buyback,-5.7% shares
+PLD,2010-12-31,dilution,+22.0% shares
+PLD,2011-12-31,dilution,+69.3% shares
+PLD,2012-12-31,dilution,+24.2% shares
+PLD,2013-12-31,dilution,+6.4% shares
+PLD,2015-12-31,dilution,+5.4% shares
+PLD,2018-12-31,dilution,+6.9% shares
+PLD,2019-12-31,dilution,+11.0% shares
+PLD,2020-12-31,dilution,+15.2% shares
+PLD,2022-12-31,dilution,+6.1% shares
+PLD,2023-12-31,dilution,+17.3% shares
+PLTR,2019-12-31,dilution,+6.1% shares
+PLTR,2020-12-31,dilution,+69.7% shares
+PLTR,2021-12-31,dilution,+96.4% shares
+PLTR,2022-12-31,dilution,+7.3% shares
+PLTR,2023-12-31,dilution,+11.3% shares
+PLTR,2024-12-31,dilution,+6.7% shares
+PM,2009-12-31,buyback,-6.1% shares
+PM,2010-12-31,buyback,-5.5% shares
+PNC,1982-05-21,split,2:1
+PNC,1985-07-02,split,2:1
+PNC,1992-11-16,split,2:1
+PNC,2009-12-31,dilution,+31.5% shares
+PNC,2010-12-31,dilution,+14.3% shares
+PNFP,2004-05-11,split,2:1
+PNR,1993-06-14,split,1.5:1
+PNR,1996-02-20,split,2:1
+PNR,2004-06-09,split,2:1
+PNR,2012-12-31,dilution,+29.7% shares
+PNR,2013-12-31,dilution,+60.6% shares
+PNR,2014-12-31,buyback,-5.3% shares
+PNR,2015-12-31,buyback,-5.7% shares
+PNR,2018-05-01,split,1.489:1
+PNW,2010-12-31,dilution,+5.8% shares
+PODD,2018-12-31,dilution,+5.2% shares
+PODD,2020-12-31,dilution,+5.8% shares
+PODD,2023-12-31,dilution,+5.3% shares
+POOL,1997-09-30,split,1.5:1
+POOL,1998-07-27,split,1.5:1
+POOL,2000-06-20,split,1.5:1
+POOL,2001-09-10,split,1.5:1
+POOL,2003-09-15,split,1.5:1
+POOL,2004-09-13,split,1.5:1
+POST,2014-09-30,dilution,+20.3% shares
+POST,2015-09-30,dilution,+42.8% shares
+POST,2016-09-30,dilution,+21.3% shares
+POST,2018-09-30,dilution,+8.6% shares
+POST,2020-09-30,buyback,-8.3% shares
+POST,2021-09-30,buyback,-5.2% shares
+POST,2022-03-11,split,1.528:1
+POST,2023-09-30,dilution,+6.9% shares
+POST,2025-09-30,buyback,-6.0% shares
+PPC,1999-08-02,split,1.5:1
+PPC,2010-12-26,dilution,+195.6% shares
+PPC,2012-12-30,dilution,+11.2% shares
+PPG,1983-09-13,split,2:1
+PPG,1987-03-13,split,2:1
+PPG,1994-06-13,split,2:1
+PPG,2013-12-31,dilution,+87.1% shares
+PPG,2015-06-15,split,2:1
+PPL,1992-05-12,split,2:1
+PPL,2005-08-25,split,2:1
+PPL,2010-12-31,dilution,+14.7% shares
+PPL,2011-12-31,dilution,+27.7% shares
+PPL,2012-12-31,dilution,+5.6% shares
+PPL,2013-12-31,dilution,+14.0% shares
+PPL,2015-06-02,split,1.07365:1
+PPLI,1998-03-27,split,2:1
+PPLI,2000-02-25,split,2:1
+PPLI,2005-08-09,split,0.9:1
+PPLI,2008-08-21,split,1.146:1
+PPLI,2020-07-01,split,3.054:1
+PPLI,2020-12-31,dilution,+6.8% shares
+PPLI,2021-05-25,split,1.503:1
+PPLI,2022-12-31,buyback,-6.0% shares
+PPLI,2025-04-01,split,1.219:1
+PR,2018-12-31,dilution,+11.3% shares
+PR,2021-12-31,dilution,+11.8% shares
+PR,2023-12-31,dilution,+20.5% shares
+PR,2024-12-31,dilution,+75.9% shares
+PR,2025-12-31,dilution,+6.8% shares
+PRGO,1993-08-26,split,2:1
+PRGO,2014-06-28,dilution,+22.3% shares
+PRGO,2015-06-27,dilution,+20.9% shares
+PRI,2012-12-31,buyback,-14.6% shares
+PRI,2013-12-31,buyback,-9.3% shares
+PRI,2015-12-31,buyback,-6.7% shares
+PRI,2016-12-31,buyback,-6.8% shares
+PRI,2020-12-31,buyback,-5.0% shares
+PRI,2023-12-31,buyback,-5.5% shares
+PRI,2024-12-31,buyback,-5.1% shares
+PRMB,1992-07-23,split,2:1
+PRMB,1993-07-26,split,2:1
+PRMB,2024-12-31,dilution,+11.0% shares
+PRMB,2025-12-31,dilution,+54.7% shares
+PSN,2019-12-31,dilution,+15.9% shares
+PSN,2020-12-31,dilution,+9.1% shares
+PSN,2021-12-31,dilution,+10.8% shares
+PSX,2014-12-31,buyback,-7.7% shares
+PSX,2018-12-31,buyback,-8.6% shares
+PSX,2022-12-31,dilution,+7.6% shares
+PSX,2024-12-31,buyback,-6.9% shares
+PTC,1991-06-28,split,1.5:1
+PTC,1992-02-26,split,2:1
+PTC,1993-02-26,split,2:1
+PTC,1996-03-01,split,2:1
+PTC,1998-03-09,split,2:1
+PTC,2006-02-28,split,0.4:1
+PVH,1984-01-04,split,2:1
+PVH,1987-06-17,split,2.5:1
+PVH,1991-10-10,split,2:1
+PVH,2011-01-30,dilution,+28.3% shares
+PVH,2012-01-29,dilution,+8.2% shares
+PVH,2014-02-02,dilution,+11.8% shares
+PVH,2023-01-29,buyback,-7.9% shares
+PVH,2024-02-04,buyback,-6.8% shares
+PVH,2025-02-02,buyback,-8.1% shares
+PVH,2026-02-01,buyback,-14.5% shares
+PWR,2000-04-10,split,1.5:1
+PWR,2008-12-31,dilution,+22.0% shares
+PWR,2010-12-31,dilution,+5.2% shares
+PWR,2015-12-31,buyback,-11.2% shares
+PWR,2016-12-31,buyback,-19.4% shares
+PYPL,2024-12-31,buyback,-6.1% shares
+PYPL,2025-12-31,buyback,-6.8% shares
+QCOM,1994-02-24,split,2:1
+QCOM,1999-05-11,split,2:1
+QCOM,1999-12-31,split,4:1
+QCOM,2004-08-16,split,2:1
+QCOM,2016-09-25,buyback,-8.6% shares
+QCOM,2019-09-29,buyback,-16.6% shares
+QCOM,2020-09-27,buyback,-5.8% shares
+QGEN,1999-07-16,split,2:1
+QGEN,2000-07-14,split,4:1
+QGEN,2010-12-31,dilution,+12.6% shares
+QGEN,2017-01-25,split,0.962:1
+QRVO,2015-03-28,dilution,+29.4% shares
+QRVO,2016-04-02,dilution,+52.3% shares
+QRVO,2017-04-01,buyback,-10.4% shares
+QRVO,2020-03-28,buyback,-6.3% shares
+QRVO,2023-04-01,buyback,-7.6% shares
+QRVO,2024-03-30,buyback,-5.3% shares
+QS,2020-12-31,dilution,+5.2% shares
+QS,2021-12-31,dilution,+62.4% shares
+QS,2022-12-31,dilution,+5.7% shares
+QS,2023-12-31,dilution,+6.8% shares
+QS,2024-12-31,dilution,+9.9% shares
+QS,2025-12-31,dilution,+13.4% shares
+QSR,2015-12-31,dilution,+32.9% shares
+QXO,2011-12-31,dilution,+2823.5% shares
+QXO,2012-12-31,dilution,+9.1% shares
+QXO,2013-12-31,buyback,-96.6% shares
+QXO,2015-12-31,dilution,+9.5% shares
+QXO,2021-12-31,dilution,+11.7% shares
+QXO,2023-12-31,buyback,-87.3% shares
+QXO,2024-06-06,split,0.125:1
+QXO,2024-12-31,dilution,+30950.2% shares
+QXO,2025-12-31,dilution,+200.5% shares
+R,1985-03-20,split,2:1
+R,1986-06-02,split,1.5:1
+R,2010-12-31,buyback,-5.8% shares
+R,2023-12-31,buyback,-8.6% shares
+R,2025-12-31,buyback,-5.5% shares
+RARE,2021-12-31,dilution,+11.4% shares
+RARE,2023-12-31,dilution,+5.1% shares
+RARE,2024-12-31,dilution,+23.1% shares
+RARE,2025-12-31,dilution,+9.0% shares
+RBA,2004-05-07,split,2:1
+RBA,2008-04-28,split,3:1
+RBA,2023-12-31,dilution,+50.3% shares
+RBA,2024-12-31,dilution,+10.2% shares
+RBC,2022-04-02,dilution,+8.6% shares
+RBC,2023-04-01,dilution,+6.4% shares
+RBLX,2020-12-31,dilution,+11.7% shares
+RBLX,2021-12-31,dilution,+177.8% shares
+RBLX,2022-12-31,dilution,+17.7% shares
+RBLX,2024-12-31,dilution,+5.0% shares
+RBLX,2025-12-31,dilution,+6.5% shares
+RBRK,2025-01-31,dilution,+154.5% shares
+RBRK,2026-01-31,dilution,+27.3% shares
+RCL,1998-08-03,split,2:1
+RCL,2021-12-31,dilution,+17.6% shares
+RCL,2023-12-31,dilution,+11.0% shares
+RDDT,2024-12-31,dilution,+146.0% shares
+RDDT,2025-12-31,dilution,+38.9% shares
+REG,2018-12-31,dilution,+6.3% shares
+REGN,2011-12-31,dilution,+9.3% shares
+REGN,2012-12-31,dilution,+27.3% shares
+REGN,2025-12-31,buyback,-5.6% shares
+REXR,2015-12-31,dilution,+69.1% shares
+REXR,2016-12-31,dilution,+16.5% shares
+REXR,2017-12-31,dilution,+13.7% shares
+REXR,2018-12-31,dilution,+22.0% shares
+REXR,2019-12-31,dilution,+22.3% shares
+REXR,2020-12-31,dilution,+13.5% shares
+REXR,2021-12-31,dilution,+15.6% shares
+REXR,2022-12-31,dilution,+22.1% shares
+REXR,2023-12-31,dilution,+18.8% shares
+REXR,2024-12-31,dilution,+7.6% shares
+REXR,2025-12-31,dilution,+6.4% shares
+REYN,2020-12-31,dilution,+31.5% shares
+RF,1984-06-04,split,2:1
+RF,1986-06-02,split,2:1
+RF,1993-03-01,split,1.1:1
+RF,1997-06-16,split,2:1
+RF,2004-07-01,split,1.2346:1
+RF,2009-12-31,dilution,+42.3% shares
+RF,2010-12-31,dilution,+24.1% shares
+RF,2012-12-31,dilution,+10.3% shares
+RF,2016-12-31,buyback,-5.5% shares
+RF,2018-12-31,buyback,-8.0% shares
+RF,2019-12-31,buyback,-9.3% shares
+RGEN,2016-12-31,buyback,-99.9% shares
+RGEN,2017-12-31,dilution,+114712.8% shares
+RGEN,2018-12-31,dilution,+16.1% shares
+RGEN,2019-12-31,dilution,+8.2% shares
+RGEN,2020-12-31,buyback,-99.9% shares
+RGEN,2021-12-31,dilution,+6.3% shares
+RGLD,2010-06-30,dilution,+22.9% shares
+RGLD,2011-06-30,dilution,+25.8% shares
+RGLD,2013-06-30,dilution,+10.4% shares
+RGLD,2025-12-31,dilution,+5.8% shares
+RH,2013-02-02,dilution,+2014606.8% shares
+RH,2014-02-01,dilution,+328.6% shares
+RH,2018-02-03,buyback,-33.9% shares
+RH,2020-02-01,buyback,-8.4% shares
+RH,2021-01-30,dilution,+12.4% shares
+RH,2022-01-29,dilution,+14.0% shares
+RH,2023-01-28,buyback,-14.6% shares
+RH,2024-02-03,buyback,-18.7% shares
+RH,2025-02-01,buyback,-7.4% shares
+RHI,1983-08-16,split,2:1
+RHI,1984-05-22,split,2:1
+RHI,1987-07-06,split,2:1
+RHI,1988-03-18,split,1.5:1
+RHI,1994-08-29,split,2:1
+RHI,1996-06-10,split,2:1
+RHI,1997-09-29,split,1.5:1
+RHI,2000-06-13,split,2:1
+RITM,2014-10-20,split,0.5:1
+RITM,2014-12-31,dilution,+8.5% shares
+RITM,2015-12-31,dilution,+45.4% shares
+RITM,2016-12-31,dilution,+17.5% shares
+RITM,2017-12-31,dilution,+27.6% shares
+RITM,2018-12-31,dilution,+12.7% shares
+RITM,2019-12-31,dilution,+19.2% shares
+RITM,2021-12-31,dilution,+12.6% shares
+RITM,2025-12-31,dilution,+9.3% shares
+RIVN,2021-12-31,dilution,+102.0% shares
+RIVN,2022-12-31,dilution,+347.5% shares
+RIVN,2024-12-31,dilution,+7.0% shares
+RIVN,2025-12-31,dilution,+17.1% shares
+RJF,1991-04-22,split,1.5:1
+RJF,1992-02-04,split,1.5:1
+RJF,1993-11-16,split,1.5:1
+RJF,1997-04-04,split,1.5:1
+RJF,1998-04-03,split,1.5:1
+RJF,2004-03-25,split,1.5:1
+RJF,2006-03-23,split,1.5:1
+RJF,2012-09-30,dilution,+7.3% shares
+RJF,2013-09-30,dilution,+6.6% shares
+RJF,2019-09-30,dilution,+45.2% shares
+RJF,2021-09-22,split,1.5:1
+RKLB,2021-12-31,dilution,+178.3% shares
+RKLB,2022-12-31,dilution,+122.1% shares
+RKLB,2025-12-31,dilution,+7.0% shares
+RKT,2021-12-31,dilution,+1611.5% shares
+RKT,2024-12-31,buyback,-92.9% shares
+RKT,2025-12-31,dilution,+837.6% shares
+RL,2020-03-28,buyback,-5.5% shares
+RL,2023-04-01,buyback,-7.1% shares
+RLI,1981-01-19,split,1.25:1
+RLI,1985-07-16,split,1.66667:1
+RLI,1986-07-16,split,1.5:1
+RLI,1995-06-22,split,1.25:1
+RLI,1998-06-22,split,1.25:1
+RLI,2002-10-16,split,2:1
+RLI,2011-12-31,dilution,+101.8% shares
+RLI,2012-12-31,buyback,-99.9% shares
+RLI,2013-12-31,dilution,+100720.2% shares
+RLI,2014-01-16,split,2:1
+RLI,2022-12-31,dilution,+100.4% shares
+RLI,2025-01-16,split,2:1
+RMD,1998-11-17,split,2:1
+RMD,2000-04-03,split,2:1
+RMD,2005-10-03,split,2:1
+RMD,2010-08-31,split,2:1
+RMD,2012-06-30,buyback,-5.0% shares
+RNG,2020-12-31,dilution,+6.7% shares
+RNR,2002-05-31,split,3:1
+RNR,2010-12-31,buyback,-9.1% shares
+RNR,2011-12-31,buyback,-8.8% shares
+RNR,2013-12-31,buyback,-11.0% shares
+RNR,2014-12-31,buyback,-9.4% shares
+RNR,2015-12-31,dilution,+8.9% shares
+RNR,2019-12-31,dilution,+8.6% shares
+RNR,2020-12-31,dilution,+9.3% shares
+RNR,2022-12-31,buyback,-8.8% shares
+RNR,2023-12-31,dilution,+10.6% shares
+RNR,2024-12-31,dilution,+7.8% shares
+RNR,2025-12-31,buyback,-9.5% shares
+ROIV,2023-03-31,dilution,+6.4% shares
+ROIV,2024-03-31,dilution,+16.6% shares
+ROIV,2025-03-31,buyback,-12.7% shares
+ROK,1983-06-20,split,2:1
+ROK,1987-04-14,split,2:1
+ROK,2008-09-30,buyback,-8.1% shares
+ROK,2019-09-30,buyback,-6.0% shares
+ROKU,2020-12-31,dilution,+7.6% shares
+ROKU,2021-12-31,dilution,+14.3% shares
+ROL,1981-03-11,split,2:1
+ROL,1984-07-02,split,2.198:1
+ROL,1992-12-11,split,1.5:1
+ROL,2003-03-11,split,1.5:1
+ROL,2005-03-11,split,1.5:1
+ROL,2007-12-11,split,1.5:1
+ROL,2010-12-13,split,1.5:1
+ROL,2011-12-31,buyback,-99.9% shares
+ROL,2013-12-31,dilution,+149676.1% shares
+ROL,2015-03-11,split,1.5:1
+ROL,2016-12-31,dilution,+49.8% shares
+ROL,2018-12-11,split,1.5:1
+ROL,2018-12-31,dilution,+50.1% shares
+ROL,2020-12-11,split,1.5:1
+ROP,1993-09-21,split,2:1
+ROP,1997-08-04,split,2:1
+ROP,2005-08-29,split,2:1
+ROST,1997-03-06,split,2:1
+ROST,1999-09-23,split,2:1
+ROST,2003-12-19,split,2:1
+ROST,2010-01-30,dilution,+90.4% shares
+ROST,2011-12-16,split,2:1
+ROST,2014-02-01,dilution,+93.7% shares
+ROST,2015-06-12,split,2:1
+RPM,1983-11-09,split,1.25:1
+RPM,1984-12-03,split,1.25:1
+RPM,1987-11-09,split,1.5:1
+RPM,1990-12-10,split,1.25:1
+RPM,1992-12-07,split,1.5:1
+RPM,1995-12-11,split,1.25:1
+RPM,1997-12-09,split,1.25:1
+RPRX,2021-12-31,dilution,+10.5% shares
+RPRX,2022-12-31,dilution,+5.6% shares
+RPRX,2023-12-31,dilution,+37.7% shares
+RRC,1992-11-23,split,0.0666667:1
+RRC,2005-12-05,split,1.5:1
+RRC,2016-12-31,dilution,+14.1% shares
+RRC,2017-12-31,dilution,+29.3% shares
+RRX,1980-05-01,split,1.25:1
+RRX,1983-12-01,split,1.5:1
+RRX,1985-03-25,split,1.05:1
+RRX,1987-06-01,split,1.5:1
+RRX,1988-05-17,split,1.5:1
+RRX,1994-08-15,split,2:1
+RRX,2010-01-02,dilution,+8.7% shares
+RRX,2010-12-31,dilution,+11.0% shares
+RRX,2013-12-28,dilution,+7.8% shares
+RRX,2022-01-01,dilution,+16.9% shares
+RRX,2022-12-31,dilution,+40.7% shares
+RS,1997-06-30,split,1.5:1
+RS,1999-09-27,split,1.5:1
+RS,2006-07-20,split,2:1
+RS,2019-12-31,buyback,-6.3% shares
+RS,2025-12-31,buyback,-6.0% shares
+RSG,2007-03-19,split,1.5:1
+RSG,2009-12-31,dilution,+92.0% shares
+RTX,1965-11-01,split,1.5:1
+RTX,1976-05-19,split,2:1
+RTX,1984-06-11,split,2:1
+RTX,1996-12-11,split,2:1
+RTX,1999-05-18,split,2:1
+RTX,2005-06-13,split,2:1
+RTX,2016-12-31,buyback,-6.5% shares
+RTX,2019-12-31,dilution,+6.6% shares
+RTX,2020-04-03,split,1.589:1
+RTX,2020-12-31,dilution,+57.2% shares
+RTX,2021-12-31,dilution,+11.1% shares
+RTX,2024-12-31,buyback,-6.4% shares
+RVMD,2021-12-31,dilution,+32.7% shares
+RVMD,2022-12-31,dilution,+10.7% shares
+RVMD,2023-12-31,dilution,+40.3% shares
+RVMD,2024-12-31,dilution,+48.2% shares
+RVMD,2025-12-31,dilution,+13.3% shares
+RVTY,1980-02-04,split,2:1
+RVTY,1982-02-02,split,2:1
+RVTY,1992-05-11,split,2:1
+RVTY,2001-06-04,split,2:1
+RVTY,2023-01-01,dilution,+8.4% shares
+RVTY,2025-12-28,buyback,-5.1% shares
+RYN,2003-06-13,split,1.5:1
+RYN,2003-11-12,split,1.187:1
+RYN,2005-10-18,split,1.5:1
+RYN,2011-08-25,split,1.5:1
+RYN,2014-06-30,split,1.339:1
+RYN,2020-12-31,dilution,+5.7% shares
+RYN,2021-12-31,dilution,+6.1% shares
+S,2021-01-31,dilution,+8.5% shares
+S,2022-01-31,dilution,+390.5% shares
+S,2023-01-31,dilution,+59.6% shares
+S,2024-01-31,dilution,+6.2% shares
+S,2025-01-31,dilution,+6.7% shares
+SAIA,2010-12-31,dilution,+20.1% shares
+SAIA,2011-12-31,dilution,+50.2% shares
+SAIA,2013-06-14,split,1.5:1
+SAIC,2020-01-31,dilution,+33.8% shares
+SAIC,2025-01-31,buyback,-6.0% shares
+SAIC,2026-01-30,buyback,-7.9% shares
+SAIL,2026-01-31,dilution,+550.0% shares
+SAM,2016-12-31,buyback,-5.4% shares
+SAM,2025-12-27,buyback,-7.0% shares
+SARO,2024-12-31,dilution,+5.3% shares
+SARO,2025-12-31,dilution,+15.4% shares
+SBUX,1993-09-30,split,2:1
+SBUX,1995-12-04,split,2:1
+SBUX,1999-03-22,split,2:1
+SBUX,2001-04-30,split,2:1
+SBUX,2005-10-24,split,2:1
+SBUX,2013-09-29,dilution,+97.2% shares
+SBUX,2015-04-09,split,2:1
+SBUX,2019-09-29,buyback,-11.6% shares
+SCCO,2006-10-03,split,2:1
+SCCO,2008-07-10,split,3:1
+SCCO,2019-12-31,buyback,-8.9% shares
+SCCO,2024-08-09,split,1.005:1
+SCCO,2024-11-06,split,1.006:1
+SCCO,2025-05-02,split,1.009:1
+SCCO,2025-08-15,split,1.01:1
+SCCO,2025-11-12,split,1.008:1
+SCCO,2026-02-10,split,1.008:1
+SCCO,2026-05-13,split,1.01:1
+SCHW,1991-12-03,split,1.5:1
+SCHW,1993-06-02,split,1.5:1
+SCHW,1995-03-02,split,1.5:1
+SCHW,1995-09-05,split,2:1
+SCHW,1997-09-16,split,1.5:1
+SCHW,1998-12-14,split,1.5:1
+SCHW,1999-07-02,split,2:1
+SCHW,2000-05-31,split,1.5:1
+SCHW,2008-12-31,buyback,-5.3% shares
+SCHW,2020-12-31,dilution,+8.7% shares
+SCHW,2021-12-31,dilution,+32.2% shares
+SCI,1981-06-12,split,1.33333:1
+SCI,1983-01-21,split,1.5:1
+SCI,1984-10-31,split,1.5:1
+SCI,1985-11-01,split,1.5:1
+SCI,1987-02-02,split,1.5:1
+SCI,1992-07-01,split,1.5:1
+SCI,1996-09-03,split,2:1
+SCI,2011-12-31,buyback,-5.6% shares
+SCI,2012-12-31,buyback,-7.4% shares
+SCI,2022-12-31,buyback,-5.9% shares
+SEB,2024-12-31,buyback,-13.1% shares
+SEIC,1983-02-23,split,2:1
+SEIC,1987-06-23,split,2:1
+SEIC,1993-07-07,split,2:1
+SEIC,2000-06-20,split,3:1
+SEIC,2001-03-01,split,2:1
+SEIC,2007-06-22,split,2:1
+SF,1992-10-06,split,1.05:1
+SF,1993-10-08,split,1.05:1
+SF,1995-02-06,split,1.05:1
+SF,1996-02-02,split,1.05:1
+SF,1997-01-31,split,1.05:1
+SF,1998-02-10,split,1.05:1
+SF,1999-02-09,split,1.05:1
+SF,2004-09-16,split,1.33333:1
+SF,2008-06-13,split,1.5:1
+SF,2011-04-06,split,1.5:1
+SF,2013-12-31,dilution,+16.8% shares
+SF,2018-12-31,dilution,+50.5% shares
+SF,2020-12-17,split,1.5:1
+SF,2026-02-27,split,1.5:1
+SFD,2010-05-02,dilution,+11.3% shares
+SFD,2011-05-01,dilution,+6.4% shares
+SFD,2013-04-28,buyback,-10.5% shares
+SFD,2023-01-01,dilution,+159.6% shares
+SFM,2012-12-30,dilution,+25.6% shares
+SFM,2013-12-29,dilution,+14.8% shares
+SFM,2014-12-28,dilution,+10.4% shares
+SFM,2017-12-31,buyback,-7.9% shares
+SFM,2018-12-30,buyback,-5.9% shares
+SFM,2019-12-29,buyback,-7.7% shares
+SFM,2023-01-01,buyback,-6.0% shares
+SFM,2023-12-31,buyback,-5.3% shares
+SGI,2011-12-31,buyback,-5.1% shares
+SGI,2012-12-31,buyback,-9.0% shares
+SGI,2017-12-31,buyback,-8.5% shares
+SGI,2018-12-31,dilution,+302.9% shares
+SGI,2020-11-24,split,4:1
+SGI,2022-12-31,buyback,-11.7% shares
+SGI,2025-12-31,dilution,+17.4% shares
+SHC,2021-12-31,dilution,+17.5% shares
+SHW,1981-03-31,split,2:1
+SHW,1983-03-31,split,2:1
+SHW,1986-04-01,split,2:1
+SHW,1991-04-01,split,2:1
+SHW,1997-03-31,split,2:1
+SHW,2008-12-31,buyback,-99.9% shares
+SHW,2019-12-31,dilution,+195.1% shares
+SHW,2021-04-01,split,3:1
+SIRI,2009-12-31,dilution,+65.3% shares
+SIRI,2010-12-31,dilution,+78.2% shares
+SIRI,2012-12-31,dilution,+5.7% shares
+SIRI,2013-12-31,buyback,-7.1% shares
+SIRI,2014-12-31,buyback,-8.2% shares
+SIRI,2015-12-31,buyback,-7.3% shares
+SIRI,2016-12-31,buyback,-8.7% shares
+SIRI,2021-12-31,buyback,-6.5% shares
+SIRI,2022-12-31,buyback,-91.1% shares
+SIRI,2024-09-10,split,0.1:1
+SIRI,2024-12-31,buyback,-6.6% shares
+SIRI,2025-12-31,dilution,+5.6% shares
+SITE,2017-01-01,dilution,+113.3% shares
+SITE,2017-12-31,dilution,+39.2% shares
+SJM,2010-04-30,dilution,+39.2% shares
+SJM,2016-04-30,dilution,+15.5% shares
+SLB,1997-07-14,split,2:1
+SLB,2006-04-10,split,2:1
+SLB,2011-12-31,dilution,+7.8% shares
+SLB,2016-12-31,dilution,+6.4% shares
+SLGN,2005-09-16,split,2:1
+SLGN,2010-05-04,split,2:1
+SLGN,2011-12-31,buyback,-8.0% shares
+SLGN,2013-12-31,buyback,-7.5% shares
+SLGN,2015-12-31,dilution,+92.3% shares
+SLGN,2017-05-30,split,2:1
+SLGN,2017-12-31,buyback,-7.6% shares
+SLM,1989-07-03,split,2.5:1
+SLM,1998-01-05,split,3.5:1
+SLM,2003-06-23,split,3:1
+SLM,2008-12-31,dilution,+13.2% shares
+SLM,2011-12-31,dilution,+7.2% shares
+SLM,2012-12-31,buyback,-7.7% shares
+SLM,2013-12-31,buyback,-7.1% shares
+SLM,2014-05-01,split,2.798:1
+SLM,2020-12-31,buyback,-10.1% shares
+SLM,2021-12-31,buyback,-17.4% shares
+SLM,2022-12-31,buyback,-18.3% shares
+SLM,2023-12-31,buyback,-10.5% shares
+SLM,2024-12-31,buyback,-6.0% shares
+SMCI,2014-06-30,dilution,+5.9% shares
+SMCI,2015-06-30,dilution,+7.7% shares
+SMCI,2022-06-30,dilution,+902.0% shares
+SMCI,2024-06-30,dilution,+7.6% shares
+SMCI,2024-10-01,split,10:1
+SMG,2005-11-10,split,2:1
+SMG,2012-09-30,buyback,-6.2% shares
+SMG,2018-09-30,buyback,-5.1% shares
+SMMT,2019-01-31,dilution,+31.6% shares
+SMMT,2019-12-31,dilution,+90.5% shares
+SMMT,2020-12-31,dilution,+111.8% shares
+SMMT,2021-12-31,dilution,+89.5% shares
+SMMT,2022-12-31,dilution,+46.8% shares
+SMMT,2023-12-31,dilution,+220.5% shares
+SMMT,2024-12-31,dilution,+16.0% shares
+SNA,1979-05-14,split,2:1
+SNA,1986-07-28,split,2:1
+SNA,1996-09-11,split,1.5:1
+SNDR,2017-12-31,dilution,+9.2% shares
+SNOW,2021-01-31,dilution,+215.8% shares
+SNOW,2022-01-31,dilution,+112.0% shares
+SNOW,2023-01-31,dilution,+6.1% shares
+SNPS,1995-09-11,split,2:1
+SNPS,2003-09-24,split,2:1
+SNPS,2025-10-31,dilution,+6.2% shares
+SNX,2010-11-30,dilution,+5.1% shares
+SNX,2019-11-30,dilution,+22.9% shares
+SNX,2020-12-01,split,2:1
+SNX,2021-11-30,dilution,+22.4% shares
+SNX,2022-11-30,dilution,+52.3% shares
+SNX,2024-11-30,buyback,-7.5% shares
+SO,1994-03-01,split,2:1
+SO,2001-04-03,split,1.63693:1
+SO,2010-12-31,dilution,+5.2% shares
+SO,2017-12-31,dilution,+5.2% shares
+SOFI,2020-12-31,dilution,+12.5% shares
+SOFI,2021-12-31,dilution,+613.2% shares
+SOFI,2022-12-31,dilution,+71.0% shares
+SOFI,2024-12-31,dilution,+16.5% shares
+SOFI,2025-12-31,dilution,+13.7% shares
+SON,1981-04-16,split,2:1
+SON,1985-06-11,split,2:1
+SON,1987-06-11,split,2:1
+SON,1993-06-11,split,2:1
+SON,1995-05-15,split,1.05:1
+SON,1998-05-13,split,1.1:1
+SPG,2009-08-13,split,1.00722:1
+SPG,2009-11-12,split,1.0063:1
+SPG,2009-12-31,dilution,+18.9% shares
+SPG,2010-12-31,dilution,+8.5% shares
+SPG,2014-05-29,split,1.063:1
+SPG,2021-12-31,dilution,+6.4% shares
+SPGI,1983-06-02,split,2:1
+SPGI,1996-04-29,split,2:1
+SPGI,1999-03-09,split,2:1
+SPGI,2005-05-18,split,2:1
+SPGI,2008-12-31,buyback,-7.6% shares
+SPGI,2012-12-31,buyback,-6.3% shares
+SPGI,2022-12-31,dilution,+31.7% shares
+SPGI,2026-07-01,split,1.057:1
+SRE,2018-12-31,dilution,+7.0% shares
+SRE,2021-12-31,dilution,+114.2% shares
+SRE,2023-08-22,split,2:1
+SRPT,2010-12-31,dilution,+19.5% shares
+SRPT,2011-12-31,dilution,+16.5% shares
+SRPT,2012-07-12,split,0.166667:1
+SRPT,2017-12-31,buyback,-54.6% shares
+SRPT,2018-12-31,dilution,+12.6% shares
+SRPT,2019-12-31,dilution,+11.1% shares
+SRPT,2020-12-31,dilution,+5.9% shares
+SRPT,2022-12-31,dilution,+7.7% shares
+SRPT,2023-12-31,dilution,+5.5% shares
+SRPT,2024-12-31,dilution,+16.8% shares
+SRPT,2025-12-31,buyback,-7.2% shares
+SSB,1997-06-02,split,2:1
+SSB,1998-10-29,split,1.1:1
+SSB,2002-11-20,split,1.1:1
+SSB,2004-12-20,split,1.05:1
+SSB,2007-03-07,split,1.05:1
+SSB,2010-12-31,dilution,+5.0% shares
+SSB,2011-12-31,dilution,+8.1% shares
+SSB,2012-12-31,dilution,+7.6% shares
+SSB,2013-12-31,dilution,+35.7% shares
+SSB,2014-12-31,dilution,+20.3% shares
+SSB,2017-12-31,dilution,+23.5% shares
+SSB,2018-12-31,dilution,+22.9% shares
+SSB,2019-12-31,buyback,-5.4% shares
+SSB,2020-12-31,dilution,+58.2% shares
+SSB,2021-12-31,dilution,+28.7% shares
+SSB,2022-12-31,dilution,+6.1% shares
+SSB,2025-12-31,dilution,+32.2% shares
+SSD,2002-08-19,split,2:1
+SSD,2004-11-19,split,2:1
+SSNC,2010-12-31,dilution,+114708.4% shares
+SSNC,2011-12-31,dilution,+10.4% shares
+SSNC,2014-12-31,dilution,+104.0% shares
+SSNC,2015-12-31,dilution,+9.3% shares
+SSNC,2016-06-27,split,2:1
+SSNC,2016-12-31,dilution,+7.8% shares
+SSNC,2018-12-31,dilution,+15.2% shares
+SSNC,2019-12-31,dilution,+8.4% shares
+ST,2010-12-31,dilution,+20.1% shares
+STAG,2015-12-31,dilution,+22.6% shares
+STAG,2016-12-31,dilution,+6.9% shares
+STAG,2017-12-31,dilution,+27.0% shares
+STAG,2018-12-31,dilution,+15.3% shares
+STAG,2019-12-31,dilution,+21.1% shares
+STAG,2020-12-31,dilution,+18.7% shares
+STAG,2021-12-31,dilution,+10.0% shares
+STAG,2022-12-31,dilution,+9.0% shares
+STE,1995-08-25,split,2:1
+STE,1998-08-25,split,2:1
+STE,2022-03-31,dilution,+14.5% shares
+STLD,2006-11-21,split,2:1
+STLD,2008-03-31,split,2:1
+STLD,2010-12-31,dilution,+16.9% shares
+STLD,2019-12-31,buyback,-6.1% shares
+STLD,2022-12-31,buyback,-10.6% shares
+STLD,2023-12-31,buyback,-9.3% shares
+STLD,2024-12-31,buyback,-6.7% shares
+STT,1982-05-20,split,2:1
+STT,1983-05-19,split,2:1
+STT,1985-08-16,split,2:1
+STT,1986-08-06,split,2:1
+STT,1992-05-14,split,2:1
+STT,1997-05-29,split,2:1
+STT,2001-05-31,split,2:1
+STT,2008-12-31,dilution,+13.8% shares
+STT,2009-12-31,dilution,+13.9% shares
+STT,2010-12-31,dilution,+5.0% shares
+STT,2013-12-31,buyback,-5.4% shares
+STT,2014-12-31,buyback,-5.1% shares
+STT,2023-12-31,buyback,-11.8% shares
+STT,2024-12-31,buyback,-7.5% shares
+STWD,2011-12-31,dilution,+72.7% shares
+STWD,2012-12-31,dilution,+31.6% shares
+STWD,2013-12-31,dilution,+46.4% shares
+STWD,2014-02-03,split,1.2402:1
+STWD,2014-12-31,dilution,+31.4% shares
+STWD,2015-12-31,dilution,+7.0% shares
+STWD,2017-12-31,dilution,+8.4% shares
+STWD,2018-12-31,dilution,+10.1% shares
+STWD,2021-12-31,dilution,+5.1% shares
+STWD,2022-12-31,dilution,+6.4% shares
+STWD,2025-12-31,dilution,+9.2% shares
+STX,2010-07-02,dilution,+5.3% shares
+STX,2011-07-01,buyback,-9.1% shares
+STX,2012-06-29,buyback,-5.6% shares
+STX,2013-06-28,buyback,-13.4% shares
+STX,2014-06-27,buyback,-9.2% shares
+STX,2016-07-01,buyback,-8.8% shares
+STX,2020-07-03,buyback,-7.0% shares
+STX,2021-07-02,buyback,-7.5% shares
+STX,2022-07-01,buyback,-8.6% shares
+STX,2023-06-30,buyback,-7.6% shares
+STZ,1992-07-21,split,1.5:1
+STZ,2001-05-15,split,2:1
+STZ,2002-05-14,split,2:1
+STZ,2005-05-16,split,2:1
+SUI,2011-12-31,dilution,+10.3% shares
+SUI,2012-12-31,dilution,+28.3% shares
+SUI,2013-12-31,dilution,+26.9% shares
+SUI,2014-12-31,dilution,+56.1% shares
+SUI,2016-12-31,dilution,+23.5% shares
+SUI,2017-12-31,dilution,+15.7% shares
+SUI,2018-12-31,dilution,+6.9% shares
+SUI,2019-12-31,dilution,+8.4% shares
+SUI,2020-12-31,dilution,+9.7% shares
+SUI,2021-12-31,dilution,+18.1% shares
+SUI,2022-12-31,dilution,+6.8% shares
+SW,2024-12-31,dilution,+49.6% shares
+SW,2025-12-31,dilution,+35.2% shares
+SWK,1980-05-21,split,2:1
+SWK,1986-09-30,split,1.5:1
+SWK,1996-06-04,split,2:1
+SWK,2011-01-01,dilution,+86.8% shares
+SWK,2011-12-31,dilution,+13.3% shares
+SWK,2022-12-31,buyback,-5.1% shares
+SWKS,1999-02-19,split,1.5:1
+SWKS,2000-04-20,split,2:1
+SWKS,2010-10-01,dilution,+7.7% shares
+SYF,2014-12-31,dilution,+7.4% shares
+SYF,2015-12-31,dilution,+10.3% shares
+SYF,2018-12-31,buyback,-6.6% shares
+SYF,2019-12-31,buyback,-9.8% shares
+SYF,2020-12-31,buyback,-12.3% shares
+SYF,2022-12-31,buyback,-15.1% shares
+SYF,2023-12-31,buyback,-12.4% shares
+SYF,2024-12-31,buyback,-5.4% shares
+SYF,2025-12-31,buyback,-6.7% shares
+SYK,1980-11-12,split,1.5:1
+SYK,1982-11-15,split,1.5:1
+SYK,1985-09-17,split,1.5:1
+SYK,1987-06-12,split,2:1
+SYK,1989-06-20,split,1.5:1
+SYK,1991-06-14,split,2:1
+SYK,1996-06-11,split,2:1
+SYK,2000-05-15,split,2:1
+SYK,2004-05-17,split,2:1
+SYY,1979-06-22,split,1.5:1
+SYY,1980-12-23,split,1.5:1
+SYY,1982-06-28,split,2:1
+SYY,1986-03-31,split,2:1
+SYY,1989-10-18,split,2:1
+SYY,1992-06-22,split,2:1
+SYY,1998-03-23,split,2:1
+SYY,2000-12-18,split,2:1
+T,1987-05-26,split,3:1
+T,1993-05-26,split,2:1
+T,1998-03-20,split,2:1
+T,2013-12-31,buyback,-7.5% shares
+T,2015-12-31,dilution,+8.1% shares
+T,2016-12-31,dilution,+9.6% shares
+T,2018-12-31,dilution,+10.1% shares
+T,2019-12-31,dilution,+8.0% shares
+T,2022-04-11,split,1.324:1
+TAP,2007-10-04,split,2:1
+TAP,2016-12-31,dilution,+14.5% shares
+TAP,2025-12-31,buyback,-5.1% shares
+TDC,2014-12-31,buyback,-5.2% shares
+TDC,2015-12-31,buyback,-11.5% shares
+TDC,2016-12-31,buyback,-5.8% shares
+TDC,2019-12-31,buyback,-5.8% shares
+TDC,2022-12-31,buyback,-6.3% shares
+TDY,2016-01-03,buyback,-5.0% shares
+TDY,2022-01-02,dilution,+16.9% shares
+TDY,2023-01-01,dilution,+7.7% shares
+TECH,1997-11-18,split,2:1
+TECH,2000-12-04,split,2:1
+TECH,2021-06-30,dilution,+311.0% shares
+TECH,2022-11-30,split,4:1
+TEL,2009-09-25,buyback,-5.6% shares
+TEL,2016-09-30,buyback,-10.2% shares
+TEM,2024-12-31,dilution,+89.3% shares
+TEM,2025-12-31,dilution,+45.4% shares
+TER,1982-10-25,split,2:1
+TER,1983-08-01,split,2:1
+TER,1995-08-30,split,2:1
+TER,1999-09-01,split,2:1
+TER,2010-12-31,dilution,+30.6% shares
+TER,2014-12-31,buyback,-5.5% shares
+TER,2016-12-31,buyback,-5.0% shares
+TER,2019-12-31,buyback,-6.8% shares
+TER,2022-12-31,buyback,-7.6% shares
+TFC,1983-07-01,split,1.25:1
+TFC,1985-04-29,split,2:1
+TFC,1987-06-23,split,1.5:1
+TFC,1989-07-03,split,1.5:1
+TFC,1998-08-04,split,2:1
+TFC,2009-12-31,dilution,+15.0% shares
+TFC,2010-12-31,dilution,+10.3% shares
+TFC,2016-12-31,dilution,+7.5% shares
+TFC,2020-12-31,dilution,+66.6% shares
+TFSL,2009-09-30,buyback,-5.6% shares
+TFX,1980-12-16,split,2:1
+TFX,1981-09-16,split,1.5:1
+TFX,1986-06-17,split,2:1
+TFX,1991-06-17,split,1.5:1
+TFX,1997-06-17,split,2:1
+TFX,2013-12-31,dilution,+6.9% shares
+TFX,2014-12-31,dilution,+6.4% shares
+TFX,2025-12-31,buyback,-5.0% shares
+TGT,1981-12-01,split,2:1
+TGT,1983-07-25,split,2:1
+TGT,1996-07-18,split,3:1
+TGT,1998-05-01,split,2:1
+TGT,2000-07-20,split,2:1
+TGT,2009-01-31,buyback,-9.1% shares
+TGT,2012-01-28,buyback,-6.2% shares
+TGT,2017-01-28,buyback,-8.0% shares
+TGT,2018-02-03,buyback,-5.5% shares
+TGT,2023-01-28,buyback,-5.7% shares
+THC,1983-04-27,split,1.25:1
+THC,1991-09-16,split,2:1
+THC,2002-07-01,split,1.5:1
+THC,2009-12-31,dilution,+6.0% shares
+THC,2010-12-31,buyback,-72.4% shares
+THC,2011-12-31,buyback,-13.5% shares
+THC,2012-10-11,split,0.25:1
+THC,2012-12-31,buyback,-10.2% shares
+THC,2013-12-31,buyback,-6.7% shares
+THC,2023-12-31,buyback,-5.2% shares
+THC,2024-12-31,buyback,-6.6% shares
+THC,2025-12-31,buyback,-7.2% shares
+THG,2010-12-31,buyback,-9.4% shares
+THG,2019-12-31,buyback,-5.6% shares
+THG,2020-12-31,buyback,-6.2% shares
+THO,1986-04-01,split,1.5:1
+THO,1992-05-12,split,1.5:1
+THO,1998-04-07,split,1.5:1
+THO,2002-07-09,split,2:1
+THO,2004-01-27,split,2:1
+TJX,1997-06-27,split,2:1
+TJX,1998-06-26,split,2:1
+TJX,2002-05-09,split,2:1
+TJX,2009-01-31,buyback,-5.5% shares
+TJX,2010-01-30,dilution,+93.4% shares
+TJX,2012-02-03,split,2:1
+TJX,2017-01-28,dilution,+94.5% shares
+TJX,2018-11-07,split,2:1
+TKO,2024-12-31,dilution,+107.6% shares
+TKO,2025-12-31,dilution,+12.9% shares
+TKR,1988-09-01,split,2:1
+TKR,1997-06-02,split,2:1
+TKR,2014-07-01,split,1.397:1
+TKR,2015-12-31,buyback,-6.4% shares
+TKR,2016-12-31,buyback,-7.2% shares
+TLN,2015-12-31,dilution,+31.6% shares
+TLN,2022-12-31,buyback,-100.0% shares
+TLN,2025-12-31,buyback,-19.1% shares
+TMO,1984-01-04,split,1.5:1
+TMO,1985-09-17,split,1.5:1
+TMO,1986-11-03,split,1.5:1
+TMO,1993-10-29,split,1.5:1
+TMO,1995-05-25,split,1.5:1
+TMO,1996-06-06,split,1.5:1
+TMO,2011-12-31,buyback,-6.0% shares
+TMO,2014-12-31,dilution,+10.0% shares
+TMUS,2011-12-31,dilution,+50.3% shares
+TMUS,2013-05-01,split,0.5:1
+TMUS,2013-12-31,dilution,+26.5% shares
+TMUS,2014-12-31,dilution,+20.5% shares
+TMUS,2020-12-31,dilution,+33.7% shares
+TMUS,2021-12-31,dilution,+8.7% shares
+TNL,2011-12-31,buyback,-10.3% shares
+TNL,2012-12-31,buyback,-12.7% shares
+TNL,2013-12-31,buyback,-6.9% shares
+TNL,2014-12-31,buyback,-5.9% shares
+TNL,2015-12-31,buyback,-6.3% shares
+TNL,2016-12-31,buyback,-7.1% shares
+TNL,2017-12-31,buyback,-6.2% shares
+TNL,2018-06-01,split,2.215:1
+TNL,2019-12-31,buyback,-6.9% shares
+TNL,2020-12-31,buyback,-6.8% shares
+TNL,2023-12-31,buyback,-10.9% shares
+TNL,2024-12-31,buyback,-5.7% shares
+TNL,2025-12-31,buyback,-5.4% shares
+TOL,1987-02-27,split,1.5:1
+TOL,1987-04-21,split,2:1
+TOL,2002-04-01,split,2:1
+TOL,2005-07-11,split,2:1
+TOL,2018-10-31,buyback,-9.0% shares
+TOL,2020-10-31,buyback,-10.4% shares
+TOL,2022-10-31,buyback,-6.2% shares
+TOL,2023-10-31,buyback,-5.9% shares
+TOL,2024-10-31,buyback,-5.7% shares
+TOST,2021-12-31,dilution,+45.0% shares
+TOST,2022-12-31,dilution,+76.6% shares
+TOST,2024-12-31,dilution,+10.9% shares
+TPG,2024-12-31,dilution,+14.7% shares
+TPL,2007-07-13,split,5:1
+TPL,2022-12-31,dilution,+199.0% shares
+TPL,2023-12-31,dilution,+198.4% shares
+TPL,2024-03-27,split,3:1
+TPL,2025-12-23,split,3:1
+TPR,2002-07-05,split,2:1
+TPR,2003-10-02,split,2:1
+TPR,2005-04-05,split,2:1
+TPR,2009-06-27,buyback,-9.6% shares
+TPR,2023-07-01,buyback,-10.7% shares
+TREX,2012-12-31,dilution,+121.8% shares
+TREX,2014-05-08,split,2:1
+TREX,2016-12-31,dilution,+86.9% shares
+TREX,2018-06-19,split,2:1
+TREX,2018-12-31,dilution,+99.7% shares
+TREX,2020-09-15,split,2:1
+TRGP,2010-12-31,dilution,+71.1% shares
+TRGP,2011-12-31,dilution,+536.9% shares
+TRGP,2015-12-31,dilution,+27.3% shares
+TRGP,2016-12-31,dilution,+188.1% shares
+TRGP,2017-12-31,dilution,+34.0% shares
+TRGP,2018-12-31,dilution,+8.4% shares
+TRMB,2004-03-05,split,1.5:1
+TRMB,2007-02-23,split,2:1
+TRMB,2011-12-30,dilution,+103.8% shares
+TRMB,2013-03-21,split,2:1
+TROW,1990-01-02,split,2:1
+TROW,1993-12-01,split,2:1
+TROW,1996-05-01,split,2:1
+TROW,1998-05-01,split,2:1
+TROW,2006-06-26,split,2:1
+TRU,2015-12-31,dilution,+13.2% shares
+TRU,2016-12-31,dilution,+10.7% shares
+TRV,1994-06-07,split,2:1
+TRV,1998-05-12,split,2:1
+TRV,2008-12-31,buyback,-9.6% shares
+TRV,2009-12-31,buyback,-5.9% shares
+TRV,2010-12-31,buyback,-15.1% shares
+TRV,2011-12-31,buyback,-12.8% shares
+TRV,2012-12-31,buyback,-7.3% shares
+TRV,2014-12-31,buyback,-8.5% shares
+TRV,2015-12-31,buyback,-8.4% shares
+TRV,2016-12-31,buyback,-7.3% shares
+TSCO,2002-08-20,split,2:1
+TSCO,2003-08-22,split,2:1
+TSCO,2009-12-26,dilution,+97724.5% shares
+TSCO,2010-09-03,split,2:1
+TSCO,2011-12-31,dilution,+98.0% shares
+TSCO,2013-09-27,split,2:1
+TSCO,2022-12-31,dilution,+384.1% shares
+TSCO,2024-12-20,split,5:1
+TSLA,2016-12-31,dilution,+12.5% shares
+TSLA,2017-12-31,dilution,+15.1% shares
+TSLA,2018-12-31,dilution,+413.9% shares
+TSLA,2020-08-31,split,5:1
+TSLA,2020-12-31,dilution,+266.3% shares
+TSLA,2022-08-25,split,3:1
+TSN,1987-04-16,split,1.5:1
+TSN,1991-04-16,split,2:1
+TSN,1997-02-18,split,1.5:1
+TSN,2015-10-03,dilution,+13.5% shares
+TSN,2016-10-01,buyback,-5.6% shares
+TSN,2017-09-30,buyback,-5.1% shares
+TSN,2023-09-30,buyback,-21.8% shares
+TSN,2024-09-28,dilution,+25.4% shares
+TT,1987-07-13,split,2.5:1
+TT,1992-06-02,split,2:1
+TT,1997-09-03,split,1.5:1
+TT,2005-09-02,split,2:1
+TT,2009-12-31,dilution,+8.4% shares
+TT,2012-12-31,buyback,-8.5% shares
+TT,2013-12-02,split,1.252:1
+TT,2014-12-31,buyback,-8.0% shares
+TT,2020-03-02,split,1.289:1
+TTC,1987-06-11,split,1.5:1
+TTC,2003-04-15,split,2:1
+TTC,2005-04-13,split,2:1
+TTC,2009-10-31,buyback,-6.1% shares
+TTC,2010-10-31,dilution,+84.5% shares
+TTC,2012-07-02,split,2:1
+TTC,2014-10-31,dilution,+95.0% shares
+TTC,2016-09-19,split,2:1
+TTD,2015-12-31,dilution,+27.8% shares
+TTD,2016-12-31,dilution,+8.9% shares
+TTD,2017-12-31,dilution,+141.0% shares
+TTD,2019-12-31,dilution,+944.0% shares
+TTD,2021-06-17,split,10:1
+TTEK,1992-12-15,split,1.25:1
+TTEK,1993-11-15,split,1.25:1
+TTEK,1994-09-19,split,1.25:1
+TTEK,1995-06-26,split,1.25:1
+TTEK,1996-06-24,split,1.25:1
+TTEK,1997-12-02,split,1.25:1
+TTEK,1998-09-16,split,1.25:1
+TTEK,1999-06-16,split,1.25:1
+TTEK,2001-12-18,split,1.25:1
+TTEK,2015-09-27,buyback,-5.5% shares
+TTEK,2022-10-02,dilution,+395.3% shares
+TTEK,2024-09-09,split,5:1
+TTWO,2005-04-12,split,1.5:1
+TTWO,2015-03-31,buyback,-6.1% shares
+TTWO,2017-03-31,dilution,+12.8% shares
+TTWO,2018-03-31,dilution,+20.0% shares
+TTWO,2023-03-31,dilution,+36.9% shares
+TTWO,2024-03-31,dilution,+6.4% shares
+TW,2019-12-31,buyback,-27.4% shares
+TW,2020-12-31,dilution,+20.2% shares
+TW,2021-12-31,dilution,+10.1% shares
+TWLO,2020-12-31,dilution,+12.8% shares
+TWLO,2021-12-31,dilution,+18.7% shares
+TWLO,2022-12-31,dilution,+5.1% shares
+TWLO,2024-12-31,buyback,-9.5% shares
+TXN,1973-05-29,split,2:1
+TXN,1987-06-15,split,3:1
+TXN,1995-08-21,split,2:1
+TXN,1997-11-24,split,2:1
+TXN,1999-08-17,split,2:1
+TXN,2000-05-23,split,2:1
+TXN,2008-12-31,buyback,-8.5% shares
+TXRH,2005-09-26,split,2:1
+TXT,1987-05-29,split,2:1
+TXT,1997-06-02,split,2:1
+TXT,2007-08-27,split,2:1
+TXT,2011-01-01,dilution,+15.1% shares
+TXT,2018-12-29,buyback,-5.8% shares
+TXT,2020-01-04,buyback,-8.1% shares
+TXT,2022-12-31,buyback,-5.1% shares
+TXT,2023-12-30,buyback,-6.1% shares
+TXT,2024-12-28,buyback,-5.7% shares
+TXT,2026-01-03,buyback,-5.3% shares
+TYL,1985-04-12,split,2:1
+TYL,1990-05-15,split,3:1
+TYL,2011-12-31,buyback,-6.7% shares
+TYL,2013-12-31,dilution,+5.1% shares
+TYL,2016-12-31,dilution,+6.6% shares
+U,2020-12-31,dilution,+48.5% shares
+U,2021-12-31,dilution,+66.0% shares
+U,2022-12-31,dilution,+10.0% shares
+U,2023-12-31,dilution,+22.5% shares
+U,2025-12-31,dilution,+6.3% shares
+UA,2009-12-31,dilution,+100511.8% shares
+UA,2010-12-31,dilution,+102.5% shares
+UA,2012-12-31,dilution,+102.5% shares
+UA,2016-06-13,split,1.0071:1
+UA,2017-12-31,dilution,+99.5% shares
+UAA,2009-12-31,dilution,+100511.8% shares
+UAA,2010-12-31,dilution,+102.5% shares
+UAA,2012-07-10,split,2:1
+UAA,2012-12-31,dilution,+102.5% shares
+UAA,2014-04-15,split,2:1
+UAA,2016-04-08,split,2:1
+UAA,2017-12-31,dilution,+99.5% shares
+UAL,2010-12-31,dilution,+67.5% shares
+UAL,2011-12-31,dilution,+51.4% shares
+UAL,2012-12-31,buyback,-13.6% shares
+UAL,2013-12-31,dilution,+18.1% shares
+UAL,2016-12-31,buyback,-12.4% shares
+UAL,2017-12-31,buyback,-8.1% shares
+UAL,2018-12-31,buyback,-8.9% shares
+UAL,2019-12-31,buyback,-6.1% shares
+UAL,2020-12-31,dilution,+7.5% shares
+UAL,2021-12-31,dilution,+15.2% shares
+UBER,2018-12-31,dilution,+12.3% shares
+UBER,2019-12-31,dilution,+160.6% shares
+UBER,2020-12-31,dilution,+40.4% shares
+UBER,2021-12-31,dilution,+8.1% shares
+UBER,2023-12-31,dilution,+5.9% shares
+UDR,1983-08-01,split,1.5:1
+UDR,1993-05-06,split,2:1
+UDR,2009-12-31,dilution,+14.5% shares
+UDR,2010-12-31,dilution,+11.2% shares
+UDR,2012-12-31,dilution,+44.0% shares
+UDR,2019-12-31,dilution,+6.1% shares
+UDR,2022-12-31,dilution,+7.0% shares
+UGI,1990-07-02,split,2:1
+UGI,2003-04-02,split,1.5:1
+UGI,2005-05-25,split,2:1
+UGI,2012-09-30,dilution,+50.6% shares
+UGI,2014-09-08,split,1.5:1
+UGI,2020-09-30,dilution,+15.9% shares
+UHAL,2022-11-10,split,10:1
+UHAL,2024-03-31,dilution,+900.0% shares
+UHAL-B,2024-03-31,dilution,+900.0% shares
+UHS,1983-07-05,split,2:1
+UHS,1996-05-20,split,2:1
+UHS,2001-06-04,split,2:1
+UHS,2009-12-16,split,2:1
+UHS,2019-12-31,buyback,-5.0% shares
+UHS,2022-12-31,buyback,-11.8% shares
+UHS,2023-12-31,buyback,-5.0% shares
+UHS,2025-12-31,buyback,-5.1% shares
+UI,2011-06-30,buyback,-24.8% shares
+UI,2012-06-30,dilution,+24.7% shares
+UI,2013-06-30,dilution,+8.1% shares
+UI,2018-06-30,buyback,-5.9% shares
+UI,2019-06-30,buyback,-8.6% shares
+UI,2020-06-30,buyback,-8.5% shares
+ULTA,2023-01-28,buyback,-5.7% shares
+ULTA,2026-01-31,buyback,-5.1% shares
+UNH,1992-09-16,split,2:1
+UNH,1994-03-11,split,2:1
+UNH,2000-12-26,split,2:1
+UNH,2003-06-19,split,2:1
+UNH,2005-05-31,split,2:1
+UNH,2008-12-31,buyback,-8.8% shares
+UNM,1992-03-10,split,2:1
+UNM,1997-06-03,split,2:1
+UNM,2011-12-31,buyback,-7.2% shares
+UNM,2012-12-31,buyback,-7.2% shares
+UNM,2013-12-31,buyback,-5.6% shares
+UNM,2025-12-31,buyback,-8.1% shares
+UNP,1980-05-12,split,2:1
+UNP,1991-10-02,split,2:1
+UNP,1996-10-16,split,1.48721:1
+UNP,2008-05-29,split,2:1
+UNP,2012-12-31,dilution,+94.5% shares
+UNP,2014-06-09,split,2:1
+UNP,2018-12-31,buyback,-5.9% shares
+UNP,2019-12-31,buyback,-6.4% shares
+URI,2011-12-31,dilution,+21.3% shares
+URI,2012-12-31,dilution,+29.3% shares
+URI,2013-12-31,dilution,+12.1% shares
+URI,2015-12-31,buyback,-8.2% shares
+URI,2016-12-31,buyback,-8.9% shares
+URI,2019-12-31,buyback,-7.0% shares
+URI,2020-12-31,buyback,-6.2% shares
+USB,1979-02-22,split,1.25:1
+USB,1985-04-16,split,2:1
+USB,1989-04-17,split,2:1
+USB,1997-01-16,split,3:1
+USB,1999-04-16,split,3:1
+USB,2009-12-31,dilution,+5.9% shares
+USFD,2016-12-31,dilution,+19.3% shares
+USFD,2017-12-30,dilution,+10.8% shares
+USFD,2023-12-30,dilution,+10.6% shares
+USFD,2025-12-27,buyback,-5.7% shares
+UTHR,2009-09-23,split,2:1
+UTHR,2009-12-31,dilution,+22.6% shares
+UTHR,2010-12-31,dilution,+6.0% shares
+UTHR,2012-12-31,buyback,-10.3% shares
+UTHR,2015-12-31,buyback,-5.5% shares
+UTHR,2016-12-31,buyback,-8.6% shares
+UTHR,2021-12-31,dilution,+6.1% shares
+UWMC,2022-12-31,buyback,-94.2% shares
+UWMC,2024-12-31,dilution,+19.4% shares
+UWMC,2025-12-31,dilution,+1335.9% shares
+V,2015-03-19,split,4:1
+VEEV,2013-01-31,dilution,+23.5% shares
+VEEV,2014-01-31,dilution,+122.3% shares
+VEEV,2015-01-31,dilution,+112.0% shares
+VFC,1982-12-21,split,2:1
+VFC,1983-12-20,split,2:1
+VFC,1986-05-06,split,2:1
+VFC,1997-11-25,split,2:1
+VFC,2011-12-31,dilution,+303.5% shares
+VFC,2013-12-23,split,4:1
+VFC,2019-05-23,split,1.062:1
+VICI,2019-12-31,dilution,+19.6% shares
+VICI,2020-12-31,dilution,+16.3% shares
+VICI,2021-12-31,dilution,+12.9% shares
+VICI,2022-12-31,dilution,+52.4% shares
+VICI,2023-12-31,dilution,+15.5% shares
+VIRT,2016-12-31,dilution,+9.1% shares
+VIRT,2017-12-31,dilution,+62.4% shares
+VIRT,2018-12-31,dilution,+63.1% shares
+VIRT,2019-12-31,dilution,+11.6% shares
+VIRT,2020-12-31,dilution,+7.4% shares
+VIRT,2022-12-31,buyback,-11.8% shares
+VIRT,2023-12-31,buyback,-9.9% shares
+VIRT,2024-12-31,buyback,-6.6% shares
+VKTX,2023-12-31,dilution,+22.8% shares
+VKTX,2024-12-31,dilution,+15.6% shares
+VLO,2004-10-08,split,2:1
+VLO,2005-12-16,split,2:1
+VLO,2008-12-31,buyback,-9.5% shares
+VLO,2013-05-02,split,1.094:1
+VLO,2015-12-31,buyback,-5.7% shares
+VLO,2016-12-31,buyback,-7.2% shares
+VLO,2023-12-31,buyback,-10.9% shares
+VLO,2024-12-31,buyback,-8.8% shares
+VMC,1976-05-17,split,2:1
+VMC,1989-03-13,split,4:1
+VMC,1999-03-11,split,3:1
+VMC,2008-12-31,dilution,+11.6% shares
+VMC,2009-12-31,dilution,+7.6% shares
+VMC,2010-12-31,dilution,+7.2% shares
+VMI,1981-10-13,split,2:1
+VMI,1988-09-12,split,2:1
+VMI,1989-11-27,split,2:1
+VMI,1997-06-02,split,2:1
+VMI,2015-12-26,buyback,-9.7% shares
+VNO,1991-06-03,split,5:1
+VNO,1993-03-26,split,1.5:1
+VNO,1997-10-21,split,2:1
+VNO,1998-10-19,split,1.01317:1
+VNO,2009-12-31,dilution,+9.7% shares
+VNO,2010-12-31,dilution,+6.1% shares
+VNO,2015-01-16,split,1.10497:1
+VNO,2017-07-18,split,1.237:1
+VNOM,2024-12-31,dilution,+26.6% shares
+VNOM,2025-12-31,dilution,+51.7% shares
+VNT,2022-12-31,buyback,-5.3% shares
+VOYA,2013-12-31,dilution,+9.5% shares
+VOYA,2015-12-31,buyback,-10.9% shares
+VOYA,2016-12-31,buyback,-10.9% shares
+VOYA,2017-12-31,buyback,-9.2% shares
+VOYA,2018-12-31,buyback,-8.6% shares
+VOYA,2019-12-31,buyback,-12.6% shares
+VOYA,2020-12-31,buyback,-10.3% shares
+VOYA,2022-12-31,buyback,-12.4% shares
+VOYA,2024-12-31,buyback,-6.8% shares
+VRSK,2011-12-31,buyback,-7.0% shares
+VRSK,2023-12-31,buyback,-7.3% shares
+VRSN,1999-06-01,split,2:1
+VRSN,1999-12-07,split,2:1
+VRSN,2008-12-31,buyback,-15.6% shares
+VRSN,2010-12-31,buyback,-7.1% shares
+VRSN,2011-12-31,buyback,-6.7% shares
+VRSN,2014-12-31,buyback,-9.6% shares
+VRSN,2015-12-31,buyback,-5.6% shares
+VRSN,2024-12-31,buyback,-5.1% shares
+VRT,2020-12-31,dilution,+159.7% shares
+VRT,2021-12-31,dilution,+17.3% shares
+VRT,2022-12-31,dilution,+5.0% shares
+VRTX,2000-08-24,split,2:1
+VRTX,2009-12-31,dilution,+23.3% shares
+VRTX,2010-12-31,dilution,+15.7% shares
+VST,2018-12-31,dilution,+18.0% shares
+VST,2022-12-31,buyback,-12.4% shares
+VST,2023-12-31,buyback,-11.2% shares
+VST,2024-12-31,buyback,-6.0% shares
+VTR,2008-12-31,dilution,+13.7% shares
+VTR,2009-12-31,dilution,+9.2% shares
+VTR,2011-12-31,dilution,+46.4% shares
+VTR,2012-12-31,dilution,+27.6% shares
+VTR,2015-08-18,split,0.8757:1
+VTR,2015-12-31,dilution,+12.6% shares
+VTR,2025-12-31,dilution,+11.1% shares
+VTRS,1992-08-03,split,2:1
+VTRS,1995-08-16,split,1.5:1
+VTRS,2003-01-28,split,1.5:1
+VTRS,2003-10-09,split,1.5:1
+VTRS,2020-12-31,dilution,+16.4% shares
+VTRS,2021-12-31,dilution,+101.1% shares
+VVV,2017-09-30,dilution,+20.0% shares
+VVV,2023-09-30,buyback,-9.9% shares
+VVV,2024-09-30,buyback,-19.4% shares
+VZ,1986-04-18,split,2:1
+VZ,1990-05-02,split,2:1
+VZ,1998-06-30,split,2:1
+VZ,2006-11-20,split,1.03806:1
+VZ,2008-04-01,split,1.00465:1
+VZ,2010-07-02,split,1.06622:1
+VZ,2014-12-31,dilution,+38.5% shares
+W,2020-12-31,dilution,+7.6% shares
+W,2021-12-31,dilution,+5.1% shares
+W,2023-12-31,dilution,+7.5% shares
+W,2024-12-31,dilution,+7.9% shares
+WAB,2011-12-31,dilution,+101.3% shares
+WAB,2013-06-12,split,2:1
+WAB,2016-12-31,buyback,-6.0% shares
+WAB,2017-12-31,dilution,+5.4% shares
+WAB,2019-12-31,dilution,+83.7% shares
+WAB,2020-12-31,dilution,+7.4% shares
+WAL,2010-12-31,dilution,+27.6% shares
+WAL,2011-12-31,dilution,+8.1% shares
+WAL,2012-12-31,dilution,+14.5% shares
+WAL,2013-12-31,buyback,-6.9% shares
+WAL,2015-12-31,dilution,+8.8% shares
+WAL,2016-12-31,dilution,+9.1% shares
+WAT,1999-06-11,split,2:1
+WAT,2000-08-28,split,2:1
+WAT,2019-12-31,buyback,-12.2% shares
+WAT,2020-12-31,buyback,-8.4% shares
+WBD,2008-12-31,dilution,+14.6% shares
+WBD,2009-12-31,dilution,+32.0% shares
+WBD,2011-12-31,buyback,-5.6% shares
+WBD,2012-12-31,buyback,-6.2% shares
+WBD,2013-12-31,buyback,-5.0% shares
+WBD,2014-08-07,split,1.957:1
+WBD,2020-12-31,dilution,+86.1% shares
+WBD,2022-12-31,dilution,+192.2% shares
+WBD,2023-12-31,dilution,+25.6% shares
+WBS,1993-05-28,split,1.1:1
+WBS,1998-04-15,split,2:1
+WBS,2010-12-31,dilution,+128462.5% shares
+WBS,2011-12-31,dilution,+11.6% shares
+WBS,2022-12-31,dilution,+85.7% shares
+WCC,2010-12-31,dilution,+8.1% shares
+WCC,2011-12-31,dilution,+7.6% shares
+WCC,2015-12-31,buyback,-5.4% shares
+WCC,2019-12-31,buyback,-7.9% shares
+WCC,2020-12-31,dilution,+7.2% shares
+WCC,2021-12-31,dilution,+11.5% shares
+WDAY,2022-01-31,dilution,+7.2% shares
+WDC,1997-06-04,split,2:1
+WDC,2017-06-30,dilution,+22.3% shares
+WDC,2025-02-24,split,1.323:1
+WDC,2025-06-27,dilution,+10.1% shares
+WEC,1982-07-28,split,1.5:1
+WEC,1987-07-01,split,2:1
+WEC,1992-07-01,split,1.5:1
+WEC,2009-12-31,dilution,+99.6% shares
+WEC,2011-03-02,split,2:1
+WEC,2015-12-31,dilution,+19.9% shares
+WEC,2016-12-31,dilution,+16.2% shares
+WELL,1985-09-04,split,1.5:1
+WELL,2009-12-31,dilution,+21.5% shares
+WELL,2010-12-31,dilution,+11.9% shares
+WELL,2011-12-31,dilution,+36.0% shares
+WELL,2012-12-31,dilution,+29.6% shares
+WELL,2013-12-31,dilution,+23.4% shares
+WELL,2014-12-31,dilution,+10.4% shares
+WELL,2015-12-31,dilution,+13.5% shares
+WELL,2019-12-31,dilution,+7.6% shares
+WELL,2022-12-31,dilution,+9.0% shares
+WELL,2023-12-31,dilution,+11.5% shares
+WELL,2024-12-31,dilution,+17.4% shares
+WELL,2025-12-31,dilution,+11.6% shares
+WEN,2011-01-02,buyback,-8.5% shares
+WEN,2014-12-28,buyback,-5.6% shares
+WEN,2016-01-03,buyback,-12.6% shares
+WEN,2017-01-01,buyback,-18.9% shares
+WEN,2017-12-31,buyback,-5.4% shares
+WEN,2025-12-28,buyback,-5.6% shares
+WEX,2016-12-31,dilution,+5.3% shares
+WEX,2017-12-31,dilution,+5.4% shares
+WEX,2025-12-31,buyback,-13.1% shares
+WFC,1977-06-20,split,2:1
+WFC,1988-07-01,split,1.5:1
+WFC,1989-07-24,split,2:1
+WFC,1993-06-29,split,2:1
+WFC,1997-10-14,split,2:1
+WFC,2006-08-14,split,2:1
+WFC,2009-12-31,dilution,+34.5% shares
+WFC,2010-12-31,dilution,+15.4% shares
+WFC,2019-12-31,buyback,-8.5% shares
+WFC,2020-12-31,buyback,-6.6% shares
+WFC,2022-12-31,buyback,-6.3% shares
+WFC,2024-12-31,buyback,-6.8% shares
+WFC,2025-12-31,buyback,-6.5% shares
+WFRD,2016-12-31,dilution,+13.9% shares
+WFRD,2017-12-31,dilution,+11.6% shares
+WFRD,2020-12-31,buyback,-93.0% shares
+WH,2023-12-31,buyback,-6.5% shares
+WH,2024-12-31,buyback,-5.7% shares
+WHR,1987-01-02,split,2:1
+WHR,2018-12-31,buyback,-9.7% shares
+WHR,2022-12-31,buyback,-11.1% shares
+WING,2015-12-26,dilution,+6.2% shares
+WLK,2012-12-31,dilution,+101.0% shares
+WLK,2014-03-19,split,2:1
+WMB,1993-11-08,split,2:1
+WMB,1996-12-31,split,1.5:1
+WMB,1997-12-30,split,2:1
+WMB,2001-04-24,split,1.08932:1
+WMB,2012-01-03,split,1.22669:1
+WMB,2013-12-31,dilution,+9.9% shares
+WMB,2014-12-31,dilution,+5.3% shares
+WMB,2017-12-31,dilution,+10.4% shares
+WMB,2018-12-31,dilution,+17.5% shares
+WMB,2019-12-31,dilution,+24.7% shares
+WMS,2015-03-31,dilution,+8.6% shares
+WMS,2016-03-31,dilution,+7.5% shares
+WMS,2020-03-31,dilution,+10.8% shares
+WMS,2021-03-31,dilution,+12.1% shares
+WMS,2023-03-31,dilution,+14.3% shares
+WMS,2024-03-31,buyback,-5.2% shares
+WMT,1975-08-25,split,2:1
+WMT,1980-12-17,split,2:1
+WMT,1982-07-12,split,2:1
+WMT,1983-07-11,split,2:1
+WMT,1985-10-07,split,2:1
+WMT,1987-07-13,split,2:1
+WMT,1990-07-09,split,2:1
+WMT,1993-02-26,split,2:1
+WMT,1999-04-20,split,2:1
+WMT,2011-01-31,buyback,-5.3% shares
+WMT,2012-01-31,buyback,-5.3% shares
+WMT,2022-01-31,dilution,+195.6% shares
+WMT,2024-02-26,split,3:1
+WPC,2012-12-31,dilution,+19.9% shares
+WPC,2013-12-31,dilution,+45.0% shares
+WPC,2014-12-31,dilution,+43.2% shares
+WPC,2015-12-31,dilution,+6.7% shares
+WPC,2018-12-31,dilution,+9.0% shares
+WPC,2019-12-31,dilution,+45.5% shares
+WPC,2022-12-31,dilution,+9.4% shares
+WPC,2023-11-02,split,1.021:1
+WPC,2023-12-31,dilution,+7.7% shares
+WRB,1986-06-19,split,1.5:1
+WRB,1991-05-06,split,1.5:1
+WRB,1997-09-19,split,1.5:1
+WRB,2002-07-03,split,1.5:1
+WRB,2003-08-28,split,1.5:1
+WRB,2005-04-11,split,1.5:1
+WRB,2006-04-05,split,1.5:1
+WRB,2010-12-31,buyback,-6.9% shares
+WRB,2011-12-31,buyback,-6.1% shares
+WRB,2014-12-31,buyback,-5.0% shares
+WRB,2017-12-31,buyback,-99.8% shares
+WRB,2019-04-03,split,1.5:1
+WRB,2020-12-31,dilution,+46.3% shares
+WRB,2022-03-24,split,1.5:1
+WRB,2022-12-31,dilution,+49.8% shares
+WRB,2023-12-31,dilution,+97694.8% shares
+WRB,2024-07-11,split,1.5:1
+WSC,2018-12-31,dilution,+42.3% shares
+WSC,2019-12-31,dilution,+22.2% shares
+WSC,2020-12-31,dilution,+63.1% shares
+WSC,2021-12-31,dilution,+31.3% shares
+WSC,2023-12-31,buyback,-8.8% shares
+WSC,2024-12-31,buyback,-5.7% shares
+WSM,1986-06-27,split,1.5:1
+WSM,1989-06-29,split,1.5:1
+WSM,1990-07-02,split,1.5:1
+WSM,1994-02-22,split,1.5:1
+WSM,1994-09-27,split,1.5:1
+WSM,1998-05-18,split,2:1
+WSM,2002-05-10,split,2:1
+WSM,2013-02-03,buyback,-5.2% shares
+WSM,2023-01-29,dilution,+81.0% shares
+WSM,2024-01-28,buyback,-5.5% shares
+WSM,2024-07-09,split,2:1
+WSO,1992-04-09,split,1.05:1
+WSO,1995-05-16,split,1.5:1
+WSO,1996-06-17,split,1.5:1
+WSO,1998-08-17,split,1.5:1
+WSO,2010-12-31,dilution,+7.2% shares
+WST,1982-05-06,split,2:1
+WST,1987-06-02,split,2:1
+WST,2004-09-29,split,2:1
+WST,2011-12-31,dilution,+101.6% shares
+WST,2013-09-27,split,2:1
+WTFC,2002-03-15,split,1.5:1
+WTFC,2009-12-31,dilution,+9.2% shares
+WTFC,2010-12-31,dilution,+19.8% shares
+WTFC,2011-12-31,dilution,+39.3% shares
+WTFC,2012-12-31,dilution,+9.2% shares
+WTM,2011-12-31,buyback,-7.6% shares
+WTM,2012-12-31,buyback,-14.1% shares
+WTM,2013-12-31,buyback,-8.9% shares
+WTM,2016-12-31,buyback,-14.8% shares
+WTM,2017-12-31,buyback,-14.4% shares
+WTM,2018-12-31,buyback,-21.2% shares
+WTM,2019-12-31,buyback,-6.0% shares
+WTM,2022-12-31,buyback,-7.1% shares
+WTM,2023-12-31,buyback,-10.6% shares
+WTRG,1981-07-01,split,12.43:1
+WTRG,1986-09-03,split,1.5:1
+WTRG,1996-07-11,split,1.5:1
+WTRG,1998-01-13,split,1.33333:1
+WTRG,2000-12-04,split,1.25:1
+WTRG,2001-12-03,split,1.25:1
+WTRG,2003-12-02,split,1.25:1
+WTRG,2005-12-02,split,1.33333:1
+WTRG,2011-12-31,dilution,+26.3% shares
+WTRG,2013-09-03,split,1.25:1
+WTRG,2019-12-31,dilution,+21.0% shares
+WTRG,2020-12-31,dilution,+17.9% shares
+WTRG,2023-12-31,buyback,-26.6% shares
+WTW,2013-12-31,buyback,-60.7% shares
+WTW,2016-01-05,split,0.3775:1
+WTW,2016-12-31,dilution,+100.0% shares
+WTW,2022-12-31,buyback,-13.2% shares
+WTW,2023-12-31,buyback,-5.4% shares
+WU,2009-12-31,buyback,-5.0% shares
+WU,2011-12-31,buyback,-5.2% shares
+WU,2013-12-31,buyback,-7.9% shares
+WU,2017-12-31,buyback,-5.2% shares
+WU,2019-12-31,buyback,-5.2% shares
+WU,2022-12-31,buyback,-5.0% shares
+WU,2024-12-31,buyback,-8.3% shares
+WWD,1997-02-10,split,4:1
+WWD,2006-02-15,split,3:1
+WWD,2008-02-15,split,2:1
+WY,1973-12-12,split,2:1
+WY,1988-06-03,split,1.5:1
+WY,2010-12-31,dilution,+51.9% shares
+WY,2011-12-31,dilution,+68.1% shares
+WY,2013-12-31,dilution,+5.3% shares
+WY,2015-12-31,buyback,-7.4% shares
+WY,2016-12-31,dilution,+39.0% shares
+WYNN,2009-12-31,dilution,+9.8% shares
+WYNN,2012-12-31,buyback,-17.0% shares
+WYNN,2021-12-31,dilution,+6.6% shares
+WYNN,2025-12-31,buyback,-5.5% shares
+XEL,1986-06-16,split,2:1
+XEL,1998-06-02,split,2:1
+XOM,1976-07-26,split,2:1
+XOM,1981-06-12,split,2:1
+XOM,1987-09-15,split,2:1
+XOM,1997-04-14,split,2:1
+XOM,2001-07-19,split,2:1
+XOM,2012-12-31,buyback,-5.1% shares
+XPO,2011-09-02,split,0.25:1
+XPO,2012-12-31,dilution,+90.4% shares
+XPO,2013-12-31,dilution,+45.2% shares
+XPO,2014-12-31,dilution,+135.1% shares
+XPO,2015-12-31,dilution,+73.1% shares
+XPO,2016-12-31,dilution,+32.5% shares
+XPO,2018-12-31,dilution,+5.5% shares
+XPO,2019-12-31,buyback,-21.5% shares
+XPO,2020-12-31,buyback,-13.2% shares
+XPO,2021-08-02,split,1.718:1
+XPO,2021-12-31,dilution,+23.9% shares
+XPO,2022-11-01,split,1.683:1
+XRAY,1992-08-24,split,2:1
+XRAY,1997-10-30,split,2:1
+XRAY,2002-02-01,split,1.5:1
+XRAY,2006-07-18,split,2:1
+XRAY,2016-12-31,dilution,+55.5% shares
+XYL,2023-12-31,dilution,+20.6% shares
+XYL,2024-12-31,dilution,+11.6% shares
+XYZ,2015-12-31,dilution,+20.0% shares
+XYZ,2016-12-31,dilution,+100.3% shares
+XYZ,2017-12-31,dilution,+11.1% shares
+XYZ,2018-12-31,dilution,+7.0% shares
+XYZ,2019-12-31,dilution,+14.9% shares
+XYZ,2022-12-31,dilution,+15.4% shares
+XYZ,2023-12-31,dilution,+6.1% shares
+YUM,2002-06-18,split,2:1
+YUM,2007-06-27,split,2:1
+YUM,2009-12-26,dilution,+98370572.1% shares
+YUM,2016-11-01,split,1.391:1
+YUM,2016-12-31,buyback,-9.7% shares
+YUM,2017-12-31,buyback,-11.2% shares
+YUM,2018-12-31,buyback,-7.3% shares
+Z,2020-12-31,dilution,+12.1% shares
+Z,2021-12-31,dilution,+13.1% shares
+Z,2022-12-31,buyback,-7.5% shares
+Z,2025-12-31,dilution,+8.6% shares
+ZBH,2009-12-31,buyback,-5.5% shares
+ZBH,2010-12-31,buyback,-6.8% shares
+ZBH,2011-12-31,buyback,-6.2% shares
+ZBH,2012-12-31,buyback,-6.7% shares
+ZBH,2015-12-31,dilution,+10.5% shares
+ZBH,2016-12-31,dilution,+6.6% shares
+ZBH,2022-03-01,split,1.03:1
+ZBRA,1995-12-29,split,2:1
+ZBRA,2003-08-22,split,1.5:1
+ZBRA,2004-08-26,split,1.5:1
+ZBRA,2009-12-31,buyback,-7.9% shares
+ZBRA,2011-12-31,buyback,-5.6% shares
+ZG,2015-08-17,split,3.207:1
+ZG,2020-12-31,dilution,+12.1% shares
+ZG,2021-12-31,dilution,+13.1% shares
+ZG,2022-12-31,buyback,-7.5% shares
+ZG,2025-12-31,dilution,+8.6% shares
+ZION,1981-08-17,split,1.5:1
+ZION,1993-01-27,split,2:1
+ZION,1997-05-15,split,4:1
+ZION,2009-12-31,dilution,+14.3% shares
+ZION,2010-12-31,dilution,+33.4% shares
+ZION,2011-12-31,dilution,+10.0% shares
+ZION,2015-12-31,dilution,+5.7% shares
+ZION,2019-12-31,buyback,-9.7% shares
+ZION,2020-12-31,buyback,-11.2% shares
+ZION,2022-12-31,buyback,-6.2% shares
+ZM,2019-01-31,dilution,+48.5% shares
+ZM,2020-01-31,dilution,+119.2% shares
+ZM,2021-01-31,dilution,+17.2% shares
