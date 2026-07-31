@@ -223,6 +223,11 @@ def derive_ratios(df: pd.DataFrame) -> pd.DataFrame:
 
     df["net_debt_to_equity"] = _ratio(ndebt, equity)
     df["debt_to_assets_pct"] = _ratio(debt, assets, scale=100)
+    # Quanti anni di cassa libera servono per estinguere il debito netto. E' la
+    # domanda a cui il debito/EBIT risponde solo per approssimazione: gli
+    # interessi si pagano con la cassa, non con l'utile operativo.
+    df["net_debt_to_fcf"] = _ratio(ndebt, fcf)
+    df["cash_to_debt_pct"] = _ratio(cash, debt, scale=100)
     df["earnings_yield_pct"] = _ratio(pd.Series(100.0, index=df.index), pe)
     # Dividendi pagati (rendimento × capitalizzazione) sugli utili dello stesso
     # periodo: quanta parte dell'utile esce dall'azienda verso i soci.
@@ -617,6 +622,25 @@ METRICS: dict[str, dict] = {
              "**How to read it** — the mirror image of the equity ratio, and "
              "readable even where equity is distorted by buybacks or "
              "write-downs."),
+    "net_debt_to_fcf": dict(
+        label="Net debt / FCF", kind="ratio", better="low", group="balance",
+        help="**What it is** — how many years of free cash flow it would take "
+             "to repay the net debt, if every spare dollar went to the "
+             "lenders.\n\n**Formula** — net debt ÷ free cash flow (TTM).\n\n"
+             "**How to read it** — the harshest of the debt tests, and the "
+             "most honest: interest is paid with cash, not with operating "
+             "profit. Under 3 the debt is comfortably serviceable, above 5 it "
+             "is running the company. Blank when free cash flow is negative — "
+             "a company burning cash cannot repay anything out of it."),
+    "cash_to_debt_pct": dict(
+        label="Cash / debt", kind="pct", better="high", group="balance",
+        help="**What it is** — how much of the debt could be repaid tomorrow "
+             "morning out of the money already in the bank.\n\n"
+             "**Formula** — cash & equivalents ÷ total debt.\n\n"
+             "**How to read it** — above 100% the company holds more cash than "
+             "it owes (net cash). Low is not automatically bad, but it means "
+             "the debt has to be repaid out of future profits rather than out "
+             "of the balance sheet."),
     "net_debt_to_ebit": dict(
         label="Net debt / EBIT", kind="ratio", better="low", group="balance",
         help="**What it is** — how many years of operating profit it would "
@@ -1882,35 +1906,88 @@ def render_financials_tab(ticker: str, r: pd.Series) -> None:
     # STATO PATRIMONIALE                                                  #
     # =================================================================== #
     with t_bal:
-        st.markdown("##### What it owns, and what it owes")
-        kpi_row(r, peers, ("assets", "equity", "total_debt", "cash"))
-        kpi_row(r, peers, ("net_debt", "long_term_debt", "enterprise_value",
-                           "book_value_per_share"))
-        st.markdown("###### How solid the structure is")
-        kpi_row(r, peers, ("equity_ratio_pct", "debt_to_equity",
-                           "net_debt_to_equity", "debt_to_assets_pct"))
-        kpi_row(r, peers, ("net_debt_to_ebit", "asset_turnover", "roe_pct",
-                           "price_to_book"))
+        st.markdown("##### What it owns")
+        kpi_row(r, peers, ("assets", "equity", "book_value_per_share",
+                           "asset_turnover"))
+        kpi_row(r, peers, ("equity_ratio_pct", "roe_pct", "price_to_book",
+                           "enterprise_value"))
 
+        # ---------------- DEBITO: UNA SEZIONE SUA ----------------
+        #
+        # DICHIARATA ANCHE QUANDO MANCA. Le schede vuote vengono saltate in
+        # silenzio (una banca non deposita il capex, e va bene cosi'), ma il
+        # debito e' l'unica voce che il lettore va a cercare per NOME: se le
+        # sue schede spariscono senza dire niente, la pagina sembra sostenere
+        # che la societa' non ha debiti. Qui, quando il dato non c'e', lo si
+        # scrive — e il 30% del dataset non lo ha, perche' non tutte le
+        # societa' taggano il debito in modo confrontabile.
+        st.markdown("##### What it owes")
+        _debt_keys = ("total_debt", "long_term_debt", "net_debt", "cash")
+        _has_debt = any(_num(r.get(k)) is not None for k in _debt_keys[:3])
+        if _has_debt:
+            kpi_row(r, peers, _debt_keys)
+            kpi_row(r, peers, ("debt_to_equity", "net_debt_to_equity",
+                               "debt_to_assets_pct", "cash_to_debt_pct"))
+            st.markdown("###### How heavy that debt is")
+            kpi_row(r, peers, ("net_debt_to_ebit", "net_debt_to_fcf",
+                               "earning_power_pct", "fcf_ttm"))
+            st.caption(
+                "The two coverage ratios answer the same question in two "
+                "currencies: **net debt / EBIT** measures the debt in years of "
+                "operating profit, **net debt / FCF** in years of cash actually "
+                "left over. The second is the stricter one, because interest "
+                "is paid with cash and not with an accounting result. Negative "
+                "net debt means the company holds more cash than it owes.")
+        else:
+            st.info(
+                "**No debt figures on file for this company.** It does not tag "
+                "borrowings in a way that can be compared across companies — "
+                "common for banks and insurers, whose liabilities are deposits "
+                "and technical reserves rather than debt. It does **not** mean "
+                "the company is debt-free: check the balance sheet in the "
+                "latest 10-K, linked from the Filings tab.", icon="🏦")
+
+        # Il grafico chiesto: debito, cassa e cassa libera insieme. E' il
+        # confronto che dice se il debito e' sostenibile — quanto se ne deve,
+        # quanto se ne potrebbe ripagare subito, quanto se ne ripaga ogni anno
+        # — e per questo il free cash flow, che e' voce di rendiconto, sta
+        # anche qui: da solo il debito non si giudica.
         if a is not None and (_has(a, "total_debt") or _has(a, "cash")
-                              or _has(a, "equity")):
-            st.markdown("###### Debt, cash and equity, year by year")
-            fig = charts.bars(a["year"], [("Equity", _col(a, "equity")),
-                                          ("Total debt", _col(a, "total_debt")),
-                                          ("Cash & equivalents", _col(a, "cash"))],
+                              or _has(a, "fcf")):
+            st.markdown("###### Debt, cash and free cash flow, year by year")
+            fig = charts.bars(a["year"],
+                              [("Total debt", _col(a, "total_debt")),
+                               ("Cash & equivalents", _col(a, "cash")),
+                               ("Free cash flow", _col(a, "fcf"))],
                               ylab="$", height=300)
             if fig is not None:
                 st.plotly_chart(fig, use_container_width=True,
-                                key="fin_balance_bars")
+                                key="fin_balance_debt_bars")
                 st.caption(
-                    "Read the three together: debt growing faster than equity "
-                    "is leverage building up, and cash is what decides whether "
-                    "that debt is a problem this year or in ten years.")
+                    "The three bars are the whole debt question: how much is "
+                    "owed, how much could be repaid this morning out of cash, "
+                    "and how much is repaid every year out of the cash the "
+                    "business generates. Debt rising while free cash flow "
+                    "falls is the pattern worth catching early.")
         elif a is not None:
             st.caption(
-                "ℹ️ Debt and cash are not in the annual file yet. Regenerate "
-                "the dataset (`python build_dataset.py`) to add them — they "
-                "are read from the balance sheet tags the company files.")
+                "ℹ️ Debt and cash are not in the annual file for this company. "
+                "Regenerate the dataset (`python build_dataset.py`) to add "
+                "them — they are read from the balance sheet tags the company "
+                "files.")
+
+        if a is not None and (_has(a, "equity") or _has(a, "assets")):
+            st.markdown("###### Owned versus borrowed, year by year")
+            fig = charts.bars(a["year"], [("Total assets", _col(a, "assets")),
+                                          ("Equity", _col(a, "equity"))],
+                              ylab="$", height=250)
+            if fig is not None:
+                st.plotly_chart(fig, use_container_width=True,
+                                key="fin_balance_equity_bars")
+                st.caption(
+                    "The gap between the two bars is everything the company "
+                    "owes to somebody else. Widening year after year means the "
+                    "balance sheet is growing on borrowed money.")
 
         if _num(r.get("enterprise_value")):
             st.markdown("###### From share price to price of the business")
@@ -2026,7 +2103,9 @@ def render_financials_tab(ticker: str, r: pd.Series) -> None:
 
         st.markdown("###### Cash and balance sheet")
         kpi_row(r, peers, ("fcf_yield_pct", "equity_ratio_pct",
-                           "debt_to_equity", "net_debt_to_ebit"))
+                           "debt_to_equity", "net_debt_to_equity"))
+        kpi_row(r, peers, ("net_debt_to_ebit", "net_debt_to_fcf",
+                           "debt_to_assets_pct", "cash_to_debt_pct"))
 
         if peers is not None:
             st.markdown("###### Side by side with the peer group")
@@ -2034,7 +2113,8 @@ def render_financials_tab(ticker: str, r: pd.Series) -> None:
             for key in ("pe_ratio", "ps_ratio", "pfcf_ratio", "fcf_yield_pct",
                         "fcf_margin_pct", "earning_power_pct",
                         "operating_margin_pct", "net_margin_pct", "roe_pct",
-                        "roic_pct", "equity_ratio_pct", "debt_to_equity"):
+                        "roic_pct", "equity_ratio_pct", "debt_to_equity",
+                        "net_debt_to_ebit", "net_debt_to_fcf"):
                 if key not in r.index or key not in peers.index:
                     continue
                 gap, text = peer_gap(key, r.get(key), peers.get(key))

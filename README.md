@@ -339,7 +339,7 @@ accanto a quello che spiega.
 | Tab | Domanda a cui risponde | Contenuto |
 |---|---|---|
 | 📉 **Valuation** | *quanto vale?* | categoria Lynch e confidenza in testa, otto KPI in due file — prezzo, EPS, **i due fair value (categoria e P/E 15) con lo scarto dal prezzo per ciascuno**, P/E corrente, Lynch ratio — grafico prezzo vs fair value, **il conto del fair value passo per passo in un riquadro richiudibile**, multipli confrontati con l'industria, utili normalizzati (con lo scarto dal prezzo anche lì), arbitraggio dell'EPS in forma compatta |
-| 📊 **Financials** | *quanto è solida?* | quattro grandezze in testa, poi **cinque sotto-schede che ricalcano i prospetti di bilancio**: 🧾 conto economico · 🏦 stato patrimoniale · 💵 rendiconto finanziario · 📐 rapporti · 📈 crescita a 5 anni. Ognuna con i suoi KPI a tema, il grafico degli esercizi e la tabella *come depositato* |
+| 📊 **Financials** | *quanto è solida?* | quattro grandezze in testa, poi **cinque sotto-schede che ricalcano i prospetti di bilancio**: 🧾 conto economico · 🏦 stato patrimoniale · 💵 rendiconto finanziario · 📐 rapporti · 📈 crescita a 5 anni. Ognuna con i suoi KPI a tema, il grafico degli esercizi e la tabella *come depositato*. Lo stato patrimoniale è diviso in **cosa possiede** e **cosa deve**, con il grafico debito / cassa / free cash flow — le tre barre che dicono se il debito è sostenibile |
 | 📈 **Growth** | *sta crescendo, e quanto?* | **la misura di crescita che determina il multiplo**, tendenza contro CAGR, matrice dei CAGR 3/5/10 anni, grafico indicizzato a 100, per azione, **estremi di ogni tasso** (in un riquadro richiudibile) |
 | 📄 **Filings** | *dove sta il documento?* | quanto è vecchio il dato SEC più recente e quando escono i prossimi conti, i 10-K/10-Q depositati **con la spiegazione di cosa contiene ciascun modulo** e il link diretto, i punti d'ingresso su EDGAR |
 | 🔍 **Data quality** | *posso fidarmi?* | **da dove viene ogni numero**, arbitraggio dell'EPS per esteso, gli input che hanno deciso la classificazione, formula e tag XBRL di ogni voce, metadati, eventi societari |
@@ -544,6 +544,9 @@ prossima trimestrale.
 | **ROIC** | EBIT TTM × (1 − 21%) ÷ (patrimonio netto + debito totale − cassa) |
 | **Equity ratio** | patrimonio netto ÷ totale attivo |
 | **Debito / attivo** | debito totale ÷ totale attivo |
+| **Debito netto / EBIT** | debito netto ÷ EBIT TTM — anni di utile operativo |
+| **Debito netto / FCF** | debito netto ÷ FCF TTM — anni di cassa libera |
+| **Cassa / debito** | cassa ÷ debito totale — oltre il 100% è posizione di cassa netta |
 | **Asset turnover** | ricavi TTM ÷ totale attivo |
 | **Earning power** | EBIT TTM ÷ totale attivo (per le banche: utile ante imposte) |
 | **FCF** | flusso di cassa operativo − investimenti in immobilizzi |
