@@ -15,6 +15,7 @@ Concetti chiave:
 """
 
 from __future__ import annotations
+import math
 from datetime import date, datetime
 from typing import Optional
 
@@ -742,17 +743,69 @@ def yoy_change(series: list[tuple[date, float]],
     return (last_v - best[1]) / abs(best[1]) * 100.0
 
 
+# Oltre questa variazione annua una societa' e' "erratica" e basta: sapere se
+# l'utile e' sceso del 400% o del 4.000% non aggiunge segnale, ma in una
+# deviazione standard il secondo numero pesa cento volte il primo e finisce per
+# essere l'unica cosa che la misura descrive.
+VOL_CLIP_PCT = 200.0
+
+# Pavimento del denominatore, in frazione del livello TIPICO degli utili della
+# societa'. Senza, una variazione calcolata su una base vicina a zero (un
+# trimestre a 0,01$) produce percentuali a sei cifre.
+VOL_FLOOR_FRACTION = 0.15
+
+
+def _median(values: list[float]) -> float:
+    s = sorted(values)
+    n = len(s)
+    return s[n // 2] if n % 2 else (s[n // 2 - 1] + s[n // 2]) / 2
+
+
+def _mad(values: list[float]) -> float:
+    """Deviazione assoluta mediana: mediana degli scarti dalla mediana."""
+    med = _median(values)
+    return _median([abs(v - med) for v in values])
+
+
 def earnings_volatility(eps_series: list[tuple[date, float]], years: int = 7) -> Optional[float]:
     """
     Volatilita' degli utili: deviazione standard delle variazioni YoY, in %.
-    Valori alti (>40) indicano utili erratici, tipici delle societa' cicliche.
 
     Il confronto anno su anno e' fatto per DATA. La versione precedente
     confrontava il punto i con il punto i-4 dando per scontata una serie
     trimestrale: sulle serie ANNUALI (fallback quando i trimestri EDGAR non
     bastano) quel passo confrontava valori distanti quattro anni, e la
     "volatilita' annua" che ne usciva era il tasso di crescita quadriennale.
-    Con quella misura una societa' in crescita costante risultava ciclica.
+
+    TRE CORREZIONI DI SCALA, senza le quali la misura non e' confrontabile fra
+    societa' e la soglia "ciclica" diventa una monetina.
+
+    1. DENOMINATORE CON PAVIMENTO. `(v - prev) / |prev|` esplode quando prev e'
+       vicino a zero, ed e' vicino a zero ogni volta che una societa' attraversa
+       il pareggio — cioe' esattamente nei casi che ci interessa misurare. Sul
+       dataset S&P 500 + Russell 1000 questo produceva un massimo di 6,3e17 e una
+       mediana di 89 su una soglia di 40: il 64% dell'universo la superava, e la
+       classificazione "ciclica" diventava una funzione del rumore. Il
+       denominatore e' ora `max(|prev|, 15% del livello tipico degli utili)`.
+
+    2. RITAGLIO A ±200%. Oltre il ±200% il giudizio ("erratico") non cambia
+       piu', ma in una misura di dispersione quel numero continua a pesare.
+
+    3. DISPERSIONE ROBUSTA (MAD), NON DEVIAZIONE STANDARD. E' la correzione che
+       conta di piu', e la ragione e' nella finestra: sette anni che finiscono
+       oggi contengono il 2020. Il crollo e il rimbalzo del Covid hanno prodotto
+       due variazioni annue enormi in societa' che non hanno niente di ciclico,
+       e una deviazione standard — dominata dai quadrati — le trasformava
+       nell'intera misura. Con lo scarto quadratico TJX segnava 76 e Ross 71,
+       piu' di General Motors; Procter & Gamble segnava 73 per la sola
+       svalutazione Gillette del 2019.
+
+       La ciclicita' non e' "un colpo", e' "colpi ripetuti". La deviazione
+       assoluta mediana (riscalata per 1,4826, cosi' che su dati normali
+       coincida con la deviazione standard) ignora un episodio isolato e resta
+       alta solo se le oscillazioni sono la norma. Sugli stessi titoli: TJX 21,
+       Ross 25, P&G 4 — mentre Ford resta 223, Alcoa 186, Micron 174, Occidental
+       118. Quello e' il segnale che serve.
     """
     if len(eps_series) < 5:
         return None
@@ -761,6 +814,11 @@ def earnings_volatility(eps_series: list[tuple[date, float]], years: int = 7) ->
     pts = [(d, v) for d, v in s if d.toordinal() >= cutoff]
     if len(pts) < 5:
         return None
+
+    # Livello tipico degli utili nella finestra: mediana dei valori assoluti.
+    # Mediana e non media, per lo stesso motivo per cui la usa normalized_eps.
+    floor = VOL_FLOOR_FRACTION * _median([abs(v) for _, v in pts])
+
     changes = []
     for i, (d, v) in enumerate(pts):
         target = d.toordinal() - 365
@@ -770,37 +828,224 @@ def earnings_volatility(eps_series: list[tuple[date, float]], years: int = 7) ->
             gap = abs(pd_.toordinal() - target)
             if best_gap is None or gap < best_gap:
                 prev, best_gap = pv, gap
-        if prev is None or best_gap > 75 or prev == 0:
+        if prev is None or best_gap > 75:
             continue
-        changes.append((v - prev) / abs(prev) * 100)
+        den = max(abs(prev), floor)
+        if den <= 0:
+            continue
+        change = (v - prev) / den * 100
+        changes.append(max(-VOL_CLIP_PCT, min(VOL_CLIP_PCT, change)))
     if len(changes) < 3:
         return None
-    mean = sum(changes) / len(changes)
-    var = sum((c - mean) ** 2 for c in changes) / len(changes)
-    return var ** 0.5
+    return _mad(changes) * 1.4826
+
+
+def eps_growth_trend(eps_series: list[tuple[date, float]],
+                     years: int = 5) -> Optional[float]:
+    """
+    Crescita annua degli utili stimata come TENDENZA, non come rapporto fra due
+    estremi: regressione dei minimi quadrati su log(EPS) nella finestra, e il
+    coefficiente angolare riportato ad anni.
+
+    PERCHE' NON IL CAGR. Il CAGR guarda due soli punti, quindi consegna il
+    giudizio sulla societa' al trimestre di partenza e a quello di arrivo. Se il
+    primo capita in una recessione, la "crescita a cinque anni" e' il rimbalzo;
+    se capita in un picco, e' un crollo. Su questi due numeri poggia poi il
+    MULTIPLO EQUO di categoria (fair P/E = crescita), che e' esattamente il
+    punto in cui un fair value diventa privo di senso: PEG = 1 su una crescita
+    misurata male e' un multiplo misurato male.
+
+    La regressione usa TUTTI i punti della finestra, quindi un singolo trimestre
+    anomalo la sposta di poco. In log, perche' la crescita e' composta: una
+    retta su log(EPS) e' un tasso annuo costante.
+
+    Restituisce None quando la finestra contiene valori non positivi (il
+    logaritmo non esiste) o ha meno di sei punti: preferiamo dire "non
+    calcolabile" che estrapolare da quattro trimestri.
+    """
+    if not eps_series:
+        return None
+    s = sorted(eps_series)
+    cutoff = s[-1][0].toordinal() - int(365.25 * years)
+    pts = [(d, v) for d, v in s if d.toordinal() >= cutoff]
+    if len(pts) < 6 or any(v <= 0 for _, v in pts):
+        return None
+
+    t0 = pts[0][0].toordinal()
+    xs = [(d.toordinal() - t0) / 365.25 for d, _ in pts]
+    ys = [math.log(v) for _, v in pts]
+    n = len(xs)
+    mx = sum(xs) / n
+    my = sum(ys) / n
+    sxx = sum((x - mx) ** 2 for x in xs)
+    if sxx <= 0:
+        return None
+    sxy = sum((x - mx) * (y - my) for x, y in zip(xs, ys))
+    slope = sxy / sxx               # log-punti per anno
+    # exp(slope) - 1 = tasso annuo composto. Limitato a ±100%/anno: oltre, la
+    # retta sta descrivendo un rimbalzo da una base depressa, non una tendenza.
+    rate = (math.exp(max(-2.0, min(2.0, slope))) - 1) * 100
+    return max(-99.0, min(300.0, rate))
+
+
+def loss_profile(eps_series: list[tuple[date, float]], years: int = 5) -> dict:
+    """
+    Anatomia delle perdite degli ultimi N anni, invece del solo si'/no.
+
+    PERCHE' IL SI'/NO NON BASTAVA. La regola precedente — "un solo TTM negativo
+    negli ultimi cinque anni => Turnaround, nessun multiplo" — classificava come
+    societa' in ripresa dal dissesto il 36% dell'S&P 500 + Russell 1000:
+    Amazon, AMD, AIG, Allstate. Sono societa' che hanno attraversato UN anno
+    difficile e sono tornate a guadagnare, non turnaround nel senso di Lynch
+    ("bail-us-out", "who-would-have-thunk-it": aziende sull'orlo del dissesto).
+    Il costo dell'errore era doppio, perche' proprio a quelle societa' il
+    programma rifiutava poi qualunque fair value.
+
+    Cio' che distingue davvero un turnaround e' QUANDO e QUANTO:
+      - sta ancora perdendo adesso                    -> turnaround pieno
+      - ha smesso di perdere da poco (< 2 anni)       -> turnaround in uscita
+      - perdite ripetute (>= 1/4 dei periodi)         -> utili inaffidabili
+      - un solo episodio, chiuso da anni              -> non e' un turnaround
+
+    Ritorna: {any, current, periods, share, quarters_since, episodes}
+    """
+    out = {"any": False, "current": False, "periods": 0, "share": 0.0,
+           "quarters_since": None, "episodes": 0}
+    if not eps_series:
+        return out
+    s = sorted(eps_series)
+    last_date = s[-1][0]
+    cutoff = last_date.toordinal() - int(365.25 * years)
+    window = [(d, v) for d, v in s if d.toordinal() >= cutoff]
+    if not window:
+        return out
+
+    negatives = [(d, v) for d, v in window if v < 0]
+    out["any"] = bool(negatives)
+    out["periods"] = len(negatives)
+    out["share"] = len(negatives) / len(window)
+    out["current"] = window[-1][1] < 0
+    if negatives:
+        out["quarters_since"] = (last_date - negatives[-1][0]).days / 365.25
+        # Episodi distinti: due perdite separate da almeno un anno di utili
+        # sono due crisi, non una lunga. Una societa' con un solo episodio
+        # chiuso e' un'altra cosa da una che ci ricade ogni due anni.
+        episodes, prev_d = 1, negatives[0][0]
+        for d, _ in negatives[1:]:
+            if (d - prev_d).days > 365:
+                episodes += 1
+            prev_d = d
+        out["episodes"] = episodes
+    return out
 
 
 def had_recent_losses(eps_series: list[tuple[date, float]], years: int = 5) -> bool:
-    """True se negli ultimi N anni c'e' stato almeno un TTM in perdita."""
-    if not eps_series:
-        return False
-    s = sorted(eps_series)
-    cutoff = s[-1][0].toordinal() - int(365.25 * years)
-    return any(v < 0 for d, v in s if d.toordinal() >= cutoff)
+    """True se negli ultimi N anni c'e' stato almeno un TTM in perdita.
+
+    Conservata perche' e' il dato grezzo esportato nel CSV e usato dal controllo
+    di coerenza della dashboard. Per CLASSIFICARE si usa loss_profile(), che
+    distingue una crisi in corso da un anno storto di dieci anni fa.
+    """
+    return loss_profile(eps_series, years)["any"]
 
 
 # Soglia di volatilita' degli utili oltre la quale una societa' di settore
-# ciclico viene classificata come "Ciclica". E' la deviazione standard delle
-# variazioni annue dell'EPS, in punti percentuali. Valore tarabile: piu' basso
-# = piu' societa' classificate cicliche (approccio prudente, perche' per le
-# cicliche il P/E corrente e' fuorviante).
-CYCLICAL_VOL_THRESHOLD = 40.0
+# ciclico viene classificata come "Ciclica".
+#
+# TARATA SUI DATI, non scelta a priori. Sul dataset S&P 500 + Russell 1000 la
+# nuova misura ha mediana 46 sull'intero universo, 43 sui settori ciclici e
+# terzo quartile 85. A 50 restano fuori KO (16), Microsoft (10), Waste
+# Management (16), TJX (21), Ross (25), McDonald's (27), UPS (31) e restano
+# dentro SLB (54), Freeport (72), Devon (77), Thor (80), Occidental (118),
+# Cleveland-Cliffs (141), Alcoa (186), Ford (223). Seleziona il 45% dei settori
+# ciclici e il 20% dell'universo.
+#
+# Il caso limite noto e' General Motors a 49, che resta appena fuori. Sbagliare
+# per eccesso di prudenza sarebbe preferibile — per una ciclica il P/E corrente
+# inganna — ma abbassare la soglia per catturarla vi farebbe entrare anche
+# American Tower (48), che ciclica non e'.
+CYCLICAL_VOL_THRESHOLD = 50.0
 
 # Settori strutturalmente ciclici (classificazione yfinance)
 CYCLICAL_SECTORS = {
     "Energy", "Basic Materials", "Industrials",
     "Consumer Cyclical", "Real Estate",
 }
+
+
+# Multiplo di ripresa applicato agli utili normalizzati di un turnaround. Non e'
+# un PEG: la crescita di una societa' che esce da una crisi e' il rimbalzo, non
+# una tendenza, e usarla come multiplo produrrebbe i numeri assurdi che questo
+# modulo esiste per evitare. E' un multiplo prudente, sotto la media di mercato.
+TURNAROUND_RECOVERY_PE = 10.0
+
+# Multiplo delle cicliche, applicato agli utili NORMALIZZATI (di meta' ciclo).
+CYCLICAL_PE = 12.0
+
+# Fast grower: oltre questo multiplo non si paga, qualunque sia la crescita.
+FAST_GROWER_PE_CAP = 25.0
+
+# Tetto al multiplo quando la crescita alta e' misurata da una base in perdita:
+# e' un rimbalzo, non una tendenza (vedi il ramo "Stalwart (recovering)").
+REBOUND_PE_CAP = 15.0
+
+# Slow grower: pavimento e tetto del multiplo.
+SLOW_GROWER_PE_FLOOR, SLOW_GROWER_PE_CAP = 6.0, 12.0
+
+# Soglie di crescita fra le categorie (CAGR degli utili, %).
+FAST_GROWER_MIN_GROWTH = 20.0
+STALWART_MIN_GROWTH = 10.0
+
+# Capitalizzazione oltre la quale una stalwart e' "large cap".
+STALWART_LARGE_CAP = 5e10
+
+
+def growth_estimate(eps_series: list[tuple[date, float]]) -> dict:
+    """
+    La stima di crescita su cui poggia il multiplo equo, con la sua provenienza.
+
+    PERCHE' UNA SCALA E NON UN NUMERO. Il fair value di categoria e' `EPS x
+    crescita` (PEG = 1): la crescita non e' un dato accessorio, e' il moltiplicatore.
+    Prendere il solo CAGR a 5 anni significava due cose, entrambe dannose:
+
+      - quando il CAGR non era calcolabile — e non lo e' per 299 societa' su 989,
+        perche' il valore di partenza era una perdita — la societa' finiva in
+        "Unclassified" e restava senza alcun fair value;
+      - quando era calcolabile, dipendeva da due soli trimestri.
+
+    La scala, dal piu' affidabile al meno:
+      1. TENDENZA a 5 anni (regressione su log EPS): usa tutti i punti;
+      2. CAGR a 5 anni: due estremi, ma la finestra giusta;
+      3. TENDENZA a 3 anni;
+      4. CAGR a 3 anni: finestra corta, si dichiara.
+
+    Ritorna {value, basis, confidence}. `basis` finisce nell'interfaccia: chi
+    legge un multiplo equo di 14 ha diritto di sapere da quale misura viene.
+    """
+    trend5 = eps_growth_trend(eps_series, years=5)
+    if trend5 is not None:
+        return {"value": trend5, "basis": "5-year trend (regression on all points)",
+                "confidence": "high", "rebound_risk": False}
+    # Da qui in giu' la regressione non e' stata possibile, e la ragione e'
+    # sempre la stessa: nella finestra ci sono utili non positivi. Il che
+    # significa che ogni tasso calcolato su quella finestra parte da una base
+    # depressa e misura in buona parte il rimbalzo. Lo diciamo, e chi classifica
+    # ne tiene conto invece di promuovere la societa' a fast grower.
+    cagr5 = eps_cagr(eps_series, years=5)
+    if cagr5 is not None:
+        return {"value": cagr5, "basis": "5-year CAGR (two endpoints, window "
+                                         "contains losses)",
+                "confidence": "medium", "rebound_risk": True}
+    trend3 = eps_growth_trend(eps_series, years=3)
+    if trend3 is not None:
+        return {"value": trend3, "basis": "3-year trend — no usable 5-year history",
+                "confidence": "low", "rebound_risk": False}
+    cagr3 = eps_cagr(eps_series, years=3)
+    if cagr3 is not None:
+        return {"value": cagr3, "basis": "3-year CAGR — no usable 5-year history",
+                "confidence": "low", "rebound_risk": True}
+    return {"value": None, "basis": "not calculable", "confidence": "low",
+            "rebound_risk": False}
 
 
 def classify_lynch(
@@ -812,125 +1057,288 @@ def classify_lynch(
     price_to_book: Optional[float],
     market_cap: Optional[float],
     recent_losses: bool = False,
+    *,
+    losses: Optional[dict] = None,
+    eps_normalized: Optional[float] = None,
+    growth_basis: str = "5-year CAGR",
+    growth_confidence: str = "medium",
+    rebound_risk: bool = False,
 ) -> dict:
     """
-    Classifica una societa' nelle sei categorie di Peter Lynch e assegna il
-    multiplo P/E equo corrispondente.
+    Classifica una societa' nelle sei categorie di Peter Lynch e assegna
+    l'ANCORA DI VALUTAZIONE corrispondente.
 
     Le categorie (da 'One Up on Wall Street'):
-      - turnaround   : societa' in ripresa dopo perdite. Utili non affidabili
-                       come base di valutazione -> nessun multiplo.
+      - turnaround   : societa' in dissesto o appena uscita. Gli utili correnti
+                       non descrivono la societa' a regime -> multiplo prudente
+                       sugli utili NORMALIZZATI.
       - asset play   : quota sotto il valore degli asset (P/B < 1). Il valore sta
-                       nel patrimonio, non negli utili -> nessun multiplo.
+                       nel patrimonio -> ancora sul patrimonio netto, non sul P/E.
       - cyclical     : utili erratici legati al ciclo. Il P/E corrente inganna
                        (basso ai massimi del ciclo) -> multiplo prudente su utili
-                       normalizzati.
+                       normalizzati di meta' ciclo.
       - fast grower  : crescita > 20%. Multiplo = crescita, con cap a 25.
-      - stalwart     : crescita 10-20%, grande capitalizzazione. Multiplo = crescita.
-      - slow grower  : crescita < 10%, spesso alto dividendo. Multiplo = crescita +
-                       dividendo, con tetto a 12.
+      - stalwart     : crescita 10-20%. Multiplo = crescita (PEG = 1).
+      - slow grower  : crescita < 10%. Multiplo = crescita + dividendo, 6-12.
 
-    L'ordine di verifica conta: turnaround e asset play hanno priorita' perche'
-    per loro la valutazione sugli utili non e' significativa.
+    OGNI CATEGORIA HA UN'ANCORA. Nella versione precedente quattro categorie su
+    dieci uscivano con `fair_pe = None`, e siccome il fair value nasce da li',
+    meta' del dataset (494 righe su 989) non aveva alcuna valutazione. Non era
+    una scelta: era la conseguenza di non aver deciso cosa fare quando il P/E
+    non e' lo strumento giusto. Lynch, in quei casi, non smette di valutare —
+    cambia strumento: il patrimonio per un asset play, gli utili di un anno
+    normale per un turnaround. E' quello che fa ora questa funzione, dichiarando
+    ogni volta QUALE ancora ha usato (`anchor`) e su quali utili (`eps_base`),
+    invece di restituire un multiplo muto.
 
-    Ritorna: {category, fair_pe, basis, note}
+    L'ORDINE DI VERIFICA CONTA. Le condizioni che invalidano il P/E vengono
+    prima delle fasce di crescita, perche' una societa' in perdita con crescita
+    del 40% non e' una fast grower: quel 40% e' un rimbalzo.
+
+    Ritorna: {category, fair_pe, eps_base, anchor, fair_pb, basis, note,
+              confidence, confidence_note}
     """
     g = growth_pct
     div = dividend_yield or 0.0
+    lp = losses or {"any": bool(recent_losses), "current": bool(recent_losses),
+                    "periods": 1 if recent_losses else 0,
+                    "share": 0.5 if recent_losses else 0.0,
+                    "quarters_since": 0.0 if recent_losses else None,
+                    "episodes": 1 if recent_losses else 0}
 
-    # 1) TURNAROUND — recent losses (even if back to profit now)
-    if recent_losses:
+    reasons: list[str] = []
+    if growth_pct is None:
+        reasons.append("growth not calculable on any window")
+    elif growth_confidence == "low":
+        reasons.append(f"growth measured on a short window ({growth_basis})")
+    if volatility is not None and volatility > CYCLICAL_VOL_THRESHOLD:
+        reasons.append(f"erratic earnings (volatility {volatility:.0f})")
+
+    def out(category, *, fair_pe=None, eps_base="current", anchor="earnings",
+            fair_pb=None, basis="", note="", extra_reasons=(), floor_conf=None):
+        rs = list(reasons) + list(extra_reasons)
+        conf = "high" if not rs else ("medium" if len(rs) == 1 else "low")
+        if floor_conf == "low":
+            conf = "low"
+        elif floor_conf == "medium" and conf == "high":
+            conf = "medium"
         return {
-            "category": "Turnaround",
-            "fair_pe": None,
-            "basis": "earnings not normalizable",
-            "note": ("Losses in the past few years: the P/E is not a reliable "
-                     "basis. Assess the margin recovery and balance sheet strength."),
+            "category": category, "fair_pe": fair_pe, "eps_base": eps_base,
+            "anchor": anchor, "fair_pb": fair_pb, "basis": basis, "note": note,
+            "confidence": conf,
+            "confidence_note": ("; ".join(rs) if rs
+                                else "consistent earnings, growth measured over "
+                                     "the full 5-year window"),
         }
 
-    # 2) ASSET PLAY — trading below book value
-    if price_to_book is not None and 0 < price_to_book < 1.0:
-        return {
-            "category": "Asset Play",
-            "fair_pe": None,
-            "basis": "asset value",
-            "note": (f"Trading at {price_to_book:.2f}x book value: the value is in "
-                     "the assets, not the earnings. Assess with P/B, not P/E."),
-        }
+    norm_ok = eps_normalized is not None and eps_normalized > 0
+    cheap_on_book = price_to_book is not None and 0 < price_to_book < 1.0
 
-    # 3) CYCLICAL — cyclical sector with erratic earnings
-    is_cyc_sector = sector in CYCLICAL_SECTORS
-    is_erratic = volatility is not None and volatility > CYCLICAL_VOL_THRESHOLD
-    if is_cyc_sector and is_erratic:
-        return {
-            "category": "Cyclical",
-            "fair_pe": 12.0,
-            "basis": "conservative multiple on normalized earnings",
-            "note": ("Erratic, cycle-driven earnings: a low P/E can signal the "
-                     "cycle's peak, not a bargain. Use normalized earnings."),
-        }
+    # -----------------------------------------------------------------
+    # 1) NESSUNA BASE DI UTILI — in perdita ora e anche in media su 3 anni.
+    # Qui non c'e' un P/E da correggere: non c'e' un denominatore.
+    # -----------------------------------------------------------------
+    if (eps_now is None or eps_now <= 0) and not norm_ok:
+        if cheap_on_book:
+            return out("Asset Play", anchor="book", fair_pb=1.0,
+                       basis="net asset value (no earnings to capitalise)",
+                       note=(f"Loss-making and trading at {price_to_book:.2f}x book "
+                             "value: the only floor left is the balance sheet. "
+                             "Valued on assets, not on earnings."),
+                       floor_conf="low")
+        return out("Turnaround", anchor="none",
+                   basis="no positive earnings, current or normalized",
+                   note=("Loss-making now and on a 3-year average: no earnings "
+                         "base exists to capitalise. Any P/E-derived fair value "
+                         "would be invented. Assess the cash burn, the runway "
+                         "and the balance sheet instead."),
+                   floor_conf="low")
 
-    if g is None:
-        return {
-            "category": "Unclassified",
-            "fair_pe": None,
-            "basis": "growth not calculable",
-            "note": "Not enough earnings history to estimate 5-year growth.",
-        }
-
-    # 4) FAST GROWER — growth above 20%
-    if g > 20:
-        return {
-            "category": "Fast Grower",
-            "fair_pe": min(g, 25.0),      # cap at 25: higher growth rates don't last
-            "basis": f"P/E = growth {g:.0f}% (capped at 25)",
-            "note": ("High growth: the multiple tracks the growth rate but is "
-                     "capped at 25, because very few companies sustain it for years."),
-        }
-
-    # 5) STALWART — growth 10-20%
-    if g >= 10:
-        # Senza market cap non si puo' dire se sia large o mid: dirlo, invece di
-        # far ricadere in "mid cap" ogni societa' con il dato mancante.
-        if market_cap is None:
-            label = "Stalwart (dimensione non disponibile)"
+    # -----------------------------------------------------------------
+    # 2) TURNAROUND — nel senso di Lynch: dissesto in corso o appena chiuso.
+    #
+    # La regola precedente ("una sola perdita in cinque anni") classificava qui
+    # 359 societa' su 989 — Amazon, AMD, AIG, Allstate — e a tutte negava poi il
+    # fair value. Un anno storto non e' un turnaround. Servono almeno una di:
+    #   - perdita in corso;
+    #   - ultima perdita da meno di un anno (la ripresa non e' confermata);
+    #   - piu' episodi distinti di perdita, l'ultimo non ancora lontano.
+    #
+    # LA SOGLIA E' UN ANNO, NON DUE, PER VIA DEL TTM. La serie e' su dodici mesi
+    # mobili: un solo trimestre in perdita tiene il TTM sotto zero per i quattro
+    # trimestri successivi. "Ultima perdita un anno fa" sulla serie TTM
+    # corrisponde quindi a circa due anni dal trimestre che l'ha causata. Con la
+    # soglia a due anni finivano qui 109 societa' tornate all'utile da tempo.
+    #
+    # E "RICORRENTE" VUOL DIRE PIU' EPISODI, non "molti trimestri". La quota di
+    # periodi in perdita era il criterio sbagliato per la stessa ragione: un
+    # unico anno storto smerigliato dal TTM occupa da solo un quarto della
+    # finestra. Allstate, in perdita nel 2022-23 e a 38$ di utile per azione nel
+    # 2025, veniva classificata societa' in dissesto.
+    # -----------------------------------------------------------------
+    since = lp.get("quarters_since")
+    recurring = lp.get("episodes", 0) > 1 and (since is None or since < 3.0)
+    fresh = since is not None and since < 1.0
+    if lp.get("current") or fresh or (lp.get("any") and recurring):
+        if lp.get("current"):
+            why = "currently loss-making"
+        elif fresh:
+            why = f"back to profit only {since:.1f} years ago"
         else:
-            label = "Stalwart" if market_cap > 5e10 else "Stalwart (mid cap)"
-        return {
-            "category": label,
-            "fair_pe": g,
-            "basis": f"P/E = growth {g:.0f}%",
-            "note": ("Solid, predictable growth: the fair P/E matches the growth "
-                     "rate (PEG = 1)."),
-        }
+            why = (f"recurring losses ({lp.get('episodes')} separate episodes, "
+                   f"the last {since:.1f} years ago)")
+        if norm_ok:
+            return out("Turnaround", fair_pe=TURNAROUND_RECOVERY_PE,
+                       eps_base="normalized",
+                       basis=f"P/E {TURNAROUND_RECOVERY_PE:.0f} on 3-year normalized "
+                             f"earnings — {why}",
+                       note=("A recovery multiple, not a PEG multiple: the growth "
+                             "rate of a company coming out of losses measures the "
+                             "rebound, not a trend, and using it as a multiple is "
+                             "how a fair value becomes nonsense. Applied to "
+                             "normalized earnings, and deliberately below the "
+                             "market average."),
+                       floor_conf="low")
+        return out("Turnaround", anchor="none",
+                   basis=f"earnings not normalizable — {why}",
+                   note=("Losses too recent or too frequent for the P/E to be a "
+                         "reliable basis. Assess the margin recovery and the "
+                         "balance sheet strength."),
+                   floor_conf="low")
 
-    # 6a) DECLINING EARNINGS — negative growth: PEG doesn't apply.
-    # A multiple "equal to growth" with negative growth is meaningless, and the
-    # max(growth,0)+dividend formula would collapse toward zero, producing a
-    # negligible fair value. Better to state the model doesn't apply here.
-    if g < 0:
-        return {
-            "category": "Slow Grower (declining earnings)",
-            "fair_pe": None,
-            "basis": f"negative growth ({g:.0f}%): PEG not applicable",
-            "note": ("Earnings are contracting: a growth-linked P/E is meaningless "
-                     "here. Use the fixed-P/E model and assess whether the decline "
-                     "is cyclical or structural."),
-        }
+    # Una perdita isolata e chiusa da anni NON declassa la societa': viene solo
+    # dichiarata, perche' abbassa la fiducia nella crescita misurata su quella
+    # finestra (il CAGR parte da una base depressa).
+    healed = []
+    if lp.get("any"):
+        healed.append(f"one loss episode {since:.0f} years ago, profitable since")
 
-    # 6b) SLOW GROWER — growth between 0 and 10%
-    # Floor at 6: even a nearly-stagnant but solid company isn't worth 2-3x
-    # earnings. Cap at 12: beyond that it's no longer a slow grower.
-    fair = min(max(g + div, 6.0), 12.0)
+    # -----------------------------------------------------------------
+    # 3) ASSET PLAY — quota sotto il patrimonio netto contabile.
+    # -----------------------------------------------------------------
+    if cheap_on_book:
+        return out("Asset Play", anchor="book", fair_pb=1.0,
+                   basis="net asset value (fair P/B = 1)",
+                   note=(f"Trading at {price_to_book:.2f}x book value: the market "
+                         "prices the company below its accounting net worth. The "
+                         "anchor is the balance sheet, not the P/E. Book value is "
+                         "a starting point, not an appraisal — it understates land "
+                         "carried at cost and overstates obsolete inventory."),
+                   extra_reasons=healed, floor_conf="medium")
+
+    # -----------------------------------------------------------------
+    # 4) CICLICA — settore ciclico e utili erratici.
+    # -----------------------------------------------------------------
+    if sector in CYCLICAL_SECTORS and volatility is not None \
+            and volatility > CYCLICAL_VOL_THRESHOLD:
+        if norm_ok:
+            return out("Cyclical", fair_pe=CYCLICAL_PE, eps_base="normalized",
+                       basis=f"P/E {CYCLICAL_PE:.0f} on 3-year normalized (mid-cycle) "
+                             "earnings",
+                       note=("Erratic, cycle-driven earnings: a low P/E can signal "
+                             "the peak of the cycle, not a bargain. The multiple is "
+                             "applied to mid-cycle earnings, so the fair value does "
+                             "not follow the peak."),
+                       extra_reasons=healed)
+        return out("Cyclical", fair_pe=CYCLICAL_PE, eps_base="current",
+                   basis=f"P/E {CYCLICAL_PE:.0f} on current earnings — no "
+                         "normalized figure available",
+                   note=("Erratic, cycle-driven earnings. Ideally the multiple "
+                         "applies to mid-cycle earnings, but this company has no "
+                         "usable 3-year median, so it is applied to the current "
+                         "figure: if these are peak earnings, the fair value is "
+                         "overstated."),
+                   extra_reasons=healed, floor_conf="low")
+
+    # -----------------------------------------------------------------
+    # 5) FASCE DI CRESCITA (PEG = 1)
+    # -----------------------------------------------------------------
+    if g is None:
+        return out("Unclassified", anchor="none",
+                   basis="growth not calculable on any window",
+                   note=("Not enough usable earnings history to estimate growth on "
+                         "any of the four windows tried (5-year trend and CAGR, "
+                         "3-year trend and CAGR). No category multiple is assigned: "
+                         "the fixed P/E 15 line is the only reading available."),
+                   extra_reasons=healed, floor_conf="low")
+
+    if g > FAST_GROWER_MIN_GROWTH:
+        # IL RIMBALZO NON E' CRESCITA. Quando la finestra contiene perdite, il
+        # tasso e' calcolato da una base depressa e sovrastima sistematicamente:
+        # una societa' che passa da -1$ a +2$ di utile per azione esce con
+        # percentuali a tre cifre, entra fra le fast grower e si prende un
+        # multiplo di 25. E' il modo piu' rapido per produrre un fair value
+        # senza senso, ed e' esattamente cio' contro cui Lynch mette in guardia
+        # quando distingue una societa' in crescita da una in ripresa. In quel
+        # caso il multiplo si ferma al livello di una stalwart.
+        if rebound_risk:
+            return out("Stalwart (recovering)", fair_pe=REBOUND_PE_CAP,
+                       basis=f"P/E {REBOUND_PE_CAP:.0f} — growth of {g:.0f}% measured "
+                             f"from a loss-making base ({growth_basis})",
+                       note=("The measured growth rate is a rebound off depressed "
+                             "earnings, not a trend, so it does not earn a fast "
+                             "grower's multiple. The multiple is capped at the "
+                             "stalwart level until the company has a full window "
+                             "of profitable history."),
+                       extra_reasons=healed, floor_conf="low")
+        return out("Fast Grower", fair_pe=min(g, FAST_GROWER_PE_CAP),
+                   basis=f"P/E = growth {g:.0f}% (capped at {FAST_GROWER_PE_CAP:.0f}) "
+                         f"· {growth_basis}",
+                   note=("High growth: the multiple tracks the growth rate but is "
+                         f"capped at {FAST_GROWER_PE_CAP:.0f}, because very few "
+                         "companies sustain that pace for years."),
+                   extra_reasons=healed)
+
+    if g >= STALWART_MIN_GROWTH:
+        if market_cap is None:
+            label = "Stalwart (size unknown)"
+        else:
+            label = ("Stalwart" if market_cap > STALWART_LARGE_CAP
+                     else "Stalwart (mid cap)")
+        return out(label, fair_pe=g,
+                   basis=f"P/E = growth {g:.0f}% · {growth_basis}",
+                   note=("Solid, predictable growth: the fair P/E matches the "
+                         "growth rate (PEG = 1)."),
+                   extra_reasons=healed)
+
+    # 6) SLOW GROWER — crescita sotto il 10%, dividendo incluso.
+    #
+    # Anche a crescita NEGATIVA. La versione precedente restituiva qui
+    # `fair_pe = None` per 82 societa', motivando che "un multiplo pari alla
+    # crescita non ha senso se la crescita e' negativa" — vero, ma la formula
+    # non e' "pari alla crescita": e' `crescita + dividendo`, con un PAVIMENTO a
+    # 6 che esiste proprio per questo. Il pavimento gia' esprime il giudizio
+    # giusto ("una societa' ferma ma solida non vale 2-3 volte gli utili") e
+    # vale identico quando la crescita e' -3%. Lasciare 82 societa' senza alcuna
+    # valutazione era una lacuna, non una posizione.
+    #
+    # Alla crescita negativa non si concede pero' credito: entra nella formula
+    # come zero, e il multiplo si applica agli utili normalizzati quando ci sono,
+    # perche' l'ultimo TTM di una societa' in calo e' il punto piu' basso.
+    growth_credit = max(g, 0.0)
+    fair = min(max(growth_credit + div, SLOW_GROWER_PE_FLOOR), SLOW_GROWER_PE_CAP)
     div_txt = (f"dividend {div:.1f}%" if dividend_yield is not None
                else "dividend not available (treated as 0)")
-    return {
-        "category": "Slow Grower",
-        "fair_pe": fair,
-        "basis": f"P/E = growth {g:.0f}% + {div_txt} (floor 6, cap 12)",
-        "note": ("Modest growth: deserves a contained multiple. The dividend "
-                 "partly offsets the lower growth."),
-    }
+    if g < 0:
+        return out("Slow Grower (declining earnings)", fair_pe=fair,
+                   eps_base="normalized" if norm_ok else "current",
+                   basis=f"P/E = 0% growth credit + {div_txt} "
+                         f"(floor {SLOW_GROWER_PE_FLOOR:.0f}) · {growth_basis}",
+                   note=("Earnings are contracting, so the model gives no credit "
+                         "for growth: the multiple comes from the dividend and "
+                         "the floor alone. Applied to normalized earnings where "
+                         "available, since the latest figure of a declining "
+                         "company is its lowest point. Check whether the decline "
+                         "is cyclical or structural."),
+                   extra_reasons=healed + [f"earnings declining {g:.0f}%/year"])
+
+    return out("Slow Grower", fair_pe=fair,
+               basis=f"P/E = growth {g:.0f}% + {div_txt} "
+                     f"(floor {SLOW_GROWER_PE_FLOOR:.0f}, cap {SLOW_GROWER_PE_CAP:.0f}) "
+                     f"· {growth_basis}",
+               note=("Modest growth: deserves a contained multiple. The dividend "
+                     "partly offsets the lower growth."),
+               extra_reasons=healed)
 
 
 def lynch_ratio(growth_pct: Optional[float], dividend_yield: Optional[float],
@@ -1070,6 +1478,28 @@ LONG_TERM_DEBT_TAG_CANDIDATES = (
     # scadenza entro l'anno): senza di essa le banche, che usano solo questo
     # tag, non hanno alcun dato sul debito.
     "LongTermDebtAndCapitalLeaseObligationsIncludingCurrentMaturities",
+)
+
+# Debito a breve: quota corrente del debito a lungo piu' i finanziamenti
+# a breve. Serve al TOTALE del debito, che e' la grandezza che conta nella
+# struttura del capitale: un debito a lungo modesto accanto a una montagna di
+# carta commerciale in scadenza non e' una societa' poco indebitata.
+SHORT_TERM_DEBT_TAG_CANDIDATES = (
+    "DebtCurrent",
+    "LongTermDebtCurrent",
+    "ShortTermBorrowings",
+    "OtherShortTermBorrowings",
+    "CommercialPaper",
+)
+
+# Cassa e disponibilita' liquide. Il secondo tag include la cassa vincolata ed
+# e' quello che molti filer usano dal 2018 (ASU 2016-18); il terzo e' la voce
+# delle banche, che non hanno "cash equivalents" nel senso industriale.
+CASH_TAG_CANDIDATES = (
+    "CashAndCashEquivalentsAtCarryingValue",
+    "CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents",
+    "CashAndDueFromBanks",
+    "CashCashEquivalentsAndShortTermInvestments",
 )
 
 # Eta' massima di un dato di stato patrimoniale perche' descriva "adesso".
@@ -1268,6 +1698,22 @@ def extract_financials(companyfacts: dict,
     out["equity"] = extract_instant_series(companyfacts, EQUITY_TAG_CANDIDATES)
     out["long_term_debt"] = extract_instant_series(
         companyfacts, LONG_TERM_DEBT_TAG_CANDIDATES)
+    out["short_term_debt"] = extract_instant_series(
+        companyfacts, SHORT_TERM_DEBT_TAG_CANDIDATES)
+    out["cash"] = extract_instant_series(companyfacts, CASH_TAG_CANDIDATES)
+
+    # Debito totale = lungo + breve, allineati per data. Quando manca la parte a
+    # breve si usa il solo lungo: dichiararlo incompleto sarebbe piu' onesto di
+    # sommarlo a zero, ma la maggioranza dei filer che non taggano il debito
+    # corrente semplicemente non ne ha, e rifiutare il totale renderebbe vuoto
+    # il grafico della struttura del capitale per meta' del listino.
+    if out["short_term_debt"]:
+        out["total_debt"] = combine_series(
+            out["long_term_debt"], out["short_term_debt"], lambda a, b: a + b)
+        if not out["total_debt"]:
+            out["total_debt"] = out["long_term_debt"]
+    else:
+        out["total_debt"] = out["long_term_debt"]
 
     # Da QUALI tag XBRL sono venuti i numeri. Nessun tag e' obbligatorio e le
     # societa' cambiano il proprio nel tempo: senza questa mappa, "ricavi 44,1
@@ -1283,6 +1729,9 @@ def extract_financials(companyfacts: dict,
         "equity": instant_concept_used(companyfacts, EQUITY_TAG_CANDIDATES),
         "long_term_debt": instant_concept_used(
             companyfacts, LONG_TERM_DEBT_TAG_CANDIDATES),
+        "short_term_debt": instant_concept_used(
+            companyfacts, SHORT_TERM_DEBT_TAG_CANDIDATES),
+        "cash": instant_concept_used(companyfacts, CASH_TAG_CANDIDATES),
     }
     return out
 
@@ -1387,6 +1836,8 @@ def compute_ratios(fin: dict, price: Optional[float] = None,
     equity_now = last(fin.get("equity", []))
     assets_now = last(fin.get("assets", []))
     ltd_now = last(fin.get("long_term_debt", []))
+    debt_now = last(fin.get("total_debt", []))
+    cash_now = last(fin.get("cash", []))
 
     # patrimonio medio sull'anno che il TTM copre
     equity_avg = equity_now
@@ -1409,6 +1860,22 @@ def compute_ratios(fin: dict, price: Optional[float] = None,
     r["equity"] = equity_now
     r["assets"] = assets_now
     r["long_term_debt"] = ltd_now
+    r["total_debt"] = debt_now
+    r["cash"] = cash_now
+    r["net_debt"] = (debt_now - cash_now) if (debt_now is not None
+                                              and cash_now is not None) else None
+    # Enterprise value = capitalizzazione + debito - cassa. E' il prezzo
+    # dell'AZIENDA, non delle sole azioni: due societa' con la stessa
+    # capitalizzazione ma una carica di debito e l'altra piena di cassa non
+    # costano la stessa cifra a chi le comprasse intere.
+    r["enterprise_value"] = ((market_cap + (debt_now or 0) - (cash_now or 0))
+                             if market_cap and market_cap > 0 else None)
+    r["ev_to_ebit"] = (safe_div(r["enterprise_value"], ebit_ttm)
+                       if (r["enterprise_value"] and ebit_ttm and ebit_ttm > 0)
+                       else None)
+    r["net_debt_to_ebit"] = (safe_div(r["net_debt"], ebit_ttm)
+                             if (r["net_debt"] is not None and ebit_ttm
+                                 and ebit_ttm > 0) else None)
 
     r["roe_pct"] = (safe_div(ni_ttm, equity_avg) or 0) * 100 if (
         ni_ttm is not None and equity_avg and equity_avg > 0) else None
@@ -1542,6 +2009,9 @@ def annual_financial_table(fin: dict, eps_series: list[tuple[date, float]],
                             ("fcf", fin.get("fcf_fy")),
                             ("assets", fin.get("assets")),
                             ("equity", fin.get("equity")),
+                            ("total_debt", fin.get("total_debt")),
+                            ("cash", fin.get("cash")),
+                            ("dividends_paid", fin.get("dividends_paid_fy")),
                             ("eps", eps_series)):
             row[key] = _value_near(series or [], fy_end, tol_days=10)
         rows.append(row)

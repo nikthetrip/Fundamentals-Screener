@@ -41,6 +41,7 @@ from edgar_logic import (
     extract_eps_facts, build_ttm_eps, build_fair_value_rows,
     ttm_growth_yoy, ttm_growth_yoy_dated, normalized_eps,
     eps_cagr, earnings_volatility, had_recent_losses, classify_lynch, lynch_ratio,
+    growth_estimate, loss_profile, eps_growth_trend,
     choose_eps, fair_value_is_plausible,
     adjust_facts_for_splits, extract_share_counts, detect_share_events,
     build_derived_eps_facts, extract_dei_shares, extract_net_income_facts,
@@ -550,9 +551,17 @@ def process_ticker(ticker: str, facts_source: CompanyFactsSource, freq: str = "D
     ]
 
     # ---- CLASSIFICAZIONE LYNCH + FAIR VALUE A MULTIPLO VARIABILE ----
-    growth_5y = eps_cagr(eps_series_line, years=5)
+    # La crescita che alimenta il multiplo equo viene dalla scala di
+    # growth_estimate (tendenza a 5 anni, poi CAGR, poi finestre a 3 anni), non
+    # dal solo CAGR a 5 anni: e' il moltiplicatore del fair value, e prenderlo da
+    # due soli trimestri era la prima causa dei multipli senza senso.
+    gest = growth_estimate(eps_series_line)
+    growth_5y = gest["value"]
+    growth_5y_cagr_raw = eps_cagr(eps_series_line, years=5)
+    growth_5y_trend = eps_growth_trend(eps_series_line, years=5)
     volatility = earnings_volatility(eps_series_line)
-    losses = had_recent_losses(eps_series_line, years=5)
+    lp = loss_profile(eps_series_line, years=5)
+    losses = lp["any"]
 
     cls = classify_lynch(
         growth_pct=growth_5y,
@@ -562,14 +571,29 @@ def process_ticker(ticker: str, facts_source: CompanyFactsSource, freq: str = "D
         dividend_yield=snap.get("dividend_yield"),
         price_to_book=snap.get("price_to_book"),
         market_cap=market_cap,
-        recent_losses=losses,
+        losses=lp,
+        eps_normalized=eps_norm,
+        growth_basis=gest["basis"],
+        growth_confidence=gest["confidence"],
+        rebound_risk=gest["rebound_risk"],
     )
 
-    # Fair value PEG: base utili normalizzati per le cicliche (utili erratici),
-    # utili correnti per le altre. Multiplo = quello della categoria.
+    # Fair value di categoria. L'ANCORA la decide classify_lynch, non questa
+    # riga: puo' essere un multiplo sugli utili correnti, lo stesso multiplo
+    # sugli utili normalizzati (cicliche, turnaround, utili in calo), oppure il
+    # patrimonio netto per azione (asset play). Prima la scelta era cablata qui
+    # con un `if category == "Cyclical"`, e ogni nuova categoria che avesse
+    # avuto bisogno di una base diversa avrebbe dovuto ricordarsi di modificarla.
     fair_pe = cls["fair_pe"]
-    base_eps = eps_norm if cls["category"] == "Cyclical" and eps_norm else eps_now
-    fv_peg = base_eps * fair_pe if (fair_pe and base_eps and base_eps > 0) else None
+    fv_peg = None
+    if cls["anchor"] == "book":
+        bvps = ratios.get("book_value_per_share")
+        if bvps and bvps > 0 and cls.get("fair_pb"):
+            fv_peg = bvps * cls["fair_pb"]
+    elif cls["anchor"] == "earnings" and fair_pe:
+        base_eps = eps_norm if cls["eps_base"] == "normalized" else eps_now
+        if base_eps and base_eps > 0:
+            fv_peg = base_eps * fair_pe
     if not fair_value_is_plausible(fv_peg, price_today):
         fv_peg = None
     if fv_peg and price_today:
@@ -632,10 +656,29 @@ def process_ticker(ticker: str, facts_source: CompanyFactsSource, freq: str = "D
         "lynch_fair_pe": _round(fair_pe, 1),
         "lynch_pe_basis": cls["basis"],
         "lynch_note": cls["note"],
+        # Su COSA e' ancorato il fair value di categoria: "earnings" (multiplo),
+        # "book" (patrimonio netto per azione), "none" (nessuna base valida).
+        # Senza questa colonna l'interfaccia non puo' spiegare un fair value che
+        # non nasce da un P/E, e per le asset play e' esattamente il caso.
+        "lynch_anchor": cls["anchor"],
+        "lynch_eps_base": cls["eps_base"],
+        "lynch_fair_pb": _round(cls.get("fair_pb"), 2),
+        "lynch_confidence": cls["confidence"],
+        "lynch_confidence_note": cls["confidence_note"],
         "fair_value_peg": _round(fv_peg),
         "discount_vs_peg_pct": _round(peg_disc, 1),
         "valuation_peg": peg_val,
+        # growth_5y_cagr resta il nome storico della colonna (l'esporta lo
+        # screener), ma ora contiene la stima SCELTA dalla scala, non
+        # necessariamente il CAGR. Le due misure grezze viaggiano accanto, cosi'
+        # che la scheda possa mostrare da dove viene il multiplo.
         "growth_5y_cagr": _round(growth_5y, 1),
+        "growth_basis": gest["basis"],
+        "growth_5y_cagr_raw": _round(growth_5y_cagr_raw, 1),
+        "growth_5y_trend": _round(growth_5y_trend, 1),
+        "loss_periods_5y": lp["periods"],
+        "loss_episodes_5y": lp["episodes"],
+        "years_since_last_loss": _round(lp["quarters_since"], 1),
         "earnings_volatility": _round(volatility, 1),
         "lynch_ratio": _round(lr),
         "peg_ratio": _round(peg),
@@ -660,6 +703,12 @@ def process_ticker(ticker: str, facts_source: CompanyFactsSource, freq: str = "D
         "equity": ratios.get("equity"),
         "assets": ratios.get("assets"),
         "long_term_debt": ratios.get("long_term_debt"),
+        "total_debt": ratios.get("total_debt"),
+        "cash": ratios.get("cash"),
+        "net_debt": ratios.get("net_debt"),
+        "enterprise_value": ratios.get("enterprise_value"),
+        "ev_to_ebit": _round(ratios.get("ev_to_ebit")),
+        "net_debt_to_ebit": _round(ratios.get("net_debt_to_ebit")),
         "ps_ratio": _round(ratios.get("ps_ratio")),
         "pfcf_ratio": _round(ratios.get("pfcf_ratio")),
         "roe_pct": _round(ratios.get("roe_pct"), 1),

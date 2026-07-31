@@ -29,26 +29,64 @@ Il tool calcola **due** fair value distinti, perché Lynch usava due strumenti d
 un filtro visivo rapido, uguale per tutti. Ottimo per scansionare 500 titoli.
 Limite: penalizza le aziende a forte crescita e premia quelle lente.
 
-### 2. Lynch Fair Value — multiplo per categoria (PEG)
-`fair value = EPS × P/E equo della categoria`, dove il P/E equo dipende dal tipo
-di azienda (principio PEG = 1: il P/E equo tende al tasso di crescita).
+### 2. Lynch Fair Value — ancora per categoria (PEG)
 
-| Categoria | Criterio | P/E equo assegnato |
+`fair value = base × multiplo della categoria`, dove sia la **base** sia il
+**multiplo** dipendono dal tipo di azienda. Il principio è PEG = 1: il P/E equo
+tende al tasso di crescita.
+
+| Categoria | Criterio | Ancora di valutazione |
 |---|---|---|
-| 🚀 **Fast Grower** | crescita 5 anni > 20% | = crescita, **massimo 25** |
-| 🏛️ **Stalwart** | crescita 10–20% | = crescita |
-| 🐢 **Slow Grower** | crescita 0–10% | crescita + dividendo, **minimo 6, massimo 12** |
-| 🔄 **Ciclica** | settore ciclico **e** volatilità utili > 40 | 12 su utili **normalizzati** |
-| 🏗️ **Asset Play** | P/B < 1 | nessuno — il valore è negli asset |
-| 🔧 **Turnaround** | perdite negli ultimi 5 anni | nessuno — utili non affidabili |
+| 🚀 **Fast Grower** | crescita > 20%, misurata su una finestra senza perdite | P/E = crescita, **massimo 25** |
+| 🏛️ **Stalwart** | crescita 10–20% | P/E = crescita |
+| 🏛️ **Stalwart (recovering)** | crescita > 20% ma misurata attraverso una perdita | P/E **fermo a 15** — è un rimbalzo, non una tendenza |
+| 🐢 **Slow Grower** | crescita 0–10% | P/E = crescita + dividendo, **min 6, max 12** |
+| 🐢 **Slow Grower (declining)** | crescita negativa | P/E = 0 + dividendo, **pavimento 6**, su utili normalizzati |
+| 🔄 **Ciclica** | settore ciclico **e** utili erratici | P/E 12 su utili **normalizzati** di metà ciclo |
+| 🏗️ **Asset Play** | P/B < 1 | **patrimonio netto per azione** (P/B equo = 1) — non il P/E |
+| 🔧 **Turnaround** | in perdita ora, o tornata all'utile da meno di un anno, o più episodi di perdita recenti | P/E 10 su utili **normalizzati** — multiplo di ripresa |
+| ❓ **Unclassified** | crescita non calcolabile su nessuna finestra | nessuna — resta solo la linea a P/E 15 |
 
-**Ordine di verifica:** Turnaround e Asset Play hanno priorità su tutto, poi le
-Cicliche, poi le fasce di crescita. Una società in forte crescita ma con perdite
-recenti è classificata Turnaround, non Fast Grower: per lei il P/E non è una base
-di valutazione affidabile.
+**Ordine di verifica:** prima le condizioni che *invalidano* il P/E (nessun
+utile, turnaround, asset play, ciclica), poi le fasce di crescita. Una società
+in perdita che cresce del 40% non è una fast grower: quel 40% è un rimbalzo.
 
-**Lynch ratio** = (crescita % + dividendo %) ÷ P/E effettivo.
-Sopra 1,5 interessante · intorno a 1 equo · sotto 1 caro.
+**Ogni categoria ha un'ancora.** Le colonne `lynch_anchor` (`earnings` / `book` /
+`none`) e `lynch_eps_base` (`current` / `normalized`) dichiarano su cosa poggia
+il fair value, così che un numero che non nasce da un P/E non sembri un P/E.
+
+#### Da dove viene il tasso di crescita
+
+È il moltiplicatore del fair value, quindi non è un dettaglio. Viene da una
+**scala**, dal più affidabile al meno:
+
+1. **tendenza a 5 anni** — regressione ai minimi quadrati su log(EPS): usa
+   *tutti* i punti della finestra, non due;
+2. **CAGR a 5 anni** — due estremi (e se la finestra contiene perdite, il tasso
+   è in buona parte rimbalzo: viene segnalato e il multiplo limitato);
+3. **tendenza a 3 anni**;
+4. **CAGR a 3 anni**.
+
+Il CAGR fra due estremi consegna il giudizio sulla società al trimestre di
+partenza: con Apple dà 13,1% dove la tendenza dà 6,5% (gli esercizi depositati
+2021→2025 fanno +7,4%/anno). Su quel numero poggia il multiplo equo, quindi
+sbagliarlo significa produrre un fair value senza senso. `growth_5y_trend` e
+`growth_5y_cagr_raw` viaggiano entrambe nel CSV e sono confrontate nella scheda
+Growth.
+
+#### Volatilità degli utili (soglia delle cicliche)
+
+È la **deviazione assoluta mediana** delle variazioni annue dell'EPS, non la
+deviazione standard, con il denominatore protetto da un pavimento e le
+variazioni ritagliate a ±200%. Tre correzioni con la stessa ragione: una
+finestra di sette anni che finisce oggi contiene il 2020, e con la deviazione
+standard il solo crollo Covid faceva sembrare cicliche TJX (76) e Ross (71) più
+di General Motors. Con la misura robusta TJX segna 21 e Ross 25, mentre Ford
+resta 223, Alcoa 186, Occidental 118. Soglia: **50**.
+
+**Confidenza.** Ogni classificazione porta con sé `lynch_confidence` (🟢 alta ·
+🟡 media · 🔴 bassa) e la ragione in chiaro: come è stata misurata la crescita,
+quanto sono erratici gli utili, se ci sono state perdite nella finestra.
 
 ### Come leggerli insieme
 Quando i due modelli **concordano**, il segnale è robusto. Quando **divergono
@@ -67,6 +105,7 @@ al 3%), oppure che gli utili contengono voci straordinarie.
 | `sic_map.py` | Codice SIC della SEC → settore e industria (ripiego quando yfinance non li ha) |
 | `build_dataset.py` | Orchestratore: genera tutti i CSV in `data/` |
 | `app.py` | Dashboard Streamlit (Screener + Details) — interfaccia in inglese |
+| `charts.py` | Tavolozza e stile dei grafici, in un posto solo; segue il tema chiaro/scuro |
 | `test_logic.py` | Test offline della matematica di TTM/fair value |
 | `test_financials.py` | Test offline di bilanci, FCF, CAGR, volatilita' |
 | `test_categories.py` · `test_guardrails.py` · `test_filings.py` | Classificazione Lynch, arbitraggio fonti, filing |
@@ -78,8 +117,8 @@ al 3%), oppure che gli utili contengono voci straordinarie.
 | File | Contenuto |
 |------|-----------|
 | `history.csv.gz` | serie storica prezzo + EPS per ticker |
-| `fundamentals.csv` | una riga per ticker: valutazione, bilancio, tutti i CAGR |
-| `financials_annual.csv` | ultimi esercizi per ticker: ricavi, utili, cash flow, patrimonio |
+| `fundamentals.csv` | una riga per ticker: valutazione, ancora e confidenza della categoria, bilancio, cassa e debito, enterprise value, tutti i CAGR |
+| `financials_annual.csv` | ultimi esercizi per ticker: ricavi, utili, cash flow, patrimonio, **debito totale, cassa, dividendi pagati** |
 | `cagr_detail.csv` | ogni CAGR con i **due estremi** da cui è ricavato, per rifare il conto |
 | `events.csv` | split, diluizioni, buyback |
 | `filings.csv` | link diretti agli ultimi 10-K/10-Q |
@@ -261,15 +300,23 @@ operativo), oltre alle colonne diagnostiche.
 
 ### Details (una scheda per titolo, quattro tab)
 
-| Tab | Contenuto |
-|---|---|
-| 📉 **Valuation** | prezzo vs fair value nel tempo, **EPS e P/E accanto al prezzo**, categoria Lynch, confronto fra i due modelli, utili normalizzati |
-| 📊 **Financials** | il quadro finanziario completo, con il delta di ogni voce rispetto all'industria |
-| 📈 **Growth (5y)** | CAGR a 3/5/10 anni, ultimi esercizi come depositati, grafici |
-| 🔍 **Data quality** | **formula e fonte di ogni metrica con link di verifica**, estremi di ogni CAGR, divergenze fra fonti, eventi societari, filing SEC |
+Le schede sono organizzate per **domanda**, non per tipo di dato: ogni numero sta
+accanto a quello che spiega.
 
-Nella scheda **Valuation** i sei KPI sono in fila e il conto si chiude a vista:
-`EPS × P/E target = fair value` e `prezzo ÷ EPS = P/E`.
+| Tab | Domanda a cui risponde | Contenuto |
+|---|---|---|
+| 📉 **Valuation** | *quanto vale?* | categoria Lynch e confidenza in testa, grafico prezzo vs fair value, **il conto del fair value passo per passo** (due modelli affiancati), multipli confrontati con l'industria, utili normalizzati, arbitraggio dell'EPS in forma compatta |
+| 📊 **Financials** | *quanto è solida?* | scala del business, crescita e redditività (barre + margini in un grafico separato), salute finanziaria (debito/cassa/FCF), **struttura del capitale** a cascata fino all'enterprise value, generazione di cassa, esercizi come depositati, confronto con i pari |
+| 📈 **Growth** | *sta crescendo, e quanto?* | **la misura di crescita che determina il multiplo**, tendenza contro CAGR, matrice dei CAGR 3/5/10 anni, grafico indicizzato a 100, per azione, **estremi di ogni tasso** |
+| 🔍 **Data quality** | *posso fidarmi?* | arbitraggio dell'EPS per esteso, **gli input che hanno deciso la classificazione**, formula e tag XBRL di ogni voce, metadati, eventi societari, filing SEC |
+
+**Cosa si è spostato, e perché.** I multipli di valutazione (P/E, P/S, P/FCF,
+PEG) erano in Financials, dove si leggevano come indicatori di qualità
+dell'azienda: misurano quanto costa il titolo, quindi stanno in Valuation. Il
+conto del fair value e la derivazione dell'EPS erano in Data quality, dove
+nessuno li cercava pur essendo il cuore della valutazione. Gli estremi dei CAGR
+erano anch'essi in Data quality: non sono provenienza del dato, sono la crescita.
+In Data quality resta solo il materiale per **non fidarsi del programma**.
 
 ### Il sanity check (scheda Data quality)
 
@@ -568,8 +615,22 @@ Stessa logica del tuo setup Patterns-Screener.
 - **Profondità storica:** EDGAR ha EPS dal ~2009 (obbligo XBRL). La linea storica
   parte da lì, non dal 1990 come la WMT di GuruFocus (che usa un DB a pagamento).
   I *prezzi* vanno più indietro, ma senza utili non c'è fair value da disegnare.
-- **P/E fisso 15/20/25:** è la versione "classica" della linea. Lynch usava anche
-  un fair-P/E legato alla crescita; qui è tenuto semplice e trasparente.
+- **P/E fisso 15/20/25:** è la versione "classica" della linea. Il fair-P/E
+  legato alla crescita è il secondo modello, per categoria.
+- **La classificazione ciclica eredita la tassonomia del provider.** Il test
+  richiede un settore ciclico *e* utili erratici, ma i settori arrivano da
+  yfinance: Amazon è lì dentro "Consumer Cyclical", e con utili filed erratici
+  può risultare Ciclica pur non essendo un'azienda ciclica. La confidenza
+  dichiarata sulla scheda serve anche a questo.
+- **Niente ricavi per segmento o per area geografica.** I dati vengono dai fatti
+  XBRL consolidati (`us-gaap`); la ripartizione per segmento vive sugli *assi di
+  dimensione* del filing, che questa pipeline non legge. Le torte "Segment
+  revenue" e "By country" di TradingView non sono quindi replicabili con questa
+  fonte: servirebbe un parser degli assi XBRL o un provider a pagamento.
+- **Le soglie sono tarate su S&P 500 + Russell 1000.** La soglia di ciclicità
+  (50) e i confini fra le fasce di crescita sono stati scelti guardando la
+  distribuzione di quell'universo. Su `us-all`, che include migliaia di micro-cap
+  con utili molto più erratici, andrebbero riviste.
 - **EPS negativo:** il fair value non viene disegnato (non ha senso un P/E su utili negativi).
 - **yfinance rate limit:** su universi grandi può rallentare; il fallback Stooq
   aiuta sui prezzi, e settore/industria hanno il ripiego sul codice SIC.
