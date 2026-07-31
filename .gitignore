@@ -10,8 +10,9 @@ __pycache__/
 .pytest_cache/
 
 # --- Configurazione locale di Claude Code ---
-# Contiene la tua email e i permessi della macchina: e' locale, non del progetto.
-.claude/settings.local.json
+# Riguarda questa macchina (permessi, comando per lanciare la dashboard), non il
+# progetto: chi clona la repo non ne ha bisogno e il codice funziona senza.
+.claude/
 
 # --- Cache della build ---
 # L'archivio companyfacts della SEC scaricato da --bulk-facts (~1,5 GB).
