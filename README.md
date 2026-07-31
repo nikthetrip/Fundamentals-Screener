@@ -14,9 +14,11 @@ sconto sul fair value — estendibile a **tutte le società quotate negli USA**.
 Il fair value è calcolato **per azione**: `fair_value = EPS_TTM × P/E_target`.
 L'EPS TTM è ricostruito dai trimestri EDGAR (con Q4 derivato da FY quando manca).
 
-Oltre alla valutazione, ogni titolo ha una **scheda finanziaria** (ROE, equity
-ratio, earning power, free cash flow, margini, CAGR a 3/5/10 anni) in cui ogni
-voce è confrontata con la **mediana della sua industria**.
+Oltre alla valutazione, ogni titolo ha una **scheda finanziaria** organizzata come
+un bilancio — conto economico, stato patrimoniale, rendiconto finanziario, più
+rapporti (ROE, ROIC, earning power, margini, FCF yield, equity ratio,
+debito/mezzi propri) e crescita a 5 anni — in cui ogni voce è confrontata con la
+**mediana della sua industria**.
 
 ---
 
@@ -329,25 +331,39 @@ L'export CSV contiene **tutto**: bilanci, indicatori e ogni CAGR (3, 5 e 10 anni
 per utile per azione, ricavi, free cash flow, utile netto e flusso di cassa
 operativo), oltre alle colonne diagnostiche.
 
-### Details (una scheda per titolo, quattro tab)
+### Details (una scheda per titolo, cinque tab)
 
 Le schede sono organizzate per **domanda**, non per tipo di dato: ogni numero sta
 accanto a quello che spiega.
 
 | Tab | Domanda a cui risponde | Contenuto |
 |---|---|---|
-| 📉 **Valuation** | *quanto vale?* | categoria Lynch e confidenza in testa, grafico prezzo vs fair value, **il conto del fair value passo per passo** (due modelli affiancati), multipli confrontati con l'industria, utili normalizzati, arbitraggio dell'EPS in forma compatta |
-| 📊 **Financials** | *quanto è solida?* | scala del business, crescita e redditività (barre + margini in un grafico separato), salute finanziaria (debito/cassa/FCF), **struttura del capitale** a cascata fino all'enterprise value, generazione di cassa, esercizi come depositati, confronto con i pari |
-| 📈 **Growth** | *sta crescendo, e quanto?* | **la misura di crescita che determina il multiplo**, tendenza contro CAGR, matrice dei CAGR 3/5/10 anni, grafico indicizzato a 100, per azione, **estremi di ogni tasso** |
-| 🔍 **Data quality** | *posso fidarmi?* | arbitraggio dell'EPS per esteso, **gli input che hanno deciso la classificazione**, formula e tag XBRL di ogni voce, metadati, eventi societari, filing SEC |
+| 📉 **Valuation** | *quanto vale?* | categoria Lynch e confidenza in testa, otto KPI in due file — prezzo, EPS, **i due fair value (categoria e P/E 15) con lo scarto dal prezzo per ciascuno**, P/E corrente, Lynch ratio — grafico prezzo vs fair value, **il conto del fair value passo per passo in un riquadro richiudibile**, multipli confrontati con l'industria, utili normalizzati (con lo scarto dal prezzo anche lì), arbitraggio dell'EPS in forma compatta |
+| 📊 **Financials** | *quanto è solida?* | quattro grandezze in testa, poi **cinque sotto-schede che ricalcano i prospetti di bilancio**: 🧾 conto economico · 🏦 stato patrimoniale · 💵 rendiconto finanziario · 📐 rapporti · 📈 crescita a 5 anni. Ognuna con i suoi KPI a tema, il grafico degli esercizi e la tabella *come depositato* |
+| 📈 **Growth** | *sta crescendo, e quanto?* | **la misura di crescita che determina il multiplo**, tendenza contro CAGR, matrice dei CAGR 3/5/10 anni, grafico indicizzato a 100, per azione, **estremi di ogni tasso** (in un riquadro richiudibile) |
+| 📄 **Filings** | *dove sta il documento?* | quanto è vecchio il dato SEC più recente e quando escono i prossimi conti, i 10-K/10-Q depositati **con la spiegazione di cosa contiene ciascun modulo** e il link diretto, i punti d'ingresso su EDGAR |
+| 🔍 **Data quality** | *posso fidarmi?* | **da dove viene ogni numero**, arbitraggio dell'EPS per esteso, gli input che hanno deciso la classificazione, formula e tag XBRL di ogni voce, metadati, eventi societari |
 
 **Cosa si è spostato, e perché.** I multipli di valutazione (P/E, P/S, P/FCF,
 PEG) erano in Financials, dove si leggevano come indicatori di qualità
-dell'azienda: misurano quanto costa il titolo, quindi stanno in Valuation. Il
-conto del fair value e la derivazione dell'EPS erano in Data quality, dove
-nessuno li cercava pur essendo il cuore della valutazione. Gli estremi dei CAGR
-erano anch'essi in Data quality: non sono provenienza del dato, sono la crescita.
-In Data quality resta solo il materiale per **non fidarsi del programma**.
+dell'azienda: misurano quanto costa il titolo, quindi stanno in Valuation — e
+tornano in Financials solo nella sotto-scheda *Ratios*, come rapporti fra prezzo
+e conti. Il conto del fair value e la derivazione dell'EPS erano in Data quality,
+dove nessuno li cercava pur essendo il cuore della valutazione. Gli estremi dei
+CAGR erano anch'essi in Data quality: non sono provenienza del dato, sono la
+crescita. I **filing SEC** erano l'ultima sezione di Data quality, raggiungibile
+solo scorrendo tutta una pagina di diagnostica: non sono una diagnostica, sono la
+fonte, e hanno una scheda propria. In Data quality resta solo il materiale per
+**non fidarsi del programma**.
+
+**Perché sotto-schede in Financials.** Prima era una pagina unica in cui margini,
+debito, cassa e multipli si alternavano: per trovare il debito bisognava sapere
+dove qualcuno aveva deciso di metterlo. Ora la suddivisione è quella della
+relazione annuale — conto economico, stato patrimoniale, rendiconto — più i
+rapporti che nascono incrociandoli. Ogni indicatore è definito una volta sola nel
+dizionario `METRICS` di `app.py`, con etichetta, formula, polarità, gruppo e un
+tooltip in tre parti (*cos'è · formula · come si legge*): aggiungerne uno lì lo
+fa comparire nella sezione giusta, già formattato e già confrontato con i pari.
 
 ### Il sanity check (scheda Data quality)
 
@@ -525,11 +541,27 @@ prossima trimestrale.
 | **P/E (forward)** | prezzo ÷ EPS atteso dagli analisti — l'unico dato che guarda avanti |
 | **P/S** | capitalizzazione ÷ ricavi TTM |
 | **ROE** | utile netto TTM ÷ patrimonio netto **medio** del periodo |
+| **ROIC** | EBIT TTM × (1 − 21%) ÷ (patrimonio netto + debito totale − cassa) |
 | **Equity ratio** | patrimonio netto ÷ totale attivo |
+| **Debito / attivo** | debito totale ÷ totale attivo |
+| **Asset turnover** | ricavi TTM ÷ totale attivo |
 | **Earning power** | EBIT TTM ÷ totale attivo (per le banche: utile ante imposte) |
 | **FCF** | flusso di cassa operativo − investimenti in immobilizzi |
+| **Capex (TTM)** | flusso di cassa operativo − FCF (segno positivo = uscita) |
+| **FCF margin · OCF margin** | FCF o flusso operativo ÷ ricavi, entrambi TTM |
+| **FCF conversion** | FCF ÷ utile netto, entrambi TTM (vuoto in perdita) |
 | **FCF yield** | FCF TTM ÷ capitalizzazione |
+| **Earnings yield** | 100 ÷ P/E trailing |
+| **Payout ratio** | (dividend yield × capitalizzazione) ÷ utile netto TTM |
 | **Debito a lungo termine** | debito non corrente dall'ultimo stato patrimoniale |
+
+Il **ROIC** applica l'aliquota federale statunitense del 21% a tutte le società
+invece dell'aliquota effettiva di ciascuna, che il dataset non porta: un ROIC
+confrontabile fra società vale più di un ROIC esatto per una sola e incomparabile
+con le altre. Resta vuoto quando il capitale investito è negativo — società con
+più cassa che capitale — perché un rendimento su una base negativa cambia segno e
+si leggerebbe al contrario. La stessa regola vale per ogni rapporto: denominatore
+nullo o negativo ⇒ cella vuota, mai un numero che sembra normale.
 
 Tre punti dove è facile sbagliare, e come sono risolti qui:
 

@@ -147,6 +147,86 @@ def load_fundamentals() -> pd.DataFrame | None:
             df[col] = df[col].fillna("Unspecified").replace("", "Unspecified")
     if "lynch_category" in df.columns:
         df["lynch_category"] = df["lynch_category"].fillna("Unclassified")
+    return derive_ratios(df)
+
+
+# Tassazione usata per il NOPAT del ROIC. Non e' l'aliquota effettiva della
+# societa': quella richiederebbe le imposte depositate riga per riga, che il
+# dataset non porta. E' l'aliquota federale statunitense, la stessa per tutti,
+# dichiarata nel tooltip — un ROIC confrontabile fra societa' vale piu' di un
+# ROIC "esatto" per una sola e incomparabile con le altre.
+ROIC_TAX_RATE = 0.21
+
+
+def _series(df: pd.DataFrame, col: str) -> pd.Series:
+    """La colonna come numeri, o una colonna di NaN se non c'e'."""
+    if col not in df.columns:
+        return pd.Series(np.nan, index=df.index, dtype="float64")
+    return pd.to_numeric(df[col], errors="coerce")
+
+
+def _ratio(num: pd.Series, den: pd.Series, *, positive_den: bool = True,
+           scale: float = 1.0) -> pd.Series:
+    """
+    Divisione riga per riga che si rifiuta di produrre numeri privi di senso.
+
+    Un denominatore ZERO o NEGATIVO non da' un rapporto interpretabile: un
+    margine su ricavi negativi, un ROIC su capitale investito negativo (societa'
+    con piu' cassa che capitale) o un payout su utili in perdita si leggerebbero
+    come valori normali con il segno sbagliato. Meglio la cella vuota, che il
+    resto dell'interfaccia sa gia' rappresentare.
+    """
+    den = den.where(den > 0) if positive_den else den.where(den != 0)
+    return num / den * scale
+
+
+def derive_ratios(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    I rapporti che il dataset non porta gia' pronti, calcolati QUI e una volta
+    sola.
+
+    Perche' qui e non nella pagina: le mediane di settore (`peer_medians`) si
+    costruiscono sulle colonne del DataFrame, quindi un rapporto calcolato al
+    momento di disegnare una scheda sarebbe l'unico senza confronto con i pari.
+    Aggiungendolo alla tabella, ogni nuovo indicatore eredita gratuitamente il
+    delta contro l'industria come tutti gli altri.
+    """
+    rev = _series(df, "revenue_ttm")
+    ni = _series(df, "net_income_ttm")
+    ebit = _series(df, "ebit_ttm")
+    ocf = _series(df, "ocf_ttm")
+    fcf = _series(df, "fcf_ttm")
+    assets = _series(df, "assets")
+    equity = _series(df, "equity")
+    debt = _series(df, "total_debt")
+    cash = _series(df, "cash")
+    ndebt = _series(df, "net_debt")
+    mcap = _series(df, "market_cap")
+    pe = _series(df, "pe_ratio")
+    dy = _series(df, "dividend_yield")
+
+    # Capex non e' nel file dei fondamentali, ma e' esattamente la differenza
+    # fra i due flussi di cassa che ci sono. Segno POSITIVO = uscita.
+    df["capex_ttm"] = ocf - fcf
+
+    df["fcf_margin_pct"] = _ratio(fcf, rev, scale=100)
+    df["ocf_margin_pct"] = _ratio(ocf, rev, scale=100)
+    df["capex_to_revenue_pct"] = _ratio(df["capex_ttm"], rev, scale=100)
+    # Conversione: quanta parte dell'utile CONTABILE diventa cassa. Ha senso
+    # solo con utile positivo — con una perdita il rapporto cambia segno e si
+    # leggerebbe come una conversione eccellente.
+    df["fcf_conversion_pct"] = _ratio(fcf, ni, scale=100)
+    df["asset_turnover"] = _ratio(rev, assets)
+
+    invested = equity + debt.fillna(0) - cash.fillna(0)
+    df["roic_pct"] = _ratio(ebit * (1 - ROIC_TAX_RATE), invested, scale=100)
+
+    df["net_debt_to_equity"] = _ratio(ndebt, equity)
+    df["debt_to_assets_pct"] = _ratio(debt, assets, scale=100)
+    df["earnings_yield_pct"] = _ratio(pd.Series(100.0, index=df.index), pe)
+    # Dividendi pagati (rendimento × capitalizzazione) sugli utili dello stesso
+    # periodo: quanta parte dell'utile esce dall'azienda verso i soci.
+    df["payout_ratio_pct"] = _ratio(dy / 100 * mcap, ni, scale=100)
     return df
 
 
@@ -195,162 +275,558 @@ def load_cagr_detail() -> pd.DataFrame | None:
 #           industry at 9% is "+3 pp", not "+33%"), a ratio in relative terms
 #           (a P/E of 20 vs an industry at 25 is "-20%"). Mixing the two is the
 #           quickest way to make a comparison table lie.
+#           money = compact currency (12.9 B$) · pct = percentage · ratio = plain
+#           number · usd = a PER-SHARE amount, which is money but must never be
+#           abbreviated ("$19.82", never "20 $") · count = a quantity of things,
+#           shares in particular, scaled but with no currency symbol.
+# 'group' : which statement the figure belongs to — market · income · balance ·
+#           cash · returns · growth. It is what drives the layout of the
+#           Financials tab: sections are generated from this, so adding a metric
+#           here makes it appear in the right place with no further edit.
+#
+# ADDING A METRIC. Put it in this dictionary with a label, a kind, a polarity
+# and a 'help' written in the three-part shape used throughout — what it is,
+# the formula, how to read it — then list its key in the relevant section of
+# the Financials tab. Everything else (formatting, peer median, delta, colour)
+# follows automatically.
 METRICS: dict[str, dict] = {
+
+    # ------------------------------------------------------------------ #
+    # PRICE — what the market is charging                                 #
+    # ------------------------------------------------------------------ #
     "market_cap": dict(
-        label="Market Cap", kind="money", better=None, peer=False,
-        help="Share price × shares outstanding, from the market data provider. "
-             "Not compared against the industry: size is not a quality."),
-    "pe_ratio": dict(
-        label="P/E (trailing)", kind="ratio", better="low",
-        help="Price ÷ trailing-twelve-month EPS. The EPS is the one selected by "
-             "the source arbitration and shown throughout this page, so the "
-             "ratio is always internally consistent — it is recomputed here, "
-             "not copied from the provider."),
-    "forward_pe": dict(
-        label="P/E (forward)", kind="ratio", better="low",
-        help="Price ÷ next-twelve-month EPS **estimated by analysts** "
-             "(yfinance consensus). The only forward-looking figure on this "
-             "page: it is an expectation, not a filed number."),
-    "ps_ratio": dict(
-        label="P/S (ttm)", kind="ratio", better="low",
-        help="Market cap ÷ trailing-twelve-month revenue. Revenue is rebuilt "
-             "from the SEC filings by summing the last four discrete quarters."),
-    "pfcf_ratio": dict(
-        label="P/FCF", kind="ratio", better="low",
-        help="Market cap ÷ trailing-twelve-month free cash flow."),
-    "roe_pct": dict(
-        label="ROE", kind="pct", better="high",
-        help="Net income (TTM) ÷ **average** shareholders' equity over the same "
-             "twelve months — average, not closing, because a flow divided by "
-             "a year-end snapshot overstates the return of companies that just "
-             "bought back stock. Both figures come from SEC filings."),
-    "equity_ratio_pct": dict(
-        label="Equity ratio", kind="pct", better="high",
-        help="Shareholders' equity ÷ total assets. How much of the balance "
-             "sheet is owned rather than borrowed. Structurally low for banks "
-             "— which is why the comparison shown is against the same industry, "
-             "not the whole market."),
-    "earning_power_pct": dict(
-        label="Earning power", kind="pct", better="high",
-        help="Operating income, EBIT (TTM) ÷ total assets. What the assets earn "
-             "before financing and taxes, so it is comparable across companies "
-             "with different debt and tax situations. Where EBIT is not tagged "
-             "(banks), pre-tax income is used."),
-    "long_term_debt": dict(
-        label="Long term debt", kind="money", better="low", peer=False,
-        help="Non-current debt from the latest balance sheet filed with the "
-             "SEC. Where a company only tags debt including current "
-             "maturities, that broader figure is used."),
-    "debt_to_equity": dict(
-        label="Debt / equity", kind="ratio", better="low",
-        help="Long-term debt ÷ shareholders' equity."),
-    "total_debt": dict(
-        label="Total debt", kind="money", better="low", peer=False,
-        help="Long-term debt **plus** the current portion and short-term "
-             "borrowings, from the latest filed balance sheet. The total is the "
-             "figure that matters: modest long-term debt sitting next to a pile "
-             "of commercial paper maturing this year is not a low-debt company."),
-    "cash": dict(
-        label="Cash & equivalents", kind="money", better="high", peer=False,
-        help="Cash and cash equivalents from the latest filed balance sheet."),
-    "net_debt": dict(
-        label="Net debt", kind="money", better="low", peer=False,
-        help="Total debt − cash. Negative means the company holds more cash "
-             "than debt."),
+        label="Market cap", kind="money", better=None, peer=False,
+        group="market",
+        help="**What it is** — the price tag on all the shares put together.\n\n"
+             "**Formula** — share price × shares outstanding.\n\n"
+             "**How to read it** — size, nothing more. It is not compared with "
+             "the peer group because being bigger is not the same as being "
+             "better."),
     "enterprise_value": dict(
         label="Enterprise value", kind="money", better=None, peer=False,
-        help="Market cap + total debt − cash: what the whole business costs, "
-             "not just its shares. Two companies with the same market cap do "
-             "not cost the same if one carries debt and the other holds cash."),
+        group="market",
+        help="**What it is** — what the whole business costs, not just its "
+             "shares: buying the equity also means taking on the debt and "
+             "getting the cash.\n\n"
+             "**Formula** — market cap + total debt − cash.\n\n"
+             "**How to read it** — two companies with the same market cap do "
+             "not cost the same if one carries debt and the other is sitting "
+             "on cash."),
+    "pe_ratio": dict(
+        label="P/E (trailing)", kind="ratio", better="low", group="market",
+        help="**What it is** — how many years of current earnings you are "
+             "paying for one share.\n\n"
+             "**Formula** — price ÷ trailing-twelve-month EPS.\n\n"
+             "**How to read it** — lower is cheaper, but only against the same "
+             "kind of company: 30 is expensive for a utility and cheap for "
+             "software. Recomputed here from the EPS shown on this page, never "
+             "copied from the provider, so it always matches the rest."),
+    "forward_pe": dict(
+        label="P/E (forward)", kind="ratio", better="low", group="market",
+        help="**What it is** — the same ratio, but on the earnings analysts "
+             "*expect* over the next twelve months.\n\n"
+             "**Formula** — price ÷ consensus next-twelve-month EPS.\n\n"
+             "**How to read it** — the only forward-looking number on this "
+             "page. Well below the trailing P/E means the market is pricing in "
+             "a jump in profits; it is an expectation, not a filed figure."),
+    "earnings_yield_pct": dict(
+        label="Earnings yield", kind="pct", better="high", group="market",
+        help="**What it is** — the P/E turned upside down, so it can be "
+             "compared with a bond yield.\n\n"
+             "**Formula** — 100 ÷ P/E, i.e. EPS ÷ price.\n\n"
+             "**How to read it** — the profit the business earns each year for "
+             "every $100 of share price. Under the yield of a government bond, "
+             "you are paying for growth you have not seen yet."),
+    "ps_ratio": dict(
+        label="P/S", kind="ratio", better="low", group="market",
+        help="**What it is** — the price paid for each unit of sales.\n\n"
+             "**Formula** — market cap ÷ trailing-twelve-month revenue.\n\n"
+             "**How to read it** — the one multiple that still works when "
+             "profits are temporarily depressed or negative. Only comparable "
+             "between companies with similar margins: 1× sales is dear for a "
+             "supermarket and cheap for software."),
+    "pfcf_ratio": dict(
+        label="P/FCF", kind="ratio", better="low", group="market",
+        help="**What it is** — the P/E's cash-based twin: the price paid for "
+             "each unit of cash the business actually produces.\n\n"
+             "**Formula** — market cap ÷ trailing-twelve-month free cash "
+             "flow.\n\n"
+             "**How to read it** — much higher than the P/E means the reported "
+             "profit is not turning into cash — the gap is where accounting "
+             "choices hide."),
+    "price_to_book": dict(
+        label="P/B", kind="ratio", better="low", group="market",
+        help="**What it is** — the price paid for each unit of accounting net "
+             "worth.\n\n"
+             "**Formula** — price ÷ book value per share.\n\n"
+             "**How to read it** — below 1 the market values the company at "
+             "less than its own balance sheet, which is what Lynch called an "
+             "*asset play*. Meaningful for banks and industrials, close to "
+             "useless where the real assets are brands and people."),
     "ev_to_ebit": dict(
-        label="EV / EBIT", kind="ratio", better="low",
-        help="Enterprise value ÷ trailing-twelve-month operating income. The "
-             "debt-aware counterpart of the P/E — it compares the price of the "
-             "whole business with what the business earns before financing."),
-    "net_debt_to_ebit": dict(
-        label="Net debt / EBIT", kind="ratio", better="low",
-        help="How many years of operating income would repay the net debt. "
-             "Above 3–4 the balance sheet starts constraining the business."),
-    "book_value_per_share": dict(
-        label="Book value / share", kind="ratio", better="high", peer=False,
-        help="Shareholders' equity ÷ shares outstanding. For a Lynch asset "
-             "play this is the valuation anchor, not the P/E."),
-    "revenue_per_share": dict(
-        label="Revenue / share", kind="ratio", better="high", peer=False,
-        help="Trailing-twelve-month revenue ÷ shares outstanding."),
-    "fcf_per_share": dict(
-        label="FCF / share", kind="ratio", better="high", peer=False,
-        help="Trailing-twelve-month free cash flow ÷ shares outstanding."),
+        label="EV / EBIT", kind="ratio", better="low", group="market",
+        help="**What it is** — the debt-aware P/E: the price of the whole "
+             "business against what the business earns before financing.\n\n"
+             "**Formula** — enterprise value ÷ trailing-twelve-month operating "
+             "income.\n\n"
+             "**How to read it** — the fairest way to compare two companies "
+             "with very different debt loads, because both the numerator and "
+             "the denominator ignore who financed what."),
+    "peg_ratio": dict(
+        label="PEG", kind="ratio", better="low", group="market",
+        help="**What it is** — the P/E measured against the growth that is "
+             "supposed to justify it.\n\n"
+             "**Formula** — P/E ÷ 5-year earnings growth rate.\n\n"
+             "**How to read it** — below 1 cheap for the growth on offer, "
+             "above 2 expensive. Meaningless when growth is negative, and "
+             "therefore left blank."),
     "fcf_yield_pct": dict(
-        label="FCF yield", kind="pct", better="high",
-        help="Free cash flow (TTM) ÷ market cap. The cash return the business "
-             "generates for its current price — the cash-based counterpart of "
-             "the earnings yield."),
-    "fcf_growth_yoy_pct": dict(
-        label="FCF growth YoY", kind="pct", better="high",
-        help="Change in free cash flow over the latest full fiscal year versus "
-             "the one before. Falls back to the trailing-twelve-month series "
-             "when only one fiscal year is on file."),
-    "fcf_ttm": dict(
-        label="FCF (TTM)", kind="money", better="high", peer=False,
-        help="Operating cash flow − capital expenditure, over the last four "
-             "quarters. EDGAR reports cash flow year-to-date, not per quarter, "
-             "so quarters are recovered by differencing consecutive cumulative "
-             "figures before summing."),
-    "fcf_latest_fy": dict(
-        label="FCF (latest FY)", kind="money", better="high", peer=False,
-        help="Free cash flow of the most recent complete fiscal year, straight "
-             "from the annual cash flow statement."),
+        label="FCF yield", kind="pct", better="high", group="market",
+        help="**What it is** — the cash return the business throws off at "
+             "today's price, the way a rental yield works for a flat.\n\n"
+             "**Formula** — free cash flow (TTM) ÷ market cap.\n\n"
+             "**How to read it** — higher is cheaper. It is the honest "
+             "counterpart of the earnings yield, because cash cannot be "
+             "smoothed by accounting choices."),
+    "dividend_yield": dict(
+        label="Dividend yield", kind="pct", better="high", group="market",
+        help="**What it is** — the part of the return that is paid to you in "
+             "cash rather than left inside the company.\n\n"
+             "**Formula** — annual dividend per share ÷ price.\n\n"
+             "**How to read it** — always read together with the payout ratio: "
+             "a high yield paid out of an unsustainable share of profits is a "
+             "cut waiting to happen. Computed from the dividend in dollars, "
+             "not from the provider's yield field, which mixes percent and "
+             "fraction."),
+    "payout_ratio_pct": dict(
+        label="Payout ratio", kind="pct", better=None, group="market",
+        help="**What it is** — the slice of profit handed to shareholders as "
+             "dividends instead of being reinvested.\n\n"
+             "**Formula** — dividends paid (dividend yield × market cap) ÷ net "
+             "income (TTM).\n\n"
+             "**How to read it** — under 60% comfortable, over 100% the "
+             "company is paying more than it earns and is funding the "
+             "dividend from cash or debt. Neither high nor low is "
+             "intrinsically good: a growing company that pays nothing is doing "
+             "the right thing. Blank when there are no profits to share."),
+    "beta": dict(
+        label="Beta", kind="ratio", better=None, group="market",
+        help="**What it is** — how violently the stock moves compared with the "
+             "market as a whole.\n\n"
+             "**Formula** — regression of the stock's returns on the market's "
+             "(provider data).\n\n"
+             "**How to read it** — 1 means it moves with the index, 1.5 that "
+             "it exaggerates every move by half, below 1 that it is calmer. It "
+             "measures volatility, not risk of loss."),
+
+    # ------------------------------------------------------------------ #
+    # INCOME STATEMENT — what the company sells and keeps                 #
+    # ------------------------------------------------------------------ #
     "revenue_ttm": dict(
         label="Revenue (TTM)", kind="money", better="high", peer=False,
-        help="Trailing-twelve-month revenue, summed from the last four "
-             "discrete quarters filed with the SEC."),
+        group="income",
+        help="**What it is** — everything the company billed its customers in "
+             "the last twelve months.\n\n"
+             "**Formula** — the last four discrete quarters filed with the "
+             "SEC, added up.\n\n"
+             "**How to read it** — the top line: every margin below is a "
+             "fraction of this number. Not compared with peers — size is not a "
+             "quality."),
+    "revenue_latest_fy": dict(
+        label="Revenue (latest FY)", kind="money", better="high", peer=False,
+        group="income",
+        help="**What it is** — revenue for the most recent *complete* fiscal "
+             "year, as it appears in the annual report.\n\n"
+             "**Formula** — straight from the 10-K income statement.\n\n"
+             "**How to read it** — the audited figure. It differs from the TTM "
+             "number by however many quarters have been filed since the year "
+             "ended."),
+    "ebit_ttm": dict(
+        label="EBIT (TTM)", kind="money", better="high", peer=False,
+        group="income",
+        help="**What it is** — the profit the business makes from operating, "
+             "before interest and taxes get their share.\n\n"
+             "**Formula** — operating income over the last four quarters; "
+             "pre-tax income where EBIT is not tagged separately (banks).\n\n"
+             "**How to read it** — the cleanest measure of the trading "
+             "performance, because it is not affected by how the company is "
+             "financed or where it pays tax."),
     "net_income_ttm": dict(
         label="Net income (TTM)", kind="money", better="high", peer=False,
-        help="Trailing-twelve-month net income from SEC filings."),
-    "net_margin_pct": dict(
-        label="Net margin", kind="pct", better="high",
-        help="Net income ÷ revenue, both trailing twelve months."),
+        group="income",
+        help="**What it is** — the bottom line: what is left for shareholders "
+             "after every cost, interest and tax.\n\n"
+             "**Formula** — the last four discrete quarters filed with the "
+             "SEC, added up.\n\n"
+             "**How to read it** — the numerator of the P/E. It is also the "
+             "figure most exposed to one-off items, which is why the page also "
+             "shows a normalized version."),
+    "eps_ttm": dict(
+        label="EPS (TTM)", kind="usd", better="high", peer=False,
+        group="income",
+        help="**What it is** — the profit attributable to one single share.\n\n"
+             "**Formula** — four discrete quarterly EPS figures added up, "
+             "restated for stock splits, after arbitration between the SEC "
+             "filings and the provider.\n\n"
+             "**How to read it** — the number this whole page is built on: the "
+             "fair value multiplies it, the P/E divides by it."),
     "operating_margin_pct": dict(
-        label="Operating margin", kind="pct", better="high",
-        help="EBIT ÷ revenue, both trailing twelve months."),
-    "dividend_yield": dict(
-        label="Dividend yield", kind="pct", better="high",
-        help="Annual dividend per share ÷ price. Computed from the dividend "
-             "rate in dollars rather than taken from the provider's yield "
-             "field, which is inconsistent about percent vs fraction."),
-    "price_to_book": dict(
-        label="P/B", kind="ratio", better="low",
-        help="Price ÷ book value per share. Below 1 the market values the "
-             "company under its accounting net worth — a Lynch 'asset play'."),
-    "peg_ratio": dict(
-        label="PEG", kind="ratio", better="low",
-        help="P/E ÷ 5-year earnings growth. Below 1 cheap for the growth, "
-             "above 2 expensive."),
-    "beta": dict(
-        label="Beta", kind="ratio", better=None,
-        help="Volatility of the stock relative to the market (provider data)."),
-    "cagr_eps_5y": dict(
-        label="EPS CAGR 5y", kind="pct", better="high",
-        help="Compound annual growth rate of trailing-twelve-month EPS over "
-             "five years. Undefined — and left blank — when the starting value "
-             "is a loss: a compound rate from a negative base means nothing."),
+        label="Operating margin", kind="pct", better="high", group="income",
+        help="**What it is** — how many cents of each dollar of sales survive "
+             "the cost of running the business.\n\n"
+             "**Formula** — EBIT ÷ revenue, both trailing twelve months.\n\n"
+             "**How to read it** — the best single indicator of pricing power. "
+             "Compare it only within an industry, and watch its direction over "
+             "the years more than its level."),
+    "net_margin_pct": dict(
+        label="Net margin", kind="pct", better="high", group="income",
+        help="**What it is** — how many cents of each dollar of sales end up as "
+             "profit for the shareholder.\n\n"
+             "**Formula** — net income ÷ revenue, both trailing twelve "
+             "months.\n\n"
+             "**How to read it** — the operating margin after interest and "
+             "tax. A wide gap between the two says the debt or the tax bill is "
+             "eating the business's own performance."),
+    "revenue_growth_yoy_pct": dict(
+        label="Revenue growth YoY", kind="pct", better="high", group="income",
+        help="**What it is** — how much bigger the top line is than a year "
+             "ago.\n\n"
+             "**Formula** — trailing-twelve-month revenue against the point "
+             "closest to twelve months earlier (compared by date, not by "
+             "position in the series).\n\n"
+             "**How to read it** — the fastest-reacting growth figure on the "
+             "page, and the noisiest: one strong quarter moves it."),
+    "eps_growth_yoy": dict(
+        label="EPS growth YoY", kind="pct", better="high", group="income",
+        help="**What it is** — how much more the company earns per share than "
+             "a year ago.\n\n"
+             "**Formula** — trailing-twelve-month EPS against the point "
+             "closest to twelve months earlier.\n\n"
+             "**How to read it** — persistently faster than revenue growth "
+             "means margins are widening or the share count is shrinking; "
+             "persistently slower means the opposite."),
+    "revenue_per_share": dict(
+        label="Revenue / share", kind="usd", better="high", peer=False,
+        group="income",
+        help="**What it is** — the sales that belong to one share.\n\n"
+             "**Formula** — trailing-twelve-month revenue ÷ shares "
+             "outstanding.\n\n"
+             "**How to read it** — the per-share view is the only one that "
+             "sees dilution: revenue that grows while the share count grows "
+             "faster leaves the individual shareholder with less."),
+    "shares_outstanding": dict(
+        label="Shares outstanding", kind="count", better="low", peer=False,
+        group="income",
+        help="**What it is** — how many slices the company is cut into.\n\n"
+             "**Formula** — the latest share count from the provider.\n\n"
+             "**How to read it** — falling over the years means buybacks are "
+             "concentrating the profit on fewer shares; rising means dilution, "
+             "which quietly eats the growth of every per-share figure."),
+
+    # ------------------------------------------------------------------ #
+    # BALANCE SHEET — what it owns and owes                               #
+    # ------------------------------------------------------------------ #
+    "assets": dict(
+        label="Total assets", kind="money", better=None, peer=False,
+        group="balance",
+        help="**What it is** — everything the company owns, at the value "
+             "carried in its books.\n\n"
+             "**Formula** — the latest filed balance sheet.\n\n"
+             "**How to read it** — on its own it says only how capital-heavy "
+             "the business is. What matters is how much of it is financed by "
+             "the owners (equity ratio) and what it earns (earning power)."),
+    "equity": dict(
+        label="Shareholders' equity", kind="money", better="high", peer=False,
+        group="balance",
+        help="**What it is** — the part of the assets that belongs to the "
+             "shareholders once every creditor has been paid.\n\n"
+             "**Formula** — total assets − total liabilities, from the latest "
+             "filed balance sheet.\n\n"
+             "**How to read it** — the accounting floor under the share price, "
+             "and the denominator of ROE. Negative equity is not automatically "
+             "fatal, but it makes ROE and debt/equity unreadable."),
+    "cash": dict(
+        label="Cash & equivalents", kind="money", better="high", peer=False,
+        group="balance",
+        help="**What it is** — money available immediately, plus what can be "
+             "turned into money within days.\n\n"
+             "**Formula** — the cash line of the latest filed balance "
+             "sheet.\n\n"
+             "**How to read it** — the buffer that lets a company survive a "
+             "bad year without asking anyone's permission. Only meaningful "
+             "next to the debt it might have to repay."),
+    "total_debt": dict(
+        label="Total debt", kind="money", better="low", peer=False,
+        group="balance",
+        help="**What it is** — every dollar the company has borrowed, whenever "
+             "it falls due.\n\n"
+             "**Formula** — long-term debt + the current portion and "
+             "short-term borrowings, from the latest filed balance sheet.\n\n"
+             "**How to read it** — this, not the long-term figure, is the "
+             "number that matters: modest long-term debt next to a pile of "
+             "commercial paper maturing this year is not a low-debt company."),
+    "long_term_debt": dict(
+        label="Long term debt", kind="money", better="low", peer=False,
+        group="balance",
+        help="**What it is** — the borrowings that do not fall due within the "
+             "year.\n\n"
+             "**Formula** — the non-current debt line of the latest filed "
+             "balance sheet; where a company only tags debt including current "
+             "maturities, that broader figure is used.\n\n"
+             "**How to read it** — the patient part of the debt: it does not "
+             "create refinancing pressure this year, but it still costs "
+             "interest."),
+    "net_debt": dict(
+        label="Net debt", kind="money", better="low", peer=False,
+        group="balance",
+        help="**What it is** — the debt that would still be there if the "
+             "company spent all its cash repaying borrowings tomorrow.\n\n"
+             "**Formula** — total debt − cash & equivalents.\n\n"
+             "**How to read it** — negative is a *net cash* position: the "
+             "company owes less than it holds."),
+    "equity_ratio_pct": dict(
+        label="Equity ratio", kind="pct", better="high", group="balance",
+        help="**What it is** — how much of the balance sheet is genuinely "
+             "owned rather than borrowed.\n\n"
+             "**Formula** — shareholders' equity ÷ total assets.\n\n"
+             "**How to read it** — higher means more shock absorption. "
+             "Structurally low for banks, whose business *is* lending other "
+             "people's money — which is why the comparison shown is against "
+             "the same industry, never the whole market."),
+    "debt_to_equity": dict(
+        label="Debt / equity", kind="ratio", better="low", group="balance",
+        help="**What it is** — how many dollars the company has borrowed for "
+             "every dollar the shareholders put in.\n\n"
+             "**Formula** — long-term debt ÷ shareholders' equity.\n\n"
+             "**How to read it** — the classic leverage gauge. Above 1 the "
+             "lenders have committed more than the owners; what counts as "
+             "normal varies enormously by industry."),
+    "net_debt_to_equity": dict(
+        label="Net debt / equity", kind="ratio", better="low", group="balance",
+        help="**What it is** — the same leverage test, but crediting the "
+             "company for the cash it is holding.\n\n"
+             "**Formula** — net debt ÷ shareholders' equity.\n\n"
+             "**How to read it** — the fairer of the two for cash-rich "
+             "companies. Negative means net cash: more money in the bank than "
+             "borrowings outstanding."),
+    "debt_to_assets_pct": dict(
+        label="Debt / assets", kind="pct", better="low", group="balance",
+        help="**What it is** — the share of everything the company owns that "
+             "was paid for with borrowed money.\n\n"
+             "**Formula** — total debt ÷ total assets.\n\n"
+             "**How to read it** — the mirror image of the equity ratio, and "
+             "readable even where equity is distorted by buybacks or "
+             "write-downs."),
+    "net_debt_to_ebit": dict(
+        label="Net debt / EBIT", kind="ratio", better="low", group="balance",
+        help="**What it is** — how many years of operating profit it would "
+             "take to clear the net debt.\n\n"
+             "**Formula** — net debt ÷ trailing-twelve-month EBIT.\n\n"
+             "**How to read it** — under 3 comfortable, above 4 the balance "
+             "sheet starts dictating the strategy. This is the ratio bank "
+             "covenants are usually written on."),
+    "book_value_per_share": dict(
+        label="Book value / share", kind="usd", better="high", peer=False,
+        group="balance",
+        help="**What it is** — the accounting net worth attached to one "
+             "share.\n\n"
+             "**Formula** — shareholders' equity ÷ shares outstanding.\n\n"
+             "**How to read it** — for a Lynch asset play this, not the P/E, "
+             "is the valuation anchor: the price is compared with the balance "
+             "sheet rather than with the earnings."),
+    "asset_turnover": dict(
+        label="Asset turnover", kind="ratio", better="high", group="balance",
+        help="**What it is** — how hard the assets are working: the sales "
+             "produced by each dollar on the balance sheet.\n\n"
+             "**Formula** — revenue (TTM) ÷ total assets.\n\n"
+             "**How to read it** — a retailer turns its assets over several "
+             "times a year, a utility a fraction of once. Rising over time "
+             "means the same asset base is doing more work."),
+
+    # ------------------------------------------------------------------ #
+    # CASH FLOW — what actually reaches the bank account                  #
+    # ------------------------------------------------------------------ #
+    "ocf_ttm": dict(
+        label="Operating cash flow (TTM)", kind="money", better="high",
+        peer=False, group="cash",
+        help="**What it is** — the cash the ordinary business generated, "
+             "before deciding what to invest.\n\n"
+             "**Formula** — the last four quarters. EDGAR reports cash flow "
+             "year-to-date rather than per quarter, so quarters are recovered "
+             "by differencing consecutive cumulative figures.\n\n"
+             "**How to read it** — profit is an opinion, this is closer to a "
+             "fact. It should track net income over the years; a lasting gap "
+             "deserves an explanation."),
+    "capex_ttm": dict(
+        label="Capital expenditure (TTM)", kind="money", better=None,
+        peer=False, group="cash",
+        help="**What it is** — the cash spent on plant, equipment and other "
+             "long-lived assets, shown as a positive outflow.\n\n"
+             "**Formula** — operating cash flow − free cash flow, both "
+             "trailing twelve months.\n\n"
+             "**How to read it** — neither good nor bad in itself: it is the "
+             "cost of staying in business, and for a growing company also the "
+             "cost of getting bigger. Judge it as a share of revenue."),
+    "fcf_ttm": dict(
+        label="Free cash flow (TTM)", kind="money", better="high", peer=False,
+        group="cash",
+        help="**What it is** — the cash left over once the business has paid "
+             "for everything it needs to keep running: the money that can pay "
+             "dividends, repay debt or buy back shares.\n\n"
+             "**Formula** — operating cash flow − capital expenditure, over "
+             "the last four quarters.\n\n"
+             "**How to read it** — the number a business is ultimately worth "
+             "the discounted sum of. Missing for most banks and insurers, "
+             "whose cash flow statement has a different shape."),
+    "fcf_latest_fy": dict(
+        label="FCF (latest FY)", kind="money", better="high", peer=False,
+        group="cash",
+        help="**What it is** — free cash flow for the most recent *complete* "
+             "fiscal year.\n\n"
+             "**Formula** — straight from the annual cash flow statement.\n\n"
+             "**How to read it** — the audited counterpart of the TTM figure, "
+             "and the one to prefer for businesses with heavy seasonality."),
+    "fcf_per_share": dict(
+        label="FCF / share", kind="usd", better="high", peer=False,
+        group="cash",
+        help="**What it is** — the free cash flow that belongs to one "
+             "share.\n\n"
+             "**Formula** — trailing-twelve-month free cash flow ÷ shares "
+             "outstanding.\n\n"
+             "**How to read it** — the cash equivalent of EPS. Compare it with "
+             "the dividend per share to see how much room the payout has."),
+    "fcf_margin_pct": dict(
+        label="FCF margin", kind="pct", better="high", group="cash",
+        help="**What it is** — how many cents of each dollar of sales end up as "
+             "genuinely free cash.\n\n"
+             "**Formula** — free cash flow ÷ revenue, both trailing twelve "
+             "months.\n\n"
+             "**How to read it** — the single hardest margin to manipulate. "
+             "Above 15% is a business that finances itself; near zero means "
+             "growth has to be paid for with debt or new shares."),
+    "ocf_margin_pct": dict(
+        label="OCF margin", kind="pct", better="high", group="cash",
+        help="**What it is** — the share of sales that turns into operating "
+             "cash before any investment.\n\n"
+             "**Formula** — operating cash flow ÷ revenue, both trailing "
+             "twelve months.\n\n"
+             "**How to read it** — read next to the FCF margin: the distance "
+             "between the two is exactly how capital-hungry the business is."),
+    "fcf_conversion_pct": dict(
+        label="FCF conversion", kind="pct", better="high", group="cash",
+        help="**What it is** — how much of the accounting profit actually "
+             "shows up as cash.\n\n"
+             "**Formula** — free cash flow ÷ net income, both trailing twelve "
+             "months.\n\n"
+             "**How to read it** — around 100% the earnings are real. "
+             "Persistently below 60% means profit is being tied up in working "
+             "capital or capex; above 100% is common where depreciation "
+             "exceeds the cash actually being reinvested. Blank when there is "
+             "no profit to convert."),
+    "capex_to_revenue_pct": dict(
+        label="Capex / revenue", kind="pct", better=None, group="cash",
+        help="**What it is** — how much of every dollar of sales has to be "
+             "ploughed back into assets.\n\n"
+             "**Formula** — capital expenditure ÷ revenue, both trailing "
+             "twelve months.\n\n"
+             "**How to read it** — low means an asset-light business that can "
+             "grow without swallowing cash; high is normal for utilities, "
+             "telecoms and heavy industry. Compare only within an industry."),
+    "fcf_growth_yoy_pct": dict(
+        label="FCF growth YoY", kind="pct", better="high", group="cash",
+        help="**What it is** — how much more (or less) free cash the business "
+             "produced than in the previous year.\n\n"
+             "**Formula** — the latest full fiscal year against the one "
+             "before; falls back to the trailing-twelve-month series when only "
+             "one fiscal year is on file.\n\n"
+             "**How to read it** — the most volatile growth figure on the "
+             "page: one large investment year is enough to turn it negative "
+             "without anything being wrong."),
+
+    # ------------------------------------------------------------------ #
+    # RETURNS — how well the capital is being used                        #
+    # ------------------------------------------------------------------ #
+    "roe_pct": dict(
+        label="ROE", kind="pct", better="high", group="returns",
+        help="**What it is** — the return the company earns on the money the "
+             "shareholders have left in it.\n\n"
+             "**Formula** — net income (TTM) ÷ **average** equity over the "
+             "same twelve months — average, not year-end, because a flow "
+             "divided by a closing snapshot flatters companies that have just "
+             "bought back stock.\n\n"
+             "**How to read it** — above 15% sustained is a genuinely good "
+             "business. But debt inflates it: always read it next to ROIC and "
+             "the equity ratio."),
+    "roic_pct": dict(
+        label="ROIC", kind="pct", better="high", group="returns",
+        help="**What it is** — the return on *all* the capital at work, "
+             "borrowed as well as owned. The one profitability measure "
+             "leverage cannot flatter.\n\n"
+             "**Formula** — EBIT × (1 − 21%) ÷ (equity + total debt − cash). "
+             "The 21% US federal rate is applied to every company rather than "
+             "each one's own effective rate, which the dataset does not "
+             "carry — comparable beats individually exact.\n\n"
+             "**How to read it** — compare it with what the capital costs "
+             "(roughly 8–10%): above it the company creates value by growing, "
+             "below it growth destroys value. Blank when invested capital is "
+             "negative."),
+    "earning_power_pct": dict(
+        label="Earning power", kind="pct", better="high", group="returns",
+        help="**What it is** — what the assets earn before financing and tax "
+             "get involved. Graham's *earning power* test.\n\n"
+             "**Formula** — EBIT (TTM) ÷ total assets; pre-tax income where "
+             "EBIT is not tagged (banks).\n\n"
+             "**How to read it** — comparable across companies with completely "
+             "different debt and tax situations, because it ignores both."),
+
+    # ------------------------------------------------------------------ #
+    # GROWTH — the five-year track record                                 #
+    # ------------------------------------------------------------------ #
     "cagr_revenue_5y": dict(
-        label="Revenue CAGR 5y", kind="pct", better="high",
-        help="Compound annual growth rate of trailing-twelve-month revenue "
-             "over five years."),
-    "cagr_fcf_5y": dict(
-        label="FCF CAGR 5y", kind="pct", better="high",
-        help="Compound annual growth rate of trailing-twelve-month free cash "
-             "flow over five years."),
+        label="Revenue CAGR 5y", kind="pct", better="high", group="growth",
+        help="**What it is** — the average yearly rate at which sales have "
+             "compounded over five years.\n\n"
+             "**Formula** — ((value now ÷ value five years ago) ^ (1/5)) − 1, "
+             "on the trailing-twelve-month series.\n\n"
+             "**How to read it** — the most reliable growth line, because "
+             "revenue is the hardest number to massage. The two endpoints "
+             "behind it are shown on the Growth tab."),
+    "cagr_eps_5y": dict(
+        label="EPS CAGR 5y", kind="pct", better="high", group="growth",
+        help="**What it is** — the average yearly rate at which earnings per "
+             "share have compounded over five years.\n\n"
+             "**Formula** — ((value now ÷ value five years ago) ^ (1/5)) − 1, "
+             "on the trailing-twelve-month series.\n\n"
+             "**How to read it** — this is the growth the fair multiple is "
+             "built on. Left blank when the starting value was a loss: a "
+             "compound rate from a negative base means nothing."),
     "cagr_net_income_5y": dict(
-        label="Net income CAGR 5y", kind="pct", better="high",
-        help="Compound annual growth rate of trailing-twelve-month net income "
-             "over five years."),
+        label="Net income CAGR 5y", kind="pct", better="high", group="growth",
+        help="**What it is** — five-year compound growth of total profit.\n\n"
+             "**Formula** — ((value now ÷ value five years ago) ^ (1/5)) − 1, "
+             "on the trailing-twelve-month series.\n\n"
+             "**How to read it** — compare it with the EPS rate: EPS growing "
+             "faster means buybacks are helping, slower means shares are being "
+             "issued."),
+    "cagr_fcf_5y": dict(
+        label="FCF CAGR 5y", kind="pct", better="high", group="growth",
+        help="**What it is** — five-year compound growth of free cash "
+             "flow.\n\n"
+             "**Formula** — ((value now ÷ value five years ago) ^ (1/5)) − 1, "
+             "on the trailing-twelve-month series.\n\n"
+             "**How to read it** — the acid test of the earnings growth next "
+             "to it. Profits that rise while cash does not are the classic "
+             "early warning."),
     "cagr_ocf_5y": dict(
         label="Op. cash flow CAGR 5y", kind="pct", better="high",
-        help="Compound annual growth rate of trailing-twelve-month operating "
-             "cash flow over five years."),
+        group="growth",
+        help="**What it is** — five-year compound growth of operating cash "
+             "flow.\n\n"
+             "**Formula** — ((value now ÷ value five years ago) ^ (1/5)) − 1, "
+             "on the trailing-twelve-month series.\n\n"
+             "**How to read it** — steadier than free cash flow, which a "
+             "single heavy investment year can distort, so it is the better "
+             "read on the underlying trend."),
 }
 
 CAGR_METRICS = ["cagr_eps", "cagr_revenue", "cagr_fcf", "cagr_net_income", "cagr_ocf"]
@@ -392,9 +868,39 @@ def fmt_ratio(v, digits: int = 1) -> str:
     return f"{v:,.{digits}f}"
 
 
+def fmt_usd(v, digits: int = 2) -> str:
+    """
+    Un importo PER AZIONE: "$19.82".
+
+    Non passa da fmt_money di proposito. Abbreviare un valore per azione lo
+    rende illeggibile — un EPS di 19,82 dollari stampato "20 $" perde
+    esattamente la precisione che serve, visto che il fair value nasce da una
+    moltiplicazione su quel numero.
+    """
+    if v is None or (isinstance(v, float) and pd.isna(v)):
+        return "—"
+    return f"${v:,.{digits}f}"
+
+
+def fmt_count(v) -> str:
+    """Una quantita' di cose (azioni): 7.43 B, 512 M. Scalata, senza valuta."""
+    if v is None or (isinstance(v, float) and pd.isna(v)):
+        return "—"
+    a = abs(v)
+    for unit, scale in (("T", 1e12), ("B", 1e9), ("M", 1e6), ("K", 1e3)):
+        if a >= scale:
+            s = v / scale
+            return f"{s:,.{0 if abs(s) >= 100 else 2}f} {unit}"
+    return f"{v:,.0f}"
+
+
+_FORMATTERS = {"money": fmt_money, "pct": fmt_pct, "ratio": fmt_ratio,
+               "usd": fmt_usd, "count": fmt_count}
+
+
 def fmt_metric(key: str, v) -> str:
     kind = METRICS.get(key, {}).get("kind", "ratio")
-    return {"money": fmt_money, "pct": fmt_pct, "ratio": fmt_ratio}[kind](v)
+    return _FORMATTERS.get(kind, fmt_ratio)(v)
 
 
 def _num(v):
@@ -681,16 +1187,44 @@ def render_normalized_earnings(r: pd.Series, eps_raw: float | None) -> None:
             st.caption("Not enough filed history for a 3-year normalization.")
             return
         delta = _num(r.get("eps_vs_normalized_pct"))
-        cA, cB, cC = st.columns(3)
-        cA.metric("TTM EPS (raw)", f"${eps_raw:,.2f}" if eps_raw else "—",
-                  help="Trailing-twelve-month EPS as filed, with no smoothing.")
-        cB.metric("3-year normalized EPS", f"${norm:,.2f}",
-                  help="MEDIAN of the trailing-twelve-month EPS over the last 3 "
-                       "years. Median, not mean: a single corrupted data point "
-                       "would drag a mean and produce a fair value in the "
-                       "millions.")
-        cC.metric("Normalized fair value P/E15", f"${fvn:,.2f}",
-                  help="3-year normalized EPS × 15.")
+        # Lo SCARTO CONTRO IL PREZZO come per gli altri due fair value. Un
+        # valore equo senza il confronto con il prezzo e' un numero e basta:
+        # sono i due modelli accanto al grafico a dirlo, e questo terzo deve
+        # rispondere alla stessa domanda nello stesso modo, o non si puo'
+        # mettere in fila con loro.
+        price_now = _num(r.get("current_price"))
+        disc_n = ((price_now / fvn - 1) * 100) if (fvn and price_now) else None
+        cA, cB, cC, cD = st.columns(4)
+        cA.metric("TTM EPS (raw)", fmt_usd(eps_raw),
+                  help="**What it is** — trailing-twelve-month EPS exactly as "
+                       "filed, one-off items included.\n\n**How to read it** — "
+                       "this is the figure the rest of the page uses unless you "
+                       "switch the EPS basis above.")
+        cB.metric("3-year normalized EPS", fmt_usd(norm),
+                  help="**What it is** — earnings stripped of the good and bad "
+                       "years.\n\n**Formula** — the MEDIAN of the "
+                       "trailing-twelve-month EPS over the last 3 years. "
+                       "Median, not mean: one corrupted data point would drag a "
+                       "mean and produce a fair value in the millions.\n\n"
+                       "**How to read it** — the closer it is to the raw EPS, "
+                       "the more repeatable the current profit.")
+        cC.metric("Normalized fair value P/E15", fmt_usd(fvn),
+                  help="**Formula** — 3-year normalized EPS × 15.\n\n"
+                       "**How to read it** — the value a model that smooths "
+                       "earnings would arrive at. This is usually the number "
+                       "other sites are showing when they disagree with us.")
+        cD.metric("Price vs normalized fair value",
+                  f"{disc_n:+.0f}%" if disc_n is not None else "—",
+                  delta=("below fair value" if disc_n is not None and disc_n < 0
+                         else "above fair value" if disc_n is not None else None),
+                  delta_color=("normal" if (disc_n is not None and disc_n < 0)
+                               else "inverse" if disc_n is not None else "off"),
+                  help="**Formula** — price ÷ normalized fair value − 1, the "
+                       "same comparison shown for the other two fair values "
+                       "above.\n\n**How to read it** — when this discount and "
+                       "the raw P/E 15 one point in opposite directions, the "
+                       "whole verdict on the stock rests on whether the current "
+                       "earnings are repeatable.")
         if delta is not None and abs(delta) > 25:
             st.warning(
                 f"Current EPS is **{delta:+.0f}%** vs the 3-year median. Such a "
@@ -870,7 +1404,8 @@ def render_valuation_chart(ticker: str, company: str, use_norm_eps: bool,
 
     charts.style(fig, height=460, ylab="$")
     fig.update_yaxes(type="log" if scale == "Log" else "linear")
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True,
+                    key="chart_valuation_price")
     st.caption(
         f"**Blue** = market price · **orange** = fair value (EPS × P/E {pe}). "
         "Dotted lines = corporate events. Shaded band = negative earnings, where "
@@ -949,12 +1484,12 @@ def render_valuation_tab(ticker: str, row: pd.DataFrame) -> None:
 
     if use_norm_eps:
         fv_fix = _num(r.get("fair_value_norm_pe15"))
-        fv_fix_label = "Fair value P/E15 (norm.)"
+        fv_fix_label = "Fair value P/E 15 (norm.)"
         fv_fix_help = "Normalized EPS (3-year median) × 15."
         disc_fix = ((price_now / fv_fix - 1) * 100) if (fv_fix and price_now) else None
     else:
         fv_fix = _num(r.get("fair_value_pe15"))
-        fv_fix_label = "Fair value P/E15"
+        fv_fix_label = "Fair value (P/E 15)"
         fv_fix_help = "TTM EPS × 15 — the classic Lynch earnings line."
         disc_fix = _num(r.get("discount_vs_fv15_pct"))
 
@@ -962,90 +1497,167 @@ def render_valuation_tab(ticker: str, row: pd.DataFrame) -> None:
     fv_cat = deriv["value"]
     disc_cat = ((price_now / fv_cat - 1) * 100) if (fv_cat and price_now) else None
 
-    m = st.columns(6)
-    m[0].metric("Price", f"${price_now:,.2f}" if price_now else "—")
-    m[1].metric(eps_label, f"${eps_shown:,.2f}" if eps_shown else "—",
-                help="The number every figure on this page is built on: the "
-                     "fair value multiplies it, the P/E divides by it.")
-    m[2].metric("Fair value (category)", f"${fv_cat:,.2f}" if fv_cat else "n/a",
-                help="From the Lynch category's own anchor — see the derivation "
-                     "below. Not the same as the fixed P/E 15 line.")
-    m[3].metric("Discount / Premium",
-                f"{disc_cat:+.0f}%" if disc_cat is not None else "—",
-                delta=("below fair value" if disc_cat is not None and disc_cat < 0
-                       else "above fair value" if disc_cat is not None else None),
-                delta_color="normal" if (disc_cat is not None and disc_cat < 0)
-                else "inverse")
+    # DUE FILE DA QUATTRO, non una da sei o da otto.
+    #
+    # La riga di sopra e' il PREZZO e i due fair value che gli si confrontano;
+    # quella di sotto e' come si legge quel confronto. Il fair value a P/E 15
+    # sta qui accanto a quello di categoria — prima esisteva solo nella tabella
+    # in fondo alla pagina, e chi guardava i KPI in cima vedeva un solo modello
+    # senza sapere che ce n'erano due. Otto riquadri su una riga sola, invece,
+    # comprimono le etichette fino a renderle illeggibili sotto i 1400 px.
     _pe_prov, _pe_div = _num(r.get("pe_ratio_provider")), _num(r.get("pe_divergence_pct"))
-    _pe_help = "Price ÷ the EPS shown on this page, both from the same row."
+    _pe_help = ("**What it is** — how many years of current earnings you are "
+                "paying for one share.\n\n**Formula** — price ÷ the EPS shown "
+                "on this page, both from the same row.")
     if _pe_prov is not None:
-        _pe_help += f" Provider reports {_pe_prov:.1f}"
+        _pe_help += f"\n\n**Note** — the provider reports {_pe_prov:.1f}"
         _pe_help += (", computed on its own EPS, which the arbitration did not "
                      "select." if _pe_div is not None and _pe_div >= 1
-                     else "; consistent.")
-    m[4].metric("Current P/E", fmt_ratio(_num(r.get("pe_ratio"))), help=_pe_help)
+                     else "; consistent with ours.")
     lr_v = _num(r.get("lynch_ratio"))
-    m[5].metric("Lynch ratio", fmt_ratio(lr_v, 2),
-                delta=("attractive" if lr_v and lr_v > 1.5 else
-                       "fair" if lr_v and lr_v >= 1 else "expensive" if lr_v else None),
-                delta_color="normal" if (lr_v and lr_v >= 1) else "inverse",
-                help="(growth % + dividend %) ÷ P/E · >1.5 attractive, ~1 fair, "
-                     "<1 expensive")
+
+    def _disc_delta(v):
+        """Etichetta e colore di uno scarto prezzo/fair value."""
+        if v is None:
+            return None, "off"
+        return ("below fair value" if v < 0 else "above fair value",
+                "normal" if v < 0 else "inverse")
+
+    _d_cat_txt, _d_cat_col = _disc_delta(disc_cat)
+    _d_fix_txt, _d_fix_col = _disc_delta(disc_fix)
+    # Sotto un fair value la didascalia dice DOVE STA IL PREZZO rispetto a
+    # quel valore, non "sopra/sotto" e basta: su un riquadro il cui numero e'
+    # gia' il fair value, "above fair value" si legge come se a stare sopra
+    # fosse il valore mostrato.
+    _p_cat = f"price {disc_cat:+.0f}%" if disc_cat is not None else None
+    _p_fix = f"price {disc_fix:+.0f}%" if disc_fix is not None else None
+
+    m = st.columns(4)
+    m[0].metric("Price", fmt_usd(price_now),
+                help="**What it is** — the last market price on file.\n\n"
+                     "**How to read it** — everything on this page compares "
+                     "this number with a value estimated from the earnings.")
+    m[1].metric(eps_label, fmt_usd(eps_shown),
+                help="**What it is** — the profit attributable to one share.\n\n"
+                     "**How to read it** — the number every figure on this page "
+                     "is built on: the fair value multiplies it, the P/E "
+                     "divides by it.")
+    m[2].metric("Fair value (category)", fmt_usd(fv_cat) if fv_cat else "n/a",
+                delta=_p_cat, delta_color=_d_cat_col,
+                help="**What it is** — the fair value from this company's own "
+                     "Lynch category: a multiple adapted to how fast it "
+                     "grows.\n\n**Formula** — the earnings base × the fair "
+                     "multiple for the category (see *How this fair value is "
+                     "built*, below the chart).\n\n**How to read it** — the "
+                     "more informative of the two models, provided the "
+                     "confidence badge above is not red.")
+    m[3].metric(fv_fix_label, fmt_usd(fv_fix) if fv_fix else "n/a",
+                delta=_p_fix, delta_color=_d_fix_col,
+                help="**What it is** — the classic Lynch earnings line: the "
+                     "same multiple for every company on earth.\n\n"
+                     "**Formula** — " + fv_fix_help + "\n\n"
+                     "**How to read it** — a quick, blunt filter. It penalises "
+                     "fast growers and flatters slow ones, so a large gap "
+                     "against the category figure is expected, not an error.")
+
+    m2 = st.columns(4)
+    m2[0].metric("Discount vs category",
+                 f"{disc_cat:+.0f}%" if disc_cat is not None else "—",
+                 delta=_d_cat_txt, delta_color=_d_cat_col,
+                 help="**Formula** — price ÷ category fair value − 1.\n\n"
+                      "**How to read it** — negative means the market is "
+                      "asking less than the model's value; positive means it "
+                      "is asking more.")
+    m2[1].metric("Discount vs P/E 15",
+                 f"{disc_fix:+.0f}%" if disc_fix is not None else "—",
+                 delta=_d_fix_txt, delta_color=_d_fix_col,
+                 help="**Formula** — price ÷ P/E 15 fair value − 1.\n\n"
+                      "**How to read it** — the same comparison against the "
+                      "fixed line. When the two discounts disagree, the "
+                      "company's growth is far from the 15× average.")
+    m2[2].metric("Current P/E", fmt_ratio(_num(r.get("pe_ratio"))), help=_pe_help)
+    m2[3].metric("Lynch ratio", fmt_ratio(lr_v, 2),
+                 delta=("attractive" if lr_v and lr_v > 1.5 else
+                        "fair" if lr_v and lr_v >= 1 else
+                        "expensive" if lr_v else None),
+                 delta_color="normal" if (lr_v and lr_v >= 1) else "inverse",
+                 help="**What it is** — Lynch's own quick verdict: what you "
+                      "get (growth plus dividend) against what you pay "
+                      "(the P/E).\n\n**Formula** — (growth % + dividend %) ÷ "
+                      "P/E.\n\n**How to read it** — above 1.5 attractive, "
+                      "around 1 fair, below 1 expensive. It is the reciprocal "
+                      "of the PEG, so the reading flips.")
 
     d = render_valuation_chart(ticker, company, use_norm_eps, pe, years, scale)
 
     # ------------------- COME NASCE QUESTO FAIR VALUE -------------------
+    #
+    # RICHIUSO DI DEFAULT. Sono due tabelle di aritmetica: servono a chi vuole
+    # rifare il conto, non a chi sta leggendo la pagina per la prima volta, e
+    # aperte spingevano il confronto con i pari sotto due schermate. Il
+    # titolo del riquadro porta gia' i due risultati, cosi' aprirlo e' una
+    # scelta informata e non un sondaggio.
     st.divider()
-    st.markdown("#### How this fair value is built")
-    left, right = st.columns([1, 1])
-    with left:
-        st.markdown("**The category model** — adapts the multiple to the "
-                    "type of company")
-        st.dataframe(
-            pd.DataFrame(deriv["rows"], columns=["Step", "Value"]),
-            use_container_width=True, hide_index=True)
-        basis = r.get("lynch_pe_basis")
-        if pd.notna(basis):
-            st.caption(f"Multiple from: {basis}")
-        if deriv["anchor"] == "book":
-            st.caption(
-                "This company is valued on its **assets**, not its earnings: "
-                "that is what a Lynch asset play is. The P/E is not the tool "
-                "here, so no earnings multiple is shown.")
-        elif deriv["anchor"] == "none":
-            st.caption(
-                "No valuation anchor: the company has no positive earnings, "
-                "current or normalized, and does not trade below book value. "
-                "Stating that is more useful than producing a number from "
-                "nothing — assess the cash burn and the balance sheet.")
-    with right:
-        st.markdown("**The fixed model** — P/E 15 for everyone, the classic "
-                    "Lynch earnings line")
-        eps_used_fix = eps_shown
-        fix_rows = [
-            (("3-year normalized EPS" if use_norm_eps else "EPS (TTM)"),
-             f"${eps_used_fix:,.2f}" if eps_used_fix else "—"),
-            ("× Fixed P/E", "15"),
-            ("= FAIR VALUE", f"${fv_fix:,.2f}" if fv_fix else "—"),
-            ("Price vs fair value",
-             f"{disc_fix:+.0f}%" if disc_fix is not None else "—"),
-        ]
-        st.dataframe(pd.DataFrame(fix_rows, columns=["Step", "Value"]),
-                     use_container_width=True, hide_index=True)
-        st.caption(fv_fix_help + " A quick filter, identical for every company: "
-                   "it penalises fast growers and flatters slow ones.")
+    # I DOLLARI VANNO PROTETTI. L'etichetta di un expander e' markdown, e in
+    # markdown due "$" sulla stessa riga aprono e chiudono una formula LaTeX:
+    # "category $25.20 · P/E 15 $75.75" veniva reso come una formula, con i due
+    # importi in tondo matematico e il "·" trasformato in operatore.
+    _fv_summary = " · ".join(
+        [f"category {fmt_usd(fv_cat)}" if fv_cat else "category n/a",
+         f"P/E 15 {fmt_usd(fv_fix)}" if fv_fix else "P/E 15 n/a"]).replace("$", r"\$")
+    with st.expander(f"🧮 How this fair value is built — {_fv_summary}",
+                     expanded=False):
+        left, right = st.columns([1, 1])
+        with left:
+            st.markdown("**The category model** — adapts the multiple to the "
+                        "type of company")
+            st.dataframe(
+                pd.DataFrame(deriv["rows"], columns=["Step", "Value"]),
+                use_container_width=True, hide_index=True)
+            basis = r.get("lynch_pe_basis")
+            if pd.notna(basis):
+                st.caption(f"Multiple from: {basis}")
+            if deriv["anchor"] == "book":
+                st.caption(
+                    "This company is valued on its **assets**, not its "
+                    "earnings: that is what a Lynch asset play is. The P/E is "
+                    "not the tool here, so no earnings multiple is shown.")
+            elif deriv["anchor"] == "none":
+                st.caption(
+                    "No valuation anchor: the company has no positive "
+                    "earnings, current or normalized, and does not trade below "
+                    "book value. Stating that is more useful than producing a "
+                    "number from nothing — assess the cash burn and the "
+                    "balance sheet.")
+        with right:
+            st.markdown("**The fixed model** — P/E 15 for everyone, the classic "
+                        "Lynch earnings line")
+            eps_used_fix = eps_shown
+            fix_rows = [
+                (("3-year normalized EPS" if use_norm_eps else "EPS (TTM)"),
+                 fmt_usd(eps_used_fix) if eps_used_fix else "—"),
+                ("× Fixed P/E", "15"),
+                ("= FAIR VALUE", fmt_usd(fv_fix) if fv_fix else "—"),
+                ("Price vs fair value",
+                 f"{disc_fix:+.0f}%" if disc_fix is not None else "—"),
+            ]
+            st.dataframe(pd.DataFrame(fix_rows, columns=["Step", "Value"]),
+                         use_container_width=True, hide_index=True)
+            st.caption(fv_fix_help + " A quick filter, identical for every "
+                       "company: it penalises fast growers and flatters slow "
+                       "ones.")
 
-    if fv_fix and fv_cat:
-        spread = abs(fv_cat / fv_fix - 1) * 100
-        if spread > 35:
-            st.info(
-                f"The two models diverge by **{spread:.0f}%**. That is normal "
-                "when the category multiple is far from 15 — a fast grower or a "
-                "slow grower. The per-category figure is the more informative "
-                "of the two; check the confidence badge above before leaning "
-                "on it.")
-        else:
-            st.caption("The two models agree within 35%: a robust signal.")
+        if fv_fix and fv_cat:
+            spread = abs(fv_cat / fv_fix - 1) * 100
+            if spread > 35:
+                st.info(
+                    f"The two models diverge by **{spread:.0f}%**. That is "
+                    "normal when the category multiple is far from 15 — a fast "
+                    "grower or a slow grower. The per-category figure is the "
+                    "more informative of the two; check the confidence badge "
+                    "above before leaning on it.")
+            else:
+                st.caption("The two models agree within 35%: a robust signal.")
 
     # ------------------- MULTIPLI CONTRO L'INDUSTRIA -------------------
     st.divider()
@@ -1091,207 +1703,412 @@ def _col(a: pd.DataFrame, col: str):
     return a[col] if col in a.columns else None
 
 
+def kpi_row(r: pd.Series, peers: pd.Series | None, keys, ncols: int = 4) -> None:
+    """
+    Una fila di riquadri, saltando in silenzio le voci che questa societa' non
+    ha.
+
+    Il salto silenzioso e' il punto: una banca non deposita il capex, una
+    societa' senza debito non ha un rapporto debito/mezzi propri. Mostrare il
+    riquadro vuoto suggerisce un guasto del programma; ometterlo dice la
+    verita', cioe' che quella voce qui non esiste.
+    """
+    items = [metric_item(k, r, peers) for k in keys
+             if k in METRICS and k in r.index and _num(r.get(k)) is not None]
+    if items:
+        metric_grid(items, ncols)
+
+
+def _fy_table(a: pd.DataFrame, spec: list[tuple[str, str, object]],
+              extra: list[tuple[str, object]] | None = None) -> pd.DataFrame:
+    """
+    Un pezzo di bilancio come depositato: una riga per esercizio.
+
+    `spec` e' [(colonna, etichetta, formattatore)] e le colonne assenti spariscono
+    invece di produrre una colonna di trattini. `extra` aggiunge voci CALCOLATE
+    (un margine, un rapporto) gia' pronte come coppie (etichetta, valori).
+    """
+    show = pd.DataFrame({"Fiscal year": a["fy_end"].astype(str)})
+    for col, label, fmt in spec:
+        if col in a.columns and a[col].notna().any():
+            show[label] = a[col].map(fmt)
+    for label, values in (extra or []):
+        show[label] = values
+    return show
+
+
+def _pct_series(num, den) -> list[str]:
+    """Percentuale riga per riga per le tabelle annuali, con il trattino dove
+    il conto non si puo' fare."""
+    if num is None or den is None:
+        return []
+    out = []
+    for n, d in zip(num, den):
+        out.append(fmt_pct(n / d * 100) if (pd.notna(n) and pd.notna(d) and d) else "—")
+    return out
+
+
 def render_financials_tab(ticker: str, r: pd.Series) -> None:
     """
     "Quanto e' solida l'azienda?" — la salute del business, non il suo prezzo.
 
-    I multipli di valutazione (P/E, P/S, P/FCF, PEG) sono usciti da questa
-    scheda e sono andati in Valuation: misurano quanto costa il titolo, non
-    quanto vale l'azienda, e tenerli qui li faceva leggere come indicatori di
-    qualita'. Qui restano redditivita', margini, struttura finanziaria e
-    generazione di cassa — cioe' cio' che una societa' fa, non cio' che il
-    mercato ne pensa.
+    ORGANIZZATA COME UN BILANCIO, non come un elenco di numeri interessanti.
+    Le voci stanno in quattro schede annidate che ricalcano i tre prospetti —
+    conto economico, stato patrimoniale, rendiconto finanziario — piu' i
+    rapporti che nascono incrociandoli, piu' la crescita a cinque anni. E' la
+    stessa suddivisione che si trova nella relazione annuale della societa': chi
+    cerca il debito sa gia' dove guardare, senza scorrere una pagina unica in
+    cui margini, cassa e multipli si alternavano.
+
+    I multipli di valutazione restano ANCHE qui, nella scheda Ratios, ma come
+    rapporti fra prezzo e conti, non come giudizio sul titolo: il giudizio sta
+    in Valuation, accanto al fair value che lo produce.
+
+    La provenienza dei dati non e' piu' in fondo a questa scheda: e' in Data
+    quality, dove c'e' gia' la tabella che dichiara formula e tag XBRL di ogni
+    voce. Erano due risposte alla stessa domanda in due punti diversi.
     """
     peers, peer_label, n_peers = peer_reference(r, ind_med, sec_med)
     a = annual_for(ticker)
 
-    st.markdown("#### Scale of the business")
-    metric_grid([metric_item(k, r, peers) for k in
-                 ("revenue_ttm", "net_income_ttm", "fcf_ttm", "market_cap")])
+    # ---------------- INTESTAZIONE: LE QUATTRO GRANDEZZE ----------------
+    kpi_row(r, peers, ("revenue_ttm", "ebit_ttm", "net_income_ttm", "fcf_ttm"))
     if peers is not None:
         st.caption(
-            f"Deltas below are measured against the **median of the "
-            f"{peer_label}** ({n_peers} companies in this dataset). Percentages "
-            "are compared in percentage points (pp), ratios in relative terms. "
-            "Absolute amounts have no delta: size is not a quality.")
+            f"Trailing twelve months, from the company's own SEC filings. "
+            f"Where a delta is shown it is measured against the **median of "
+            f"the {peer_label}** ({n_peers} companies in this dataset): "
+            "percentages compared in percentage points (pp), ratios in "
+            "relative terms. Absolute amounts carry no delta — size is not a "
+            "quality.")
     else:
         st.caption(
-            f"No peer group with at least {MIN_PEERS} companies for this ticker "
-            "in the current dataset, so no industry comparison is shown.")
+            f"Trailing twelve months, from the company's own SEC filings. No "
+            f"peer group with at least {MIN_PEERS} companies for this ticker in "
+            "the current dataset, so no industry comparison is shown.")
 
-    # ---------------- CRESCITA E REDDITIVITA' ----------------
-    st.divider()
-    st.markdown("#### Growth and profitability")
-    st.caption("What the company sells, what it keeps, and what fraction of the "
-               "first becomes the second.")
-    if a is not None:
-        fig = charts.bars(a["year"], [("Revenue", _col(a, "revenue")),
-                                      ("Net income", _col(a, "net_income"))],
-                          ylab="$", height=300)
-        if fig is not None:
-            st.plotly_chart(fig, use_container_width=True)
-        # I MARGINI IN UN GRAFICO SEPARATO, non su un secondo asse verticale.
-        # Sovrapporre una percentuale a un valore in miliardi obbliga a
-        # scegliere un allineamento arbitrario fra le due scale, e il lettore
-        # ci legge una correlazione che nei dati non c'e'. Due grafici che
-        # condividono l'asse dei tempi dicono la stessa cosa senza mentire.
-        if _has(a, "revenue") and _has(a, "net_income"):
-            net_m = np.where((a["revenue"] > 0) & a["net_income"].notna(),
-                             a["net_income"] / a["revenue"] * 100, np.nan)
-            op_m = (np.where((a["revenue"] > 0) & a["ebit"].notna(),
-                             a["ebit"] / a["revenue"] * 100, np.nan)
-                    if _has(a, "ebit") else None)
-            mfig = charts.lines(a["year"],
-                                [("Net margin", net_m), ("Operating margin", op_m)],
-                                ylab="% of revenue", height=230, pct=True)
-            if mfig is not None:
-                st.plotly_chart(mfig, use_container_width=True)
-    else:
-        st.caption("No annual financials on file for this ticker.")
-
-    metric_grid([metric_item(k, r, peers) for k in
-                 ("roe_pct", "earning_power_pct", "operating_margin_pct",
-                  "net_margin_pct")])
-
-    # ---------------- SALUTE FINANZIARIA ----------------
-    st.divider()
-    st.markdown("#### Financial health")
-    st.caption("What the company owes, what it holds, and what it generates to "
-               "service the difference.")
-    if a is not None and (_has(a, "total_debt") or _has(a, "cash")):
-        fig = charts.bars(a["year"], [("Total debt", _col(a, "total_debt")),
-                                      ("Cash & equivalents", _col(a, "cash")),
-                                      ("Free cash flow", _col(a, "fcf"))],
-                          ylab="$", height=300)
-        if fig is not None:
-            st.plotly_chart(fig, use_container_width=True)
-    elif a is not None:
-        st.caption(
-            "ℹ️ Debt and cash are not in the annual file yet. Regenerate the "
-            "dataset (`python build_dataset.py`) to add them — they are read "
-            "from the balance sheet tags the company files.")
-
-    metric_grid([metric_item(k, r, peers) for k in
-                 ("equity_ratio_pct", "debt_to_equity", "net_debt_to_ebit",
-                  "fcf_yield_pct") if k in r.index])
-    metric_grid([metric_item(k, r, peers) for k in
-                 ("total_debt", "cash", "net_debt", "dividend_yield")
-                 if k in r.index])
-
-    # ---------------- STRUTTURA DEL CAPITALE ----------------
-    ev = _num(r.get("enterprise_value"))
-    if ev:
-        st.markdown("##### Capital structure")
-        fig = charts.capital_structure(_num(r.get("market_cap")),
-                                       _num(r.get("total_debt")),
-                                       _num(r.get("cash")))
-        if fig is not None:
-            st.plotly_chart(fig, use_container_width=True)
-            st.caption(
-                "Market cap + total debt − cash = **enterprise value**: the "
-                "price of the whole business rather than of its shares alone. "
-                "It is the denominator that makes two companies with the same "
-                "market cap but opposite balance sheets comparable.")
-
-    # ---------------- CASSA ----------------
-    if a is not None and (_has(a, "ocf") or _has(a, "fcf")):
-        st.divider()
-        st.markdown("#### Cash generation")
-        capex = (-a["capex"] if _has(a, "capex") else None)
-        fig = charts.bars(a["year"], [("Operating cash flow", _col(a, "ocf")),
-                                      ("Capital expenditure", capex),
-                                      ("Free cash flow", _col(a, "fcf"))],
-                          ylab="$", height=300)
-        if fig is not None:
-            st.plotly_chart(fig, use_container_width=True)
-            st.caption(
-                "Capital expenditure is drawn negative because that is what it "
-                "does to cash: operating cash flow minus it leaves free cash "
-                "flow. EDGAR reports cash flow year-to-date rather than per "
-                "quarter, so quarters are recovered by differencing consecutive "
-                "cumulative figures before summing.")
-
-    if _num(r.get("fcf_ttm")) is None and _num(r.get("revenue_ttm")) is not None:
-        st.caption(
-            "ℹ️ No free cash flow for this company: it doesn't tag capital "
-            "expenditure in a comparable way — normal for banks and insurers, "
-            "whose cash flow statement has a different structure.")
     basis = r.get("financials_basis")
     if isinstance(basis, str) and basis.startswith("annual:"):
-        st.caption(
-            "ℹ️ For **" + basis.split(":", 1)[1].replace(",", ", ") + "** this "
-            "company files only annual figures, so the values above are the "
-            "latest full fiscal year rather than the last twelve months.")
+        st.info(
+            "For **" + basis.split(":", 1)[1].replace(",", ", ") + "** this "
+            "company files only annual figures, so those values are the latest "
+            "full fiscal year rather than the last twelve months.", icon="🗓️")
+    if _num(r.get("fcf_ttm")) is None and _num(r.get("revenue_ttm")) is not None:
+        st.info(
+            "No free cash flow for this company: it doesn't tag capital "
+            "expenditure in a comparable way — normal for banks and insurers, "
+            "whose cash flow statement has a different structure. Everything "
+            "built on FCF is blank throughout the app.", icon="ℹ️")
 
-    # ---------------- GLI ESERCIZI, COME DEPOSITATI ----------------
-    if a is not None:
-        st.divider()
-        st.markdown("#### Last fiscal years, as filed")
-        show = pd.DataFrame({"Fiscal year": a["fy_end"].astype(str)})
-        for col, label, fmt in (
-                ("revenue", "Revenue", fmt_money),
-                ("net_income", "Net income", fmt_money),
-                ("ebit", "EBIT", fmt_money),
-                ("eps", "EPS", lambda v: f"${v:,.2f}" if pd.notna(v) else "—"),
-                ("ocf", "Op. cash flow", fmt_money),
-                ("capex", "Capex", fmt_money),
-                ("fcf", "Free cash flow", fmt_money),
-                ("total_debt", "Total debt", fmt_money),
-                ("cash", "Cash", fmt_money),
-                ("equity", "Equity", fmt_money)):
-            if col in a.columns and a[col].notna().any():
-                show[label] = a[col].map(fmt)
-        if _has(a, "revenue") and _has(a, "net_income"):
-            show["Net margin"] = [
-                fmt_pct(ni / rev * 100) if (pd.notna(ni) and pd.notna(rev) and rev)
-                else "—" for ni, rev in zip(a["net_income"], a["revenue"])]
-        st.dataframe(show, use_container_width=True, hide_index=True)
-        st.caption(
-            "Each row is one complete fiscal year from the annual report (10-K). "
-            "Fiscal years do not always end in December: the closing date is the "
-            "company's own. The EPS column is the **filed** figure, restated for "
-            "stock splits only — it does not carry the anchoring factor that "
-            "aligns the chart's level to today's EPS, so it can differ slightly "
-            "from the TTM figures elsewhere.")
-        st.download_button("📥 Download annual financials (CSV)",
-                           a.to_csv(index=False), f"{ticker}_financials.csv",
-                           "text/csv")
+    t_inc, t_bal, t_cash, t_ratio, t_growth = st.tabs(
+        ["🧾 Income statement", "🏦 Balance sheet", "💵 Cash flow",
+         "📐 Ratios", "📈 Growth (5y)"])
 
-    # ---------------- CONFRONTO CON I PARI ----------------
-    if peers is not None:
-        st.divider()
-        st.markdown("#### Side by side with the peer group")
-        st.caption("Business quality only. The valuation multiples are compared "
-                   "on the **Valuation** tab, where they belong.")
-        rows = []
-        for key in ("roe_pct", "equity_ratio_pct", "earning_power_pct",
-                    "operating_margin_pct", "net_margin_pct", "fcf_yield_pct",
-                    "debt_to_equity", "net_debt_to_ebit", "cagr_revenue_5y",
-                    "cagr_fcf_5y"):
-            if key not in r.index or key not in peers.index:
-                continue
-            gap, text = peer_gap(key, r.get(key), peers.get(key))
-            rows.append({
-                "Metric": METRICS[key]["label"],
-                ticker: fmt_metric(key, _num(r.get(key))),
-                "Peer median": fmt_metric(key, _num(peers.get(key))),
-                "Gap": text or "—",
-                "Better when": {"high": "higher", "low": "lower"}.get(
-                    METRICS[key].get("better"), "—"),
-            })
-        if rows:
-            st.dataframe(pd.DataFrame(rows), use_container_width=True,
-                         hide_index=True)
-        st.caption(
-            "The peer group is built from the tickers in **this dataset**, not "
-            "from the whole market: with a partial universe the median describes "
-            "the companies actually loaded.")
+    # =================================================================== #
+    # CONTO ECONOMICO                                                     #
+    # =================================================================== #
+    with t_inc:
+        st.markdown("##### What it sells, and what it keeps")
+        kpi_row(r, peers, ("revenue_ttm", "ebit_ttm", "net_income_ttm",
+                           "eps_ttm"))
+        kpi_row(r, peers, ("operating_margin_pct", "net_margin_pct",
+                           "revenue_growth_yoy_pct", "eps_growth_yoy"))
+        kpi_row(r, peers, ("revenue_per_share", "shares_outstanding",
+                           "revenue_latest_fy", "earnings_yield_pct"))
 
-    st.caption(
-        "Source: every figure here is computed from the company's own SEC "
-        "filings (XBRL company facts). Price, market cap and the earnings date "
-        "come from the market data provider, since no filing contains them. "
-        "Hover any label for its exact formula.")
+        if a is not None:
+            st.markdown("###### Revenue and profit, year by year")
+            fig = charts.bars(a["year"], [("Revenue", _col(a, "revenue")),
+                                          ("EBIT", _col(a, "ebit")),
+                                          ("Net income", _col(a, "net_income"))],
+                              ylab="$", height=300)
+            if fig is not None:
+                st.plotly_chart(fig, use_container_width=True,
+                                key="fin_income_bars")
+            # I MARGINI IN UN GRAFICO SEPARATO, non su un secondo asse
+            # verticale. Sovrapporre una percentuale a un valore in miliardi
+            # obbliga a scegliere un allineamento arbitrario fra le due scale, e
+            # il lettore ci legge una correlazione che nei dati non c'e'. Due
+            # grafici che condividono l'asse dei tempi dicono la stessa cosa
+            # senza mentire.
+            if _has(a, "revenue") and _has(a, "net_income"):
+                net_m = np.where((a["revenue"] > 0) & a["net_income"].notna(),
+                                 a["net_income"] / a["revenue"] * 100, np.nan)
+                op_m = (np.where((a["revenue"] > 0) & a["ebit"].notna(),
+                                 a["ebit"] / a["revenue"] * 100, np.nan)
+                        if _has(a, "ebit") else None)
+                mfig = charts.lines(a["year"],
+                                    [("Net margin", net_m),
+                                     ("Operating margin", op_m)],
+                                    ylab="% of revenue", height=230, pct=True)
+                if mfig is not None:
+                    st.plotly_chart(mfig, use_container_width=True,
+                                    key="fin_income_margins")
+                    st.caption(
+                        "Margins get their own chart rather than a second "
+                        "vertical axis: percentages and billions on one panel "
+                        "would need an arbitrary alignment between the two "
+                        "scales, and that alignment reads as a correlation "
+                        "that isn't in the data. Watch the **direction** more "
+                        "than the level — a margin sliding for three years is "
+                        "a business losing pricing power.")
+
+            st.markdown("###### As filed")
+            extra = []
+            if _has(a, "revenue") and _has(a, "net_income"):
+                extra.append(("Net margin",
+                              _pct_series(a["net_income"], a["revenue"])))
+            if _has(a, "revenue") and _has(a, "ebit"):
+                extra.append(("Operating margin",
+                              _pct_series(a["ebit"], a["revenue"])))
+            st.dataframe(
+                _fy_table(a, [("revenue", "Revenue", fmt_money),
+                              ("ebit", "EBIT", fmt_money),
+                              ("net_income", "Net income", fmt_money),
+                              ("eps", "EPS", fmt_usd)], extra),
+                use_container_width=True, hide_index=True)
+            st.caption(
+                "One row per complete fiscal year, from the annual report "
+                "(10-K). Fiscal years don't always end in December: the "
+                "closing date is the company's own. The EPS column is the "
+                "**filed** figure, restated for stock splits only — it does "
+                "not carry the anchoring factor that aligns the chart to "
+                "today's EPS, so it can differ slightly from the TTM figures "
+                "elsewhere.")
+        else:
+            st.caption("No annual financials on file for this ticker.")
+
+    # =================================================================== #
+    # STATO PATRIMONIALE                                                  #
+    # =================================================================== #
+    with t_bal:
+        st.markdown("##### What it owns, and what it owes")
+        kpi_row(r, peers, ("assets", "equity", "total_debt", "cash"))
+        kpi_row(r, peers, ("net_debt", "long_term_debt", "enterprise_value",
+                           "book_value_per_share"))
+        st.markdown("###### How solid the structure is")
+        kpi_row(r, peers, ("equity_ratio_pct", "debt_to_equity",
+                           "net_debt_to_equity", "debt_to_assets_pct"))
+        kpi_row(r, peers, ("net_debt_to_ebit", "asset_turnover", "roe_pct",
+                           "price_to_book"))
+
+        if a is not None and (_has(a, "total_debt") or _has(a, "cash")
+                              or _has(a, "equity")):
+            st.markdown("###### Debt, cash and equity, year by year")
+            fig = charts.bars(a["year"], [("Equity", _col(a, "equity")),
+                                          ("Total debt", _col(a, "total_debt")),
+                                          ("Cash & equivalents", _col(a, "cash"))],
+                              ylab="$", height=300)
+            if fig is not None:
+                st.plotly_chart(fig, use_container_width=True,
+                                key="fin_balance_bars")
+                st.caption(
+                    "Read the three together: debt growing faster than equity "
+                    "is leverage building up, and cash is what decides whether "
+                    "that debt is a problem this year or in ten years.")
+        elif a is not None:
+            st.caption(
+                "ℹ️ Debt and cash are not in the annual file yet. Regenerate "
+                "the dataset (`python build_dataset.py`) to add them — they "
+                "are read from the balance sheet tags the company files.")
+
+        if _num(r.get("enterprise_value")):
+            st.markdown("###### From share price to price of the business")
+            fig = charts.capital_structure(_num(r.get("market_cap")),
+                                           _num(r.get("total_debt")),
+                                           _num(r.get("cash")))
+            if fig is not None:
+                st.plotly_chart(fig, use_container_width=True,
+                                key="fin_capital_structure")
+                st.caption(
+                    "Market cap + total debt − cash = **enterprise value**: "
+                    "the price of the whole business rather than of its shares "
+                    "alone. It is what makes two companies with the same "
+                    "market cap but opposite balance sheets comparable.")
+
+        if a is not None:
+            st.markdown("###### As filed")
+            extra = []
+            if _has(a, "equity") and _has(a, "assets"):
+                extra.append(("Equity ratio",
+                              _pct_series(a["equity"], a["assets"])))
+            if _has(a, "total_debt") and _has(a, "cash"):
+                extra.append(("Net debt",
+                              [fmt_money(d - c) if (pd.notna(d) and pd.notna(c))
+                               else "—" for d, c in zip(a["total_debt"], a["cash"])]))
+            st.dataframe(
+                _fy_table(a, [("assets", "Total assets", fmt_money),
+                              ("equity", "Equity", fmt_money),
+                              ("total_debt", "Total debt", fmt_money),
+                              ("cash", "Cash", fmt_money)], extra),
+                use_container_width=True, hide_index=True)
+            st.caption(
+                "Balance sheet figures are a **snapshot** on the closing date, "
+                "not a total for the year: unlike revenue or cash flow they "
+                "cannot be added up across periods.")
+
+    # =================================================================== #
+    # RENDICONTO FINANZIARIO                                              #
+    # =================================================================== #
+    with t_cash:
+        st.markdown("##### What actually reaches the bank account")
+        kpi_row(r, peers, ("ocf_ttm", "capex_ttm", "fcf_ttm", "fcf_latest_fy"))
+        kpi_row(r, peers, ("ocf_margin_pct", "fcf_margin_pct",
+                           "fcf_conversion_pct", "capex_to_revenue_pct"))
+        st.markdown("###### What it does with that cash")
+        kpi_row(r, peers, ("fcf_per_share", "fcf_yield_pct", "dividend_yield",
+                           "payout_ratio_pct"))
+
+        if a is not None and (_has(a, "ocf") or _has(a, "fcf")):
+            st.markdown("###### Cash in, cash invested, cash left")
+            capex = (-a["capex"] if _has(a, "capex") else None)
+            fig = charts.bars(a["year"],
+                              [("Operating cash flow", _col(a, "ocf")),
+                               ("Capital expenditure", capex),
+                               ("Free cash flow", _col(a, "fcf"))],
+                              ylab="$", height=300)
+            if fig is not None:
+                st.plotly_chart(fig, use_container_width=True,
+                                key="fin_cash_bars")
+                st.caption(
+                    "Capital expenditure is drawn negative because that is "
+                    "what it does to cash: operating cash flow minus it leaves "
+                    "free cash flow. EDGAR reports cash flow year-to-date "
+                    "rather than per quarter, so quarters are recovered by "
+                    "differencing consecutive cumulative figures before "
+                    "summing.")
+
+        if a is not None:
+            st.markdown("###### As filed")
+            extra = []
+            if _has(a, "fcf") and _has(a, "revenue"):
+                extra.append(("FCF margin", _pct_series(a["fcf"], a["revenue"])))
+            if _has(a, "fcf") and _has(a, "net_income"):
+                extra.append(("FCF conversion",
+                              _pct_series(a["fcf"], a["net_income"])))
+            st.dataframe(
+                _fy_table(a, [("ocf", "Op. cash flow", fmt_money),
+                              ("capex", "Capex", fmt_money),
+                              ("fcf", "Free cash flow", fmt_money),
+                              ("dividends_paid", "Dividends paid", fmt_money)],
+                          extra),
+                use_container_width=True, hide_index=True)
+            st.caption(
+                "Cash flow is the least negotiable part of a set of accounts: "
+                "revenue and profit depend on when a sale is recognised, this "
+                "depends on when the money moved.")
+            st.download_button("📥 Download annual financials (CSV)",
+                               a.to_csv(index=False), f"{ticker}_financials.csv",
+                               "text/csv")
+
+    # =================================================================== #
+    # RAPPORTI                                                            #
+    # =================================================================== #
+    with t_ratio:
+        st.markdown("##### Everything expressed as a ratio")
+        st.caption(
+            "A ratio is what makes two companies of completely different size "
+            "comparable — and what makes the peer median below meaningful. "
+            "Hover any label for the formula and how to read it.")
+
+        st.markdown("###### Price ratios — what the market is charging")
+        kpi_row(r, peers, ("pe_ratio", "forward_pe", "ps_ratio", "pfcf_ratio"))
+        kpi_row(r, peers, ("price_to_book", "ev_to_ebit", "peg_ratio",
+                           "earnings_yield_pct"))
+
+        st.markdown("###### Return on capital — how well the money is used")
+        kpi_row(r, peers, ("roe_pct", "roic_pct", "earning_power_pct",
+                           "asset_turnover"))
+
+        st.markdown("###### Margins — how much of a sale survives")
+        kpi_row(r, peers, ("operating_margin_pct", "net_margin_pct",
+                           "fcf_margin_pct", "fcf_conversion_pct"))
+
+        st.markdown("###### Cash and balance sheet")
+        kpi_row(r, peers, ("fcf_yield_pct", "equity_ratio_pct",
+                           "debt_to_equity", "net_debt_to_ebit"))
+
+        if peers is not None:
+            st.markdown("###### Side by side with the peer group")
+            rows = []
+            for key in ("pe_ratio", "ps_ratio", "pfcf_ratio", "fcf_yield_pct",
+                        "fcf_margin_pct", "earning_power_pct",
+                        "operating_margin_pct", "net_margin_pct", "roe_pct",
+                        "roic_pct", "equity_ratio_pct", "debt_to_equity"):
+                if key not in r.index or key not in peers.index:
+                    continue
+                gap, text = peer_gap(key, r.get(key), peers.get(key))
+                rows.append({
+                    "Ratio": METRICS[key]["label"],
+                    ticker: fmt_metric(key, _num(r.get(key))),
+                    "Peer median": fmt_metric(key, _num(peers.get(key))),
+                    "Gap": text or "—",
+                    "Better when": {"high": "higher", "low": "lower"}.get(
+                        METRICS[key].get("better"), "—"),
+                })
+            if rows:
+                # Altezza fissata sul numero di righe: il default di
+                # st.dataframe ne mostra dieci e mette le altre dietro una
+                # barra di scorrimento interna, che in una tabella di confronto
+                # nasconde proprio le ultime voci — struttura patrimoniale e
+                # debito — senza che si veda che ci sono.
+                st.dataframe(pd.DataFrame(rows), use_container_width=True,
+                             hide_index=True, height=(len(rows) + 1) * 35 + 3)
+            st.caption(
+                f"Benchmark: the median of the **{peer_label}** ({n_peers} "
+                "companies). The peer group is built from the tickers in "
+                "**this dataset**, not from the whole market: with a partial "
+                "universe the median describes the companies actually loaded. "
+                "Percentages are compared in percentage points, ratios in "
+                "relative terms — mixing the two is the quickest way to make a "
+                "comparison table lie.")
+        else:
+            st.caption(
+                f"No peer group with at least {MIN_PEERS} companies for this "
+                "ticker in the current dataset, so no side-by-side comparison "
+                "is available.")
+
+    # =================================================================== #
+    # CRESCITA A CINQUE ANNI                                              #
+    # =================================================================== #
+    with t_growth:
+        st.markdown("##### Five-year compound growth")
+        st.caption(
+            "Each rate is computed on the trailing-twelve-month series, so it "
+            "compares twelve full months with twelve full months. A rate is "
+            "blank when the starting value was zero or negative: a compound "
+            "rate from a loss has no meaning. The **Growth** tab shows the two "
+            "endpoints behind every one of these numbers.")
+        kpi_row(r, peers, ("cagr_revenue_5y", "cagr_eps_5y",
+                           "cagr_net_income_5y", "cagr_fcf_5y"))
+        kpi_row(r, peers, ("cagr_ocf_5y", "revenue_growth_yoy_pct",
+                           "eps_growth_yoy", "fcf_growth_yoy_pct"))
+
+        if a is not None:
+            st.markdown("###### Who grew, and by how much")
+            fig = charts.indexed(a["year"],
+                                 [("Revenue", _col(a, "revenue")),
+                                  ("Net income", _col(a, "net_income")),
+                                  ("Free cash flow", _col(a, "fcf")),
+                                  ("EPS", _col(a, "eps"))])
+            if fig is not None:
+                st.plotly_chart(fig, use_container_width=True,
+                                key="fin_growth_indexed")
+                skipped = getattr(fig, "_skipped", [])
+                note = ("Every series rebased to 100 at the first fiscal year "
+                        "shown, so quantities of completely different size — "
+                        "revenue in billions, EPS in dollars — sit on **one** "
+                        "axis and can actually be compared. The lines "
+                        "separating tell the story: EPS above revenue means "
+                        "buybacks and margins are working, cash below profit "
+                        "means the earnings aren't turning into money.")
+                if skipped:
+                    note += (" Not shown: " + ", ".join(skipped) + " — the "
+                             "first year is negative, zero, or far below that "
+                             "series' own usual level. An index built on a base "
+                             "like that measures how unusual the first year "
+                             "was, not growth.")
+                st.caption(note)
 
 
 def render_growth_tab(ticker: str, r: pd.Series) -> None:
@@ -1315,20 +2132,36 @@ def render_growth_tab(ticker: str, r: pd.Series) -> None:
 
     k = st.columns(4)
     k[0].metric("Growth used for the multiple", fmt_pct(g_used),
-                help="The figure the Lynch category model multiplies by (PEG = 1). "
-                     "Picked from a ladder: 5-year trend first, then 5-year CAGR, "
-                     "then the 3-year windows.")
+                help="**What it is** — the growth rate that sets this "
+                     "company's fair P/E, under Lynch's PEG = 1 rule.\n\n"
+                     "**Formula** — picked from a ladder: 5-year trend first, "
+                     "then the 5-year CAGR, then the 3-year windows. The first "
+                     "measure that can be computed wins.\n\n**How to read it** "
+                     "— change this number and the fair value on the Valuation "
+                     "tab moves with it. It is the single most consequential "
+                     "figure in the model.")
     k[1].metric("5-year trend", fmt_pct(g_trend),
-                help="Least-squares regression on log(EPS) over five years — it "
-                     "uses every point in the window, so one odd quarter moves it "
-                     "little.")
+                help="**What it is** — the growth rate that best describes the "
+                     "whole five-year path, not just its two ends.\n\n"
+                     "**Formula** — least-squares regression on log(EPS) over "
+                     "five years.\n\n**How to read it** — it uses every point "
+                     "in the window, so one odd quarter barely moves it. This "
+                     "is why it sits first on the ladder.")
     k[2].metric("5-year CAGR", fmt_pct(g_cagr),
-                help="Compound rate between the two endpoints only. Shown next to "
-                     "the trend so the difference is visible: when they disagree "
-                     "widely, one of the two endpoints is unrepresentative.")
+                help="**What it is** — the compound rate between the first and "
+                     "last point, ignoring everything in between.\n\n"
+                     "**Formula** — ((EPS now ÷ EPS five years ago) ^ (1/5)) − "
+                     "1.\n\n**How to read it** — shown next to the trend so "
+                     "the difference is visible: when the two disagree widely, "
+                     "one of the two endpoints is not representative.")
     k[3].metric("EPS growth YoY", fmt_pct(_num(r.get("eps_growth_yoy"))),
-                help="Change in trailing-twelve-month EPS versus the point closest "
-                     "to one year earlier — compared by date, not by position.")
+                help="**What it is** — the most recent year of growth, on its "
+                     "own.\n\n**Formula** — trailing-twelve-month EPS against "
+                     "the point closest to one year earlier, compared by date "
+                     "and not by position in the series.\n\n**How to read it** "
+                     "— far above the five-year rate means the growth is "
+                     "accelerating, or that one exceptional quarter is in the "
+                     "window.")
     if pd.notna(basis):
         st.caption(f"Measure actually used: **{basis}**.")
     if g_trend is not None and g_cagr is not None and abs(g_trend - g_cagr) > 10:
@@ -1380,7 +2213,8 @@ def render_growth_tab(ticker: str, r: pd.Series) -> None:
                                          ("Free cash flow", _col(a, "fcf")),
                                          ("EPS", _col(a, "eps"))])
         if fig is not None:
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, use_container_width=True,
+                            key="growth_indexed")
             skipped = getattr(fig, "_skipped", [])
             note = ("Every series rebased to 100 at the first fiscal year shown, "
                     "so quantities of completely different size — revenue in "
@@ -1403,21 +2237,23 @@ def render_growth_tab(ticker: str, r: pd.Series) -> None:
         fig = charts.lines(a["year"], [("EPS", _col(a, "eps"))],
                            ylab="$ per share", height=260, suffix="")
         if fig is not None:
-            st.plotly_chart(fig, use_container_width=True)
-        ps = st.columns(4)
-        for col, key in zip(ps, ("book_value_per_share", "revenue_per_share",
-                                 "fcf_per_share", "eps_ttm")):
-            if key == "eps_ttm":
-                col.metric("EPS (TTM)", f"${_num(r.get('eps_ttm')):,.2f}"
-                           if _num(r.get("eps_ttm")) else "—")
-            elif key in METRICS and key in r.index:
-                spec = METRICS[key]
-                col.metric(spec["label"], fmt_ratio(_num(r.get(key)), 2),
-                           help=spec["help"])
+            st.plotly_chart(fig, use_container_width=True,
+                            key="growth_eps_line")
+        peers_ps, _, _ = peer_reference(r, ind_med, sec_med)
+        kpi_row(r, peers_ps, ("eps_ttm", "revenue_per_share", "fcf_per_share",
+                              "book_value_per_share"))
+        kpi_row(r, peers_ps, ("shares_outstanding",), ncols=4)
 
     # ---------------- GLI ESTREMI DI OGNI TASSO ----------------
+    #
+    # RICHIUSO. E' una tabella di quindici righe di controllo — metrica,
+    # finestra, i due estremi, gli anni, il tasso — che serve a rifare il conto
+    # a mano quando un numero sorprende, non a leggere la crescita. Aperta,
+    # occupava piu' spazio di tutto il resto della scheda.
     st.divider()
-    render_cagr_audit(ticker, r)
+    with st.expander("🔎 Every growth rate, with the two numbers it comes from",
+                     expanded=False):
+        render_cagr_audit(ticker, r)
 
 
 # Come si ottiene ogni voce della scheda finanziaria: formula in chiaro, da
@@ -1449,14 +2285,29 @@ METRIC_PROVENANCE: tuple[tuple[str, str, str, str], ...] = (
      "against the provider's trailing EPS", "SEC XBRL + market data provider", ""),
     ("ROE", "net income TTM ÷ average equity over the same 12 months",
      "derived", ""),
+    ("ROIC", "EBIT TTM × (1 − 21%) ÷ (equity + total debt − cash). The 21% US "
+     "federal rate is applied to every company, not each one's effective rate",
+     "derived", ""),
     ("Equity ratio", "equity ÷ total assets", "derived", ""),
+    ("Debt / assets", "total debt ÷ total assets", "derived", ""),
+    ("Net debt / equity", "(total debt − cash) ÷ equity", "derived", ""),
+    ("Asset turnover", "revenue TTM ÷ total assets", "derived", ""),
     ("Earning power", "EBIT TTM ÷ total assets", "derived", ""),
     ("Net / operating margin", "net income or EBIT ÷ revenue, both TTM",
      "derived", ""),
+    ("FCF / OCF margin", "free cash flow or operating cash flow ÷ revenue, "
+     "both TTM", "derived", ""),
+    ("FCF conversion", "free cash flow ÷ net income, both TTM; blank on a loss",
+     "derived", ""),
+    ("Capex (TTM) · capex / revenue",
+     "operating cash flow − free cash flow; then ÷ revenue", "derived", ""),
     ("P/E (trailing)", "price ÷ the EPS above (recomputed, never copied)",
      "derived", ""),
+    ("Earnings yield", "100 ÷ trailing P/E", "derived", ""),
     ("P/S · P/FCF · FCF yield", "market cap ÷ revenue, ÷ FCF; FCF ÷ market cap",
      "derived", ""),
+    ("Payout ratio", "(dividend yield × market cap) ÷ net income TTM",
+     "derived from provider + filings", ""),
     ("Market cap", "provider field, or price × shares outstanding when missing",
      "market data provider", ""),
     ("P/E (forward)", "price ÷ analyst consensus EPS — an expectation, not a filing",
@@ -1470,14 +2321,17 @@ METRIC_PROVENANCE: tuple[tuple[str, str, str, str], ...] = (
 
 def render_metric_provenance(ticker: str, r: pd.Series) -> None:
     """Tabella: ogni metrica, la sua formula, la sua fonte, il tag XBRL usato."""
-    st.markdown("**3. How every financial figure is computed, and from what**")
+    st.markdown("**3. Where the data comes from — every figure, its formula "
+                "and its source**")
     st.caption(
-        "Everything on the Financials tab is derived from the company's own SEC "
-        "filings, except the four rows marked as provider data — no filing "
-        "contains a share price. The **XBRL concept** column names the exact tag "
-        "read for this company: more than one means the company changed tag over "
-        "time (ASC 606 moved all revenue to a new tag in 2018) and the series "
-        "spans that boundary."
+        "This is the table the **Financials** tab points to. Everything there "
+        "is computed from the company's own SEC filings, except the rows "
+        "marked as provider data — no filing contains a share price. The "
+        "**XBRL concept** column names the exact tag read for this company: "
+        "more than one means the company changed tag over time (ASC 606 moved "
+        "all revenue to a new tag in 2018) and the series spans that boundary. "
+        "The *Raw filed data* link opens the untouched facts the SEC holds for "
+        "that tag, which is where a suspicious number is settled."
     )
     used: dict[str, str] = {}
     raw = r.get("concepts_used")
@@ -1541,7 +2395,11 @@ def render_cagr_audit(ticker: str, r: pd.Series) -> None:
     ispezionabile — e rende immediatamente visibile il caso in cui un "+98%
     l'anno" dipende da una base di partenza depressa.
     """
-    st.markdown("#### Every growth rate, with the two numbers it comes from")
+    st.caption(
+        "The audit trail behind every rate on this page: a growth rate is the "
+        "easiest number in finance to make say anything, because you only have "
+        "to choose the starting year. Showing both endpoints makes that choice "
+        "inspectable.")
     if cagr_detail is None:
         st.caption("Not available: regenerate the dataset to produce "
                    "`data/cagr_detail.csv`.")
@@ -1708,10 +2566,16 @@ def render_quality_tab(ticker: str, r: pd.Series) -> None:
     g = lambda k: r[k] if k in r.index and pd.notna(r[k]) else None  # noqa: E731
 
     st.caption(
-        "The fair value derivation now lives on **Valuation**, and the growth "
-        "endpoints on **Growth** — each next to the number it explains. This "
-        "tab is what is left when you want to check the machine rather than "
-        "the company.")
+        "**Where every number on this page comes from.** The financial "
+        "statements are rebuilt from the company's own SEC filings (XBRL "
+        "company facts); price, market cap, the analyst consensus and the "
+        "earnings date come from the market data provider, because no filing "
+        "contains a share price. Everything else is derived from those two by "
+        "the formulas listed below. The fair value derivation lives on "
+        "**Valuation**, the growth endpoints on **Growth**, and the filings "
+        "themselves on **Filings** — each next to the thing it explains. What "
+        "is left here is the material for checking the machine rather than the "
+        "company.")
 
     render_eps_arbitration(ticker, r, compact=False)
 
@@ -1773,24 +2637,149 @@ def render_quality_tab(ticker: str, r: pd.Series) -> None:
                                       "detail": "Detail"}),
                      use_container_width=True, hide_index=True)
 
-    st.markdown("**6. Recent SEC filings**")
+    st.caption(
+        "The filings these figures were read from are on the **📄 Filings** "
+        "tab, with a direct link to each document on SEC EDGAR.")
+
+
+# Cosa contiene ciascun modulo, in una riga. Un elenco di sigle non dice a chi
+# legge quale documento aprire, ed e' esattamente la domanda che si fa in questa
+# scheda: "dove sta il numero che voglio verificare?".
+# NIENTE MARKDOWN: st.dataframe stampa gli asterischi cosi' come sono.
+FORM_DESCRIPTIONS = {
+    "10-K": "Annual report, audited — the source of the yearly tables.",
+    "10-Q": "Quarterly report, unaudited — four of these make the TTM figures.",
+    "8-K": "Material event — acquisition, results release, change of auditor.",
+    "20-F": "Annual report of a foreign issuer — the 10-K equivalent.",
+    "40-F": "Annual report of a Canadian issuer (MJDS).",
+    "6-K": "Interim report of a foreign issuer — the 10-Q equivalent.",
+    "S-1": "Registration statement — a first sale of shares to the public.",
+    "DEF 14A": "Proxy statement — pay, board, shareholder-meeting motions.",
+}
+
+
+def render_filings_tab(ticker: str, r: pd.Series) -> None:
+    """
+    I documenti depositati alla SEC — una scheda propria, non una coda della
+    scheda di audit.
+
+    Stavano in fondo a Data quality come sesta sezione, dopo l'arbitraggio
+    dell'EPS, la classificazione, la tabella delle formule e i metadati: cioe'
+    nel punto in cui si arriva solo scorrendo tutto il resto. Ma un deposito
+    alla SEC non e' una diagnostica del programma, e' la FONTE: e' il documento
+    che si apre quando un numero non convince, ed e' anche l'unico modo per
+    sapere se sono uscite trimestrali piu' recenti dei dati caricati qui.
+    """
     fil_t = filings[filings["ticker"] == ticker] if filings is not None else None
+
+    st.markdown("#### The documents every figure on this page is read from")
+    st.caption(
+        "This dashboard never types a number in by hand: the financial "
+        "statements are parsed from the XBRL data attached to these filings. "
+        "Open one and you are looking at exactly what the company told the "
+        "regulator — the same income statement, the same balance sheet.")
+
+    last_eps = r.get("eps_last_date")
+    age = _num(r.get("eps_series_age_days"))
+    nxt = r.get("next_earnings_date")
+    c = st.columns(3)
+    c[0].metric("Most recent SEC data point", str(last_eps) if pd.notna(last_eps)
+                else "—",
+                help="**What it is** — the period end of the newest figure "
+                     "used on this page.\n\n**How to read it** — if a quarter "
+                     "has been reported after this date, this company's data "
+                     "is one period behind and the discount shown may already "
+                     "be stale.")
+    c[1].metric("Age of that data", f"{int(age)} days" if age is not None else "—",
+                help="**What it is** — how long ago that period ended.\n\n"
+                     "**How to read it** — anything much beyond 100 days means "
+                     "a quarter is probably missing: check the filing list "
+                     "below against it.")
+    c[2].metric("Next earnings date", str(nxt) if pd.notna(nxt) else "—",
+                help="**What it is** — the date the provider expects the next "
+                     "results.\n\n**How to read it** — an expectation, not a "
+                     "commitment: it is the one date on this page that has not "
+                     "happened yet.")
+
+    st.markdown("##### Recent 10-K and 10-Q filings")
     if fil_t is None or fil_t.empty:
-        st.caption("No recent 10-K/10-Q filings on file for this ticker yet.")
+        st.info("No recent 10-K/10-Q filings on file for this ticker yet. The "
+                "build stores the latest filings per ticker in "
+                "`data/filings.csv`; regenerate the dataset to populate it.",
+                icon="📄")
     else:
         show_fil = fil_t.rename(columns={"form": "Form", "filing_date": "Filed",
                                          "period_date": "Period"})
-        cols = [c for c in ("Form", "Filed", "Period", "url") if c in show_fil.columns]
+        if "Form" in show_fil.columns:
+            show_fil["What it is"] = show_fil["Form"].map(
+                lambda f: FORM_DESCRIPTIONS.get(str(f).strip(), "—"))
+        cols = [c_ for c_ in ("Form", "What it is", "Filed", "Period", "url")
+                if c_ in show_fil.columns]
         st.dataframe(
             show_fil[cols], use_container_width=True, hide_index=True,
-            column_config={"url": st.column_config.LinkColumn("Filing",
-                                                              display_text="Open ↗")})
-        st.caption("Filing date = when it was submitted to the SEC · "
-                   "Period = the fiscal period the filing covers.")
-    st.markdown(
-        f"🔗 [Browse all filings for {ticker} on SEC EDGAR]"
-        f"(https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany"
-        f"&ticker={ticker}&type=10-K&dateb=&owner=include&count=40)")
+            column_config={
+                "url": st.column_config.LinkColumn("Document",
+                                                   display_text="Open ↗"),
+                "What it is": st.column_config.Column(width="large"),
+                "Filed": st.column_config.Column(
+                    help="When the document was submitted to the SEC."),
+                "Period": st.column_config.Column(
+                    help="The fiscal period the document covers. This, not the "
+                         "filing date, is what the figures refer to — a 10-K "
+                         "filed in February reports the year that ended in "
+                         "December."),
+            })
+        st.caption(
+            "**Filed** is when it reached the SEC, **Period** is what it "
+            "covers: the gap between the two is the reporting lag, usually "
+            "four to eight weeks. A 10-K filed today does not mean today's "
+            "numbers.")
+
+    st.markdown("##### Go to the source")
+    cik = r.get("cik")
+    cik_str = None
+    if pd.notna(cik):
+        try:
+            cik_str = str(int(float(cik))).zfill(10)
+        except (TypeError, ValueError):
+            cik_str = None
+
+    links = [
+        (f"All filings for {ticker} on EDGAR",
+         f"https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany"
+         f"&ticker={ticker}&type=10-K&dateb=&owner=include&count=40",
+         "The complete filing history, every form type."),
+        (f"Quarterly reports (10-Q) for {ticker}",
+         f"https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany"
+         f"&ticker={ticker}&type=10-Q&dateb=&owner=include&count=10",
+         "Where to check a contested EPS: look for *Diluted earnings per "
+         "share* in the income statement."),
+        ("Financial statements viewer",
+         f"https://www.sec.gov/cgi-bin/viewer?action=view&ticker={ticker}",
+         "The SEC's own reader: the statements rendered as tables, no XBRL "
+         "needed."),
+    ]
+    if cik_str:
+        links.append(
+            ("All company facts (one JSON)",
+             f"https://data.sec.gov/api/xbrl/companyfacts/CIK{cik_str}.json",
+             "Every tagged figure this company has ever filed — the raw "
+             "material this dashboard is built from."))
+    links.append(
+        ("Provider page", f"https://finance.yahoo.com/quote/{ticker}/financials",
+         "The market data side: price, market cap, analyst consensus."))
+
+    st.dataframe(
+        pd.DataFrame([{"Source": n, "What you find there": d, "Link": u}
+                      for n, u, d in links]),
+        use_container_width=True, hide_index=True,
+        column_config={"Link": st.column_config.LinkColumn(
+            "Link", display_text="open ↗")})
+
+    st.caption(
+        "Corporate events read out of these filings — splits above all — are "
+        "listed on the **🔍 Data quality** tab, because what they affect is the "
+        "comparability of the series rather than the accounts themselves.")
 
 
 if nav == "Details":
@@ -1824,12 +2813,18 @@ if nav == "Details":
                 bits.append(f"{lynch_icon(r0['lynch_category'])} {r0['lynch_category']}")
             st.markdown("&nbsp;\n\n" + " · ".join(bits))
 
-    tab_val, tab_fin, tab_growth, tab_qual = st.tabs(
-        ["📉 Valuation", "📊 Financials", "📈 Growth (5y)", "🔍 Data quality"])
+    # L'ORDINE E' UN PERCORSO: quanto vale, com'e' fatta, quanto cresce, da
+    # dove vengono i documenti, quanto fidarsi dei dati. I depositi alla SEC
+    # hanno una scheda propria — erano l'ultima sezione di Data quality, cioe'
+    # visibili solo a chi scorreva fino in fondo una pagina di diagnostica,
+    # mentre sono la fonte di tutto il resto.
+    tab_val, tab_fin, tab_growth, tab_fil, tab_qual = st.tabs(
+        ["📉 Valuation", "📊 Financials", "📈 Growth (5y)", "📄 Filings",
+         "🔍 Data quality"])
     with tab_val:
         render_valuation_tab(ticker, row)
     if row.empty:
-        for tab in (tab_fin, tab_growth, tab_qual):
+        for tab in (tab_fin, tab_growth, tab_fil, tab_qual):
             with tab:
                 st.info("No summary row for this ticker in fundamentals.csv.")
     else:
@@ -1838,6 +2833,8 @@ if nav == "Details":
             render_financials_tab(ticker, r_series)
         with tab_growth:
             render_growth_tab(ticker, r_series)
+        with tab_fil:
+            render_filings_tab(ticker, r_series)
         with tab_qual:
             render_quality_tab(ticker, r_series)
 
