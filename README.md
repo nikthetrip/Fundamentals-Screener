@@ -110,6 +110,7 @@ al 3%), oppure che gli utili contengono voci straordinarie.
 | `test_financials.py` | Test offline di bilanci, FCF, CAGR, volatilita' |
 | `test_categories.py` · `test_guardrails.py` · `test_filings.py` | Classificazione Lynch, arbitraggio fonti, filing |
 | `test_ttm_regression.py` | Regressione su companyfacts SEC reali congelati |
+| `audit_dataset.py` | **Audit della classificazione su TUTTI i ticker del dataset** — invarianti, copertura, continuità, sensibilità |
 | `requirements.txt` | Dipendenze |
 
 ### File generati in `data/`
@@ -146,6 +147,36 @@ export SEC_USER_AGENT="Lynch Research tua@email.com"
 Su Windows (cmd): `set SEC_USER_AGENT=Lynch Research tua@email.com`
 
 Su GitHub Actions è il secret `SEC_USER_AGENT`.
+
+---
+
+## Verificare che la meccanica regga (non solo che il codice giri)
+
+Su mille società nessuno può controllare i singoli casi a mano, e un difetto
+della meccanica non si presenta come un errore: si presenta come **un numero
+plausibile e sbagliato**. `audit_dataset.py` cerca *classi* di difetto, in
+quattro modi che non richiedono di sapere quanto valga davvero ogni titolo:
+
+```bash
+python audit_dataset.py
+```
+
+| Controllo | Domanda | Cosa ha trovato |
+|---|---|---|
+| **1. Invarianti di ramo** | l'esito rispetta la condizione da cui esce? | Una "Fast Grower" con crescita 4%, una "Ciclica" con P/E ≠ 12, un multiplo su utili negativi sono contraddizioni interne, verificabili senza conoscere il valore vero |
+| **2. Copertura e plausibilità** | quanti titoli ricevono un fair value, e chi non lo riceve ha una ragione dichiarata? | Un fair value *soppresso* e uno *mai calcolato* lasciano la stessa cella vuota ma sono cose diverse |
+| **3. Continuità** | il fair value è una funzione continua della crescita? | **La prova più severa.** Ha trovato un'*inversione* sul confine del 10% (passare nella categoria migliore faceva scendere il fair value del 16%) e un *gradino* del 33% dove cambiava la base degli utili |
+| **4. Sensibilità** | quanti titoli cambiano categoria per ±1 punto di crescita? | Non è un test che si supera o si fallisce, ma la quota va sorvegliata: se cresce, il modello sta rispondendo al rumore |
+
+Il punto 3 è quello che conta di più. Se spostare la crescita di due decimi di
+punto — cioè il rumore della misura — sposta la valutazione del 30%, due società
+identiche ricevono valutazioni molto diverse per come è caduto un
+arrotondamento. Oggi il fair value è continuo e monotono su tutto l'intervallo
+da −15% a +40% di crescita, ed entrambe le proprietà sono verificate anche in
+`test_categories.py`, senza bisogno di un dataset.
+
+L'audit **gira anche nella GitHub Action**, sui dati appena costruiti e *prima*
+del commit: se la meccanica si contraddice, i dati non vengono pubblicati.
 
 ---
 
@@ -617,11 +648,26 @@ Stessa logica del tuo setup Patterns-Screener.
   I *prezzi* vanno più indietro, ma senza utili non c'è fair value da disegnare.
 - **P/E fisso 15/20/25:** è la versione "classica" della linea. Il fair-P/E
   legato alla crescita è il secondo modello, per categoria.
-- **La classificazione ciclica eredita la tassonomia del provider.** Il test
-  richiede un settore ciclico *e* utili erratici, ma i settori arrivano da
-  yfinance: Amazon è lì dentro "Consumer Cyclical", e con utili filed erratici
-  può risultare Ciclica pur non essendo un'azienda ciclica. La confidenza
-  dichiarata sulla scheda serve anche a questo.
+- **Settore e industria arrivano dal provider, e non sempre ci sono.** È la
+  dipendenza più delicata del tool, perché da quella classificazione dipendono
+  *due* cose: il gruppo di confronto (i delta "vs peers") e la regola delle
+  cicliche. Tre difese, tutte dichiarate nell'interfaccia:
+  1. la ciclicità è decisa sull'**industria**, non sul settore — "Industrials"
+     contiene sia le acciaierie sia i processori di buste paga;
+  2. un settore **indovinato dal codice SIC** non fa mai scattare il multiplo
+     delle cicliche: una supposizione non basta a imporre un P/E fisso;
+  3. quando il provider non ha alcun profilo per un simbolo, la scheda lo dice
+     in testa con un avviso.
+- **I simboli di mercato possono essere obsoleti.** L'universo viene da
+  Wikipedia (S&P 500, Russell 1000) e la mappa ticker→CIK dalla SEC: entrambe
+  ritardano sulle rinomine. Fiserv è quotata come **FI** dal 2023, ma tutte e
+  due la elencano ancora come **FISV**. Il risultato è la riga peggiore
+  possibile — bilanci giusti (arrivano da EDGAR tramite il CIK) accanto a un
+  prezzo preso da un simbolo che il provider non riconosce. La colonna
+  `stale_symbol` marca questi casi e la scheda mostra un avviso, ma **il
+  simbolo non viene corretto automaticamente**: non esiste una fonte gratuita
+  delle rinomine. Se un titolo che ti interessa è in questo stato, aggiungi il
+  ticker giusto a `extra_tickers.txt`.
 - **Niente ricavi per segmento o per area geografica.** I dati vengono dai fatti
   XBRL consolidati (`us-gaap`); la ripartizione per segmento vive sugli *assi di
   dimensione* del filing, che questa pipeline non legge. Le torte "Segment

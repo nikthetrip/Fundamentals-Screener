@@ -4,7 +4,7 @@ cancello di plausibilita' sul fair value.
 Casi reali che hanno motivato queste protezioni: WM e HAL.
 """
 from datetime import date, timedelta
-from edgar_logic import (choose_eps, fair_value_is_plausible, normalized_eps,
+from edgar_logic import (choose_eps, fair_value_is_plausible, fair_value_check, normalized_eps,
                          extract_eps_facts, MAX_PLAUSIBLE_EPS)
 
 print("=" * 72)
@@ -44,21 +44,43 @@ print("  ✓ Sotto il 15% di divergenza usa yfinance senza segnalazioni")
 print("\n" + "=" * 72)
 print("TEST 4 — caso HAL: fair value assurdo bloccato")
 print("=" * 72)
+# Il cancello e' ASIMMETRICO, e la ragione e' che i due errori non sono
+# simmetrici. Verso l'alto bastano 5 volte il prezzo: che il mercato sbagli del
+# 400% e' molto meno probabile che sbagli la nostra base di utili. Verso il
+# basso il fondo e' molto piu' largo (1/20), perche' `fair value / prezzo` e'
+# identicamente `P/E equo / P/E effettivo`: un cancello stretto punirebbe il
+# multiplo equo BASSO, che e' spesso il giudizio corretto. Misurato sui dati,
+# un cancello a un quinto del prezzo avrebbe soppresso 3M e Fortive — societa'
+# a P/E 30 giudicate care contro un P/E equo di 6. Quello e' segnale.
 cases = [
     ("Halliburton (bug reale)", 10_476_080.11, 33.36, False),
     ("Fair value ragionevole", 40.00, 33.36, True),
     ("Fair value molto basso ma sensato", 5.00, 33.36, True),
+    ("Titolo giudicato molto caro (legittimo)", 3.50, 33.36, True),
     ("Fair value irrisorio (errore)", 0.50, 33.36, False),
-    ("Fair value 20x il prezzo (limite)", 660.0, 33.36, True),
-    ("Fair value 30x il prezzo", 1000.0, 33.36, False),
+    ("Fair value 4x il prezzo (limite alto)", 130.0, 33.36, True),
+    ("Fair value 20x il prezzo", 660.0, 33.36, False),
 ]
 for label, fv, price, expected in cases:
     ok = fair_value_is_plausible(fv, price)
     mark = "✓" if ok == expected else "✗"
     verdict = "accettato" if ok else "SCARTATO"
-    print(f"  {mark} {label:36s} fv=${fv:>14,.2f} vs ${price} → {verdict}")
+    print(f"  {mark} {label:40s} fv=${fv:>14,.2f} vs ${price} → {verdict}")
     assert ok == expected
 print("  ✓ Il fair value da 10 milioni non arriva piu' a schermo")
+
+# Il cancello sul P/E della base: utili quasi a zero rendono ogni multiplo
+# arbitrario, ed e' il caso di Estee Lauder (fair value allo 0,3% del prezzo).
+print("\n  Cancello sul P/E della base usata:")
+for label, fv, price, base, expected in [
+        ("utili normali (P/E 25)", 60.0, 100.0, 4.00, True),
+        ("utili quasi azzerati (P/E 400)", 1.50, 100.0, 0.25, False),
+        ("asset play: il P/E non e' il criterio", 90.0, 100.0, 0.25, True)]:
+    anchor = "book" if "asset play" in label else "earnings"
+    ok, why = fair_value_check(fv, price, base, anchor)
+    mark = "✓" if ok == expected else "✗"
+    print(f"  {mark} {label:40s} → {'accettato' if ok else 'SCARTATO'}")
+    assert ok == expected, why
 
 print("\n" + "=" * 72)
 print("TEST 5 — mediana robusta agli outlier (causa del caso HAL)")

@@ -219,6 +219,18 @@ jobs:
           echo "Righe history: $(gzip -cd data/history.csv.gz | wc -l)"
           echo "Ticker:        $(($(wc -l < data/fundamentals.csv) - 1))"
 
+      # I test girano sulla LOGICA, con dati sintetici. Questo gira sui DATI
+      # APPENA COSTRUITI: riclassifica ogni ticker e verifica che nessun esito
+      # contraddica il ramo da cui esce, che il fair value resti una funzione
+      # continua della crescita e che la copertura non crolli.
+      #
+      # Sta PRIMA del commit di proposito. Un difetto della meccanica non si
+      # presenta come un errore, si presenta come un numero plausibile e
+      # sbagliato: se passasse di qui, finirebbe nella dashboard senza che nulla
+      # lo segnali. Meglio nessun aggiornamento che un dataset che si contraddice.
+      - name: Audit della classificazione sui dati appena costruiti
+        run: python audit_dataset.py --data data
+
       - name: Commit dei dati aggiornati
         env:
           # QUANTO PESA UNA BUILD AL GIORNO.

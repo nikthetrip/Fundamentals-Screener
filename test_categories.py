@@ -43,7 +43,10 @@ cases = [
     ("MSFT-like (crescita solida)",
      dict(growth_pct=15.0, eps_now=16.8, volatility=20, sector="Technology",
           dividend_yield=0.95, price_to_book=12, market_cap=3e12, losses=NO_LOSS),
-     "Stalwart", 15.0, "earnings"),
+     # 15% di crescita + 0,95% di dividendo: la somma vale in TUTTE le fasce,
+     # ed e' cio' che rende il multiplo continuo sui confini (vedi il test
+     # dedicato piu' sotto).
+     "Stalwart", 15.95, "earnings"),
 
     ("KO-like (crescita lenta, dividendo)",
      dict(growth_pct=5.0, eps_now=2.5, volatility=15, sector="Consumer Defensive",
@@ -151,6 +154,40 @@ r = classify_lynch(growth_pct=90.0, eps_now=3.0, volatility=30,
 check("stessa crescita da base sana → Fast Grower al cap", r["fair_pe"], 25.0)
 
 print("\n" + "=" * 72)
+print("TEST CICLICHE — il settore da solo non basta")
+print("=" * 72)
+cyc = dict(growth_pct=8.0, eps_now=3.0, volatility=90, dividend_yield=1.0,
+           price_to_book=3, market_cap=5e10, losses=NO_LOSS, eps_normalized=2.5)
+
+r = classify_lynch(sector="Energy", industry="Oil & Gas E&P", **cyc)
+check("petrolifera con utili erratici → Ciclica", r["category"], "Cyclical")
+
+# Il caso Amazon: "Consumer Cyclical" e' il SETTORE, ma il commercio elettronico
+# non oscilla con il ciclo delle materie prime. Con il solo settore prendeva un
+# P/E fisso di 12 su utili normalizzati.
+r = classify_lynch(sector="Consumer Cyclical", industry="Internet Retail", **cyc)
+check("commercio online in Consumer Cyclical → NON ciclica",
+      r["category"], "Slow Grower")
+
+r = classify_lynch(sector="Industrials", industry="Aerospace & Defense", **cyc)
+check("difesa (contratti pluriennali) → NON ciclica", r["category"], "Slow Grower")
+
+r = classify_lynch(sector="Real Estate", industry="REIT - Healthcare Facilities", **cyc)
+check("REIT sanitario → NON ciclico", r["category"], "Slow Grower")
+
+# Il caso Fiserv: settore indovinato dal codice SIC, non accertato.
+r = classify_lynch(sector="Industrials", industry="Specialty Industrial Machinery",
+                   classification_source="sic", **cyc)
+check("settore indovinato dal SIC → la regola delle cicliche non scatta",
+      r["category"], "Slow Grower")
+check("  ...e la supposizione e' dichiarata",
+      "SIC code" in r["confidence_note"], True)
+
+r = classify_lynch(sector="Industrials", industry="Specialty Industrial Machinery",
+                   classification_source="yfinance", **cyc)
+check("stesso titolo con settore accertato → Ciclica", r["category"], "Cyclical")
+
+print("\n" + "=" * 72)
 print("TEST ANCORE — ogni categoria dichiara su cosa poggia")
 print("=" * 72)
 # La lacuna che lasciava 494 righe su 989 senza alcun fair value.
@@ -162,7 +199,13 @@ check("utili in calo → non piu' senza multiplo",
       r["category"], "Slow Grower (declining earnings)")
 check("  ...pavimento 6, nessun credito alla crescita negativa",
       r["fair_pe"], 6.0)
-check("  ...applicato agli utili normalizzati", r["eps_base"], "normalized")
+# La base NON e' piu' quella normalizzata. Lo era, e produceva un gradino del
+# 33% esattamente sul confine dello zero: a -0,1% di crescita il fair value
+# nasceva dalla mediana a tre anni, a +0,1% dall'ultimo TTM. La prudenza verso
+# chi ha utili in calo passa ora dal MULTIPLO (zero credito alla crescita
+# negativa), non dalla base — vedi il test di continuita' in fondo.
+check("  ...su una base uguale a quella delle altre fasce di crescita",
+      r["eps_base"], "current")
 
 r = classify_lynch(growth_pct=None, eps_now=-2.0, volatility=None,
                    sector="Healthcare", dividend_yield=0, price_to_book=0.6,
@@ -282,6 +325,53 @@ check("due episodi separati da oltre un anno", lp["episodes"], 2)
 check("non e' in perdita adesso", lp["current"], False)
 check("had_recent_losses resta il si'/no grezzo",
       had_recent_losses(two_ep, years=5), lp["any"])
+
+print("\n" + "=" * 72)
+print("TEST CONTINUITA' — il fair value non deve avere gradini")
+print("=" * 72)
+# E' il test piu' severo del file, ed e' quello che ha trovato i due difetti
+# peggiori. Si spazza la crescita a passi di un decimo di punto attraverso tutti
+# i confini fra categorie tenendo fermo tutto il resto: se il fair value salta,
+# due societa' che differiscono solo per il rumore di misura ricevono
+# valutazioni molto diverse.
+#
+# Cosa ha trovato:
+#  - un'INVERSIONE sul confine del 10%: a 9,9% il multiplo era min(9,9+div, 12)
+#    = 11,9, a 10,0% era 10,0 secco. Passare nella categoria migliore faceva
+#    SCENDERE il fair value del 16%. Corretto sommando il dividendo in tutte
+#    le fasce, non solo nelle slow grower.
+#  - un GRADINO del 33% dove cambiava la base di utili fra una categoria e
+#    l'altra. Corretto usando la stessa base in tutta la scala di crescita.
+prev, jumps = None, []
+for i in range(-150, 401):
+    g = i / 10
+    r = classify_lynch(growth_pct=g, eps_now=4.0, volatility=20,
+                       sector="Technology", dividend_yield=2.0, price_to_book=3,
+                       market_cap=1e11, losses=NO_LOSS, eps_normalized=3.0)
+    base = 3.0 if r["eps_base"] == "normalized" else 4.0
+    fv = base * r["fair_pe"] if r["fair_pe"] else None
+    if prev and fv and prev[1]:
+        jump = abs(fv / prev[1] - 1) * 100
+        if jump > 3.0:
+            jumps.append((prev[0], g, prev[1], fv, jump))
+    prev = (g, fv)
+for a, b, fa, fb, j in jumps:
+    print(f"  ✗ salto {a:.1f}% → {b:.1f}%: {fa:.2f} → {fb:.2f} ({j:+.0f}%)")
+check("nessun gradino oltre il 3% da -15% a +40% di crescita", len(jumps), 0)
+
+# E la monotonia: piu' cresci, piu' vali. Un modello in cui crescere di piu'
+# abbassa il fair value e' rotto, per quanto continuo sia.
+pes = []
+for i in range(0, 401):
+    r = classify_lynch(growth_pct=i / 10, eps_now=4.0, volatility=20,
+                       sector="Technology", dividend_yield=2.0, price_to_book=3,
+                       market_cap=1e11, losses=NO_LOSS, eps_normalized=3.0)
+    pes.append(r["fair_pe"])
+drops = [(i / 10, pes[i - 1], pes[i]) for i in range(1, len(pes))
+         if pes[i] < pes[i - 1] - 1e-9]
+for g, a, b in drops[:5]:
+    print(f"  ✗ a crescita {g:.1f}% il multiplo scende da {a:.2f} a {b:.2f}")
+check("il multiplo non scende mai al crescere della crescita", len(drops), 0)
 
 print("\n" + "=" * 72)
 print("✅ TUTTI I TEST DI CLASSIFICAZIONE PASSATI")

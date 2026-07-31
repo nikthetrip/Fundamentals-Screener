@@ -896,6 +896,27 @@ def render_valuation_tab(ticker: str, row: pd.DataFrame) -> None:
     r = row.iloc[0]
     company = r.get("company", ticker)
 
+    # Un avviso che va PRIMA di tutto: se il simbolo di mercato non e' piu'
+    # valido, il prezzo — e quindi ogni multiplo e ogni sconto in questa pagina
+    # — potrebbe riferirsi a uno strumento diverso dai bilanci mostrati.
+    if bool(r.get("stale_symbol")) or str(r.get("classification_source")) in ("sic", "none"):
+        stale = bool(r.get("stale_symbol"))
+        st.warning(
+            ("**The market data provider has no profile for this symbol.** "
+             if stale else
+             "**Sector and industry are guessed from the SEC SIC code**, "
+             "because the provider had no profile for this symbol. ")
+            + ("The financial statements come from SEC EDGAR via the company's "
+               "CIK and are correct, but the price — and therefore every "
+               "multiple and discount on this page — comes from a symbol the "
+               "provider does not recognise. That usually means the ticker has "
+               "changed. Verify the current symbol before using these figures. "
+               if stale else
+               "The peer comparison and the Lynch category both depend on that "
+               "classification, so treat both as provisional. The cyclical "
+               "multiple is deliberately not applied on a guessed sector."),
+            icon="⚠️")
+
     category_header(r)
     st.divider()
 
@@ -1917,10 +1938,17 @@ if nav == "Screener":
                 "window. It is on the Valuation tab of each ticker."
             )
         st.caption(
-            "**Known limitation:** the sector labels come from the market data "
-            "provider, so the Cyclical test inherits its taxonomy. Amazon sits "
-            "in *Consumer Cyclical* there, and with erratic filed earnings it "
-            "can be classified Cyclical even though its business is not."
+            "**The Cyclical test is decided on the INDUSTRY, not the sector.** "
+            "A sector is too coarse for a rule that imposes a fixed multiple: "
+            "*Industrials* holds both steel mills and payroll processors, "
+            "*Consumer Cyclical* holds carmakers and Amazon, *Real Estate* "
+            "holds offices and cell-tower REITs. Industries whose earnings do "
+            "not follow the commodity or capex cycle — internet retail, travel, "
+            "defence, healthcare and residential REITs, business services — are "
+            "excluded even inside a cyclical sector. And a sector **guessed "
+            "from the SEC SIC code**, because the provider had no profile for "
+            "that symbol, never triggers the rule at all: a guess is not enough "
+            "to impose a P/E."
         )
 
     def _multi_filter(label: str, options: list[str], key: str, fmt=None):
@@ -2217,6 +2245,7 @@ if nav == "Screener":
         "industry": "Industry", "exchange": "Exchange", "sic": "SIC",
         "sic_description": "SIC description",
         "classification_source": "Sector/industry source",
+        "stale_symbol": "Provider has no profile (symbol may have changed)",
         "lynch_category": "Lynch category", "current_price": "Price",
         "market_cap": "Market cap",
         "eps_ttm": "EPS used", "eps_source": "EPS source",

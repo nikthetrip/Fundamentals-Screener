@@ -653,15 +653,88 @@ def choose_eps(eps_edgar, eps_yf, eps_norm, price, days_stale: int = 0):
     return eps_yf, "yfinance", "check"
 
 
-def fair_value_is_plausible(fair_value, price, max_ratio: float = 20.0) -> bool:
+# Oltre questo multiplo del prezzo, un fair value non e' una valutazione.
+# Cinque volte e' gia' generoso: che il mercato sbagli del 400% e' molto meno
+# probabile che sbagli la nostra base di utili (tipicamente un utile appena
+# rimbalzato da una perdita, moltiplicato per il multiplo di una fast grower).
+FAIR_VALUE_MAX_RATIO = 5.0
+
+# P/E oltre il quale la BASE di utili non descrive piu' la societa'. Sopra 100
+# l'utile e' cosi' vicino a zero che qualunque multiplo produce un numero
+# arbitrario: Estee Lauder usciva con un fair value dello 0,3% del prezzo, Palo
+# Alto del 2,2%. Non sono giudizi di carezza, sono divisioni per quasi-zero.
+#
+# PERCHE' UNA SOGLIA SUL P/E E NON SUL RAPPORTO fair value/prezzo. Sono la
+# stessa cosa solo in apparenza: `fair value / prezzo` e' identicamente
+# `P/E equo / P/E effettivo`. Un cancello sul rapporto punisce quindi il
+# multiplo equo BASSO tanto quanto la base sbagliata, e un multiplo equo basso
+# e' spesso il giudizio corretto. Provato sui dati: un cancello a un quinto del
+# prezzo avrebbe soppresso 3M, Fortive, W.P. Carey ed Enphase — societa' con un
+# P/E normale di circa 30 che il modello giudica care contro un P/E equo di 6.
+# Quello e' segnale, non rumore. La soglia sul P/E ne sopprime 40 invece di 143,
+# e sono quelle in cui l'utile e' davvero evaporato.
+MAX_USABLE_PE = 100.0
+
+# Fondo assoluto sul lato basso, molto piu' largo del cap sul lato alto (1/20
+# contro 5x). Serve a due cose: prendere la spazzatura anche quando il chiamante
+# non passa la base di utili (e quindi il cancello sul P/E non puo' scattare), e
+# lasciare comunque passare i giudizi "molto caro" legittimi. La calibrazione e'
+# sui dati: a un quinto del prezzo il cancello avrebbe soppresso 3M e Fortive,
+# societa' a P/E 30 che il modello giudica care contro un P/E equo di 6; a un
+# ventesimo non tocca nessuno di quei casi e resta una rete di sicurezza.
+MIN_FAIR_VALUE_RATIO = 1 / 20
+
+
+def fair_value_check(fair_value, price, base_eps=None,
+                     anchor: str = "earnings",
+                     max_ratio: float = FAIR_VALUE_MAX_RATIO,
+                     max_pe: float = MAX_USABLE_PE) -> tuple[bool, str]:
     """
-    Cancello di sicurezza finale: un fair value distante dal prezzo piu' di
-    max_ratio volte non e' una valutazione, e' un errore nei dati. Meglio non
-    mostrarlo (es. Halliburton a 10 milioni di dollari per azione).
+    Il cancello di sicurezza sul fair value, con la RAGIONE del rifiuto.
+
+    Restituire un semplice False costringeva il chiamante a scrivere None nella
+    colonna, e nell'interfaccia un fair value soppresso diventava
+    indistinguibile da un fair value mai calcolato. Sono due cose diverse: la
+    seconda e' una categoria senza ancora, la prima e' un conto che e' stato
+    fatto e ha dato un risultato non credibile. Chi legge ha diritto di sapere
+    quale dei due sta guardando.
+
+    Due controlli asimmetrici, perche' i due errori non sono simmetrici:
+      - verso l'alto, il rapporto con il prezzo (max_ratio);
+      - verso il basso, il P/E implicito nella BASE usata (max_pe), non il
+        rapporto — vedi il commento su MAX_USABLE_PE.
+    Il secondo si applica solo alle ancore sugli utili: per un asset play il
+    P/E non e' lo strumento, quindi non e' nemmeno il criterio.
     """
-    if fair_value is None or price is None or price <= 0 or fair_value <= 0:
-        return False
-    return (1 / max_ratio) <= (fair_value / price) <= max_ratio
+    if fair_value is None:
+        return False, "not calculated"
+    if price is None or price <= 0:
+        return False, "no price to compare against"
+    if fair_value <= 0:
+        return False, "non-positive earnings base"
+    ratio = fair_value / price
+    if ratio > max_ratio:
+        return False, (f"suppressed: the multiple implies {ratio:.1f}x the market "
+                       "price — that is a rebounding earnings base, not a "
+                       "valuation")
+    if anchor == "earnings" and base_eps and base_eps > 0:
+        implied_pe = price / base_eps
+        if implied_pe > max_pe:
+            return False, (f"suppressed: the earnings used imply a P/E of "
+                           f"{implied_pe:,.0f} — earnings this close to zero "
+                           "make every multiple arbitrary")
+    if ratio < MIN_FAIR_VALUE_RATIO:
+        return False, (f"suppressed: {ratio * 100:.0f}% of the market price — "
+                       "below the floor at which a fair value is still a "
+                       "judgement rather than an artefact")
+    return True, "ok"
+
+
+def fair_value_is_plausible(fair_value, price, base_eps=None,
+                            anchor: str = "earnings",
+                            max_ratio: float = FAIR_VALUE_MAX_RATIO) -> bool:
+    """Solo il si'/no di fair_value_check(), per i chiamanti che non usano la ragione."""
+    return fair_value_check(fair_value, price, base_eps, anchor, max_ratio)[0]
 
 
 def series_cagr_detail(series: list[tuple[date, float]], years: int = 5,
@@ -972,6 +1045,34 @@ CYCLICAL_SECTORS = {
     "Consumer Cyclical", "Real Estate",
 }
 
+# INDUSTRIE CHE STANNO IN UN SETTORE CICLICO SENZA ESSERE CICLICHE.
+#
+# Il settore da solo e' troppo grosso per questa decisione. "Industrials" nella
+# tassonomia di yfinance contiene le acciaierie e i processori di buste paga;
+# "Consumer Cyclical" contiene i produttori di automobili e Amazon; "Real
+# Estate" contiene gli uffici e i REIT delle torri di telecomunicazione. Dare a
+# tutti loro il multiplo prudente delle cicliche (P/E 12 su utili di meta'
+# ciclo) significa produrre proprio quei fair value senza senso che il modello
+# dovrebbe evitare.
+#
+# Il criterio per stare in questo elenco: gli utili dell'industria NON oscillano
+# con il ciclo delle materie prime o degli investimenti in capacita' produttiva.
+# Se hanno oscillato lo stesso, e' stato per uno shock (il Covid sui viaggi) o
+# per una voce straordinaria — e uno shock non e' un ciclo. La volatilita' li
+# segnala comunque nella scheda; semplicemente non gli impone il multiplo.
+NON_CYCLICAL_INDUSTRIES = {
+    # servizi e piattaforme finite dentro Industrials / Consumer Cyclical
+    "Specialty Business Services", "Consulting Services",
+    "Staffing & Employment Services", "Security & Protection Services",
+    "Waste Management", "Personal Services", "Education & Training Services",
+    "Internet Retail", "Travel Services",
+    # contratti pluriennali, non ciclo delle materie prime
+    "Aerospace & Defense",
+    # REIT il cui affitto non segue il ciclo industriale
+    "REIT - Specialty", "REIT - Healthcare Facilities", "REIT - Residential",
+    "REIT - Industrial", "Real Estate Services",
+}
+
 
 # Multiplo di ripresa applicato agli utili normalizzati di un turnaround. Non e'
 # un PEG: la crescita di una societa' che esce da una crisi e' il rimbalzo, non
@@ -1063,6 +1164,8 @@ def classify_lynch(
     growth_basis: str = "5-year CAGR",
     growth_confidence: str = "medium",
     rebound_risk: bool = False,
+    industry: Optional[str] = None,
+    classification_source: str = "yfinance",
 ) -> dict:
     """
     Classifica una societa' nelle sei categorie di Peter Lynch e assegna
@@ -1111,6 +1214,26 @@ def classify_lynch(
         reasons.append("growth not calculable on any window")
     elif growth_confidence == "low":
         reasons.append(f"growth measured on a short window ({growth_basis})")
+    # BASE DI UTILI INSTABILE. Quando l'ultimo TTM e la mediana a tre anni
+    # divergono di piu' di tre volte, non esiste "l'utile" di questa societa':
+    # ce ne sono due molto diversi, e il fair value dipende interamente da quale
+    # si sceglie. E' la causa piu' frequente dei fair value estremi in entrambe
+    # le direzioni — Teradata (corrente 4,37$ contro 0,98$ normalizzato) esce a
+    # 3,6 volte il prezzo, Qorvo (3,62$ contro 0,29$) al 2% del prezzo.
+    # Non si puo' decidere quale sia quello giusto da qui, ma si puo' — e si
+    # deve — dire che la scelta c'e' ed e' determinante.
+    if (eps_now and eps_now > 0 and eps_normalized and eps_normalized > 0
+            and max(eps_now / eps_normalized, eps_normalized / eps_now) > 3.0):
+        reasons.append(
+            f"unstable earnings base: latest TTM ${eps_now:,.2f} vs 3-year "
+            f"median ${eps_normalized:,.2f} — the fair value depends on which "
+            "one is used")
+    if str(classification_source).startswith(("sic", "none")):
+        # Non e' solo la ciclicita' a dipendere dal settore: ci dipende anche
+        # tutto il confronto con i pari. Se la classificazione e' una
+        # supposizione, chi legge deve saperlo prima di fidarsi dei delta.
+        reasons.append("sector/industry guessed from the SEC SIC code — the "
+                       "market data provider had no profile for this symbol")
     if volatility is not None and volatility > CYCLICAL_VOL_THRESHOLD:
         reasons.append(f"erratic earnings (volatility {volatility:.0f})")
 
@@ -1227,9 +1350,28 @@ def classify_lynch(
                    extra_reasons=healed, floor_conf="medium")
 
     # -----------------------------------------------------------------
-    # 4) CICLICA — settore ciclico e utili erratici.
+    # 4) CICLICA — settore ciclico, industria non esclusa, utili erratici.
+    #
+    # TRE CONDIZIONI, NON DUE. Alle due originali (settore + volatilita') se ne
+    # aggiungono altrettante clausole di sicurezza, perche' questo ramo impone un
+    # multiplo fisso di 12 e quindi un fair value sbagliato qui e' costoso:
+    #
+    #   - l'INDUSTRIA non deve essere fra quelle non cicliche. Il settore da solo
+    #     metteva in questo ramo Amazon ed eBay ("Internet Retail" dentro
+    #     Consumer Cyclical), Booking ("Travel Services"), i REIT delle torri e
+    #     quelli sanitari, i contractor della difesa.
+    #
+    #   - la CLASSIFICAZIONE deve essere affidabile. Quando il settore non viene
+    #     dal provider ma dal ripiego sul codice SIC, e' una supposizione: il SIC
+    #     7389 ("Business Services, NEC") e' un contenitore in cui stanno Visa,
+    #     Accenture, Uber e Fiserv, e ripiegarci sopra piazzava Fiserv in
+    #     Industrials — settore ciclico — per poi valutarla come una ciclica.
+    #     Una supposizione non basta a far scattare un multiplo fisso.
     # -----------------------------------------------------------------
-    if sector in CYCLICAL_SECTORS and volatility is not None \
+    sector_reliable = not str(classification_source).startswith(("sic", "none"))
+    industry_ok = (industry or "") not in NON_CYCLICAL_INDUSTRIES
+    if sector in CYCLICAL_SECTORS and sector_reliable and industry_ok \
+            and volatility is not None \
             and volatility > CYCLICAL_VOL_THRESHOLD:
         if norm_ok:
             return out("Cyclical", fair_pe=CYCLICAL_PE, eps_base="normalized",
@@ -1271,6 +1413,9 @@ def classify_lynch(
         # senza senso, ed e' esattamente cio' contro cui Lynch mette in guardia
         # quando distingue una societa' in crescita da una in ripresa. In quel
         # caso il multiplo si ferma al livello di una stalwart.
+        # Anche qui il dividendo, per la stessa ragione di continuita' sul
+        # confine del 20% (una fast grower ne paga di rado, quindi in pratica
+        # e' zero; ma il modello non deve avere gradini).
         if rebound_risk:
             return out("Stalwart (recovering)", fair_pe=REBOUND_PE_CAP,
                        basis=f"P/E {REBOUND_PE_CAP:.0f} — growth of {g:.0f}% measured "
@@ -1281,9 +1426,9 @@ def classify_lynch(
                              "stalwart level until the company has a full window "
                              "of profitable history."),
                        extra_reasons=healed, floor_conf="low")
-        return out("Fast Grower", fair_pe=min(g, FAST_GROWER_PE_CAP),
-                   basis=f"P/E = growth {g:.0f}% (capped at {FAST_GROWER_PE_CAP:.0f}) "
-                         f"· {growth_basis}",
+        return out("Fast Grower", fair_pe=min(g + div, FAST_GROWER_PE_CAP),
+                   basis=f"P/E = growth {g:.0f}% + dividend {div:.1f}% "
+                         f"(capped at {FAST_GROWER_PE_CAP:.0f}) · {growth_basis}",
                    note=("High growth: the multiple tracks the growth rate but is "
                          f"capped at {FAST_GROWER_PE_CAP:.0f}, because very few "
                          "companies sustain that pace for years."),
@@ -1295,10 +1440,18 @@ def classify_lynch(
         else:
             label = ("Stalwart" if market_cap > STALWART_LARGE_CAP
                      else "Stalwart (mid cap)")
-        return out(label, fair_pe=g,
-                   basis=f"P/E = growth {g:.0f}% · {growth_basis}",
+        # IL DIVIDENDO ENTRA QUI COME NELLE SLOW GROWER, e non e' un dettaglio
+        # estetico: senza, il modello si INVERTIVA sul confine del 10%. Una
+        # societa' al 9,9% prendeva min(9,9 + dividendo, 12) = 11,9; la stessa
+        # societa' al 10,0% prendeva 10,0 secco. Passare nella categoria
+        # migliore faceva SCENDERE il fair value del 16%.
+        # Lynch somma sempre il rendimento alla crescita quando misura cosa
+        # rende un titolo; applicarlo solo sotto il 10% era un'incoerenza.
+        return out(label, fair_pe=g + div,
+                   basis=f"P/E = growth {g:.0f}% + dividend {div:.1f}% · "
+                         f"{growth_basis}",
                    note=("Solid, predictable growth: the fair P/E matches the "
-                         "growth rate (PEG = 1)."),
+                         "growth rate plus the dividend yield (PEG = 1)."),
                    extra_reasons=healed)
 
     # 6) SLOW GROWER — crescita sotto il 10%, dividendo incluso.
@@ -1319,9 +1472,32 @@ def classify_lynch(
     fair = min(max(growth_credit + div, SLOW_GROWER_PE_FLOOR), SLOW_GROWER_PE_CAP)
     div_txt = (f"dividend {div:.1f}%" if dividend_yield is not None
                else "dividend not available (treated as 0)")
+    # LA BASE NON DIPENDE DALLA CATEGORIA — in nessuna delle tre fasce di
+    # crescita. E' la condizione perche' il fair value sia continuo.
+    #
+    # Prima il ramo "declining" usava gli utili normalizzati e gli altri
+    # l'ultimo TTM, e ogni confine in cui la base cambiava produceva un salto:
+    # per una societa' con mediana a 3$ e TTM a 4$, il fair value saltava del
+    # 33% passando da -0,1% a +0,1% di crescita. Spostare la mediana su tutta la
+    # fascia slow grower non risolveva, spostava soltanto il gradino sul confine
+    # del 10%, dove il salto misurato era del 34%.
+    #
+    # Un gradino del 34% innescato da due decimi di punto di crescita — cioe'
+    # dal rumore della misura — e' esattamente il difetto che rende un modello
+    # inaffidabile: due societa' identiche finiscono valutate una un terzo piu'
+    # dell'altra per il modo in cui e' caduto un arrotondamento.
+    #
+    # Le fasce di crescita usano quindi tutte l'ULTIMO TTM. La prudenza verso
+    # chi ha utili in calo resta, ma passa dal MULTIPLO (nessun credito alla
+    # crescita negativa) invece che dalla base — e i casi in cui l'ultimo TTM
+    # non e' rappresentativo hanno ora due presidi dedicati: la segnalazione di
+    # base instabile qui sopra e il cancello sul P/E massimo utilizzabile in
+    # fair_value_check(). Cicliche e turnaround continuano a usare la mediana,
+    # ma i loro rami sono governati dal profilo delle perdite e dalla
+    # volatilita', non dalla crescita: non c'e' un confine che si attraversa
+    # per variazione continua.
     if g < 0:
         return out("Slow Grower (declining earnings)", fair_pe=fair,
-                   eps_base="normalized" if norm_ok else "current",
                    basis=f"P/E = 0% growth credit + {div_txt} "
                          f"(floor {SLOW_GROWER_PE_FLOOR:.0f}) · {growth_basis}",
                    note=("Earnings are contracting, so the model gives no credit "

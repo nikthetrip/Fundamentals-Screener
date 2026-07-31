@@ -42,7 +42,7 @@ from edgar_logic import (
     ttm_growth_yoy, ttm_growth_yoy_dated, normalized_eps,
     eps_cagr, earnings_volatility, had_recent_losses, classify_lynch, lynch_ratio,
     growth_estimate, loss_profile, eps_growth_trend,
-    choose_eps, fair_value_is_plausible,
+    choose_eps, fair_value_is_plausible, fair_value_check,
     adjust_facts_for_splits, extract_share_counts, detect_share_events,
     build_derived_eps_facts, extract_dei_shares, extract_net_income_facts,
     series_age_days, series_is_stale, max_age_for_method,
@@ -523,6 +523,29 @@ def process_ticker(ticker: str, facts_source: CompanyFactsSource, freq: str = "D
     sector = sector or "Unspecified"
     industry = industry or "Unspecified"
 
+    # ---- SIMBOLO DI MERCATO SOSPETTO ----
+    # Quando il provider non ha NE' settore NE' industria NE' il nome della
+    # societa', quasi sempre non e' un buco nei suoi dati: e' che quel simbolo
+    # non esiste piu'. Il ticker e' cambiato e noi stiamo ancora interrogando
+    # quello vecchio.
+    #
+    # E' il caso peggiore possibile, perche' la riga NON risulta vuota: i
+    # fondamentali arrivano da EDGAR passando per il CIK, quindi sono giusti,
+    # mentre il prezzo arriva da un simbolo che potrebbe non essere piu'
+    # scambiato. Ne esce una riga meta' corretta, che non si distingue dalle
+    # altre. Fiserv e' esattamente questo: quotata come FI dal 2023, ma ancora
+    # elencata come FISV sia dalla mappa ticker della SEC sia dalla pagina
+    # Wikipedia del Russell 1000, da cui prendiamo l'universo.
+    #
+    # Non possiamo correggere il simbolo da soli — non esiste una fonte gratuita
+    # che dia le rinomine — ma possiamo smettere di far finta di niente.
+    stale_symbol = not any((snap.get("sector"), snap.get("industry"),
+                            snap.get("company")))
+    if stale_symbol:
+        log(f"  ⚠ {ticker}: nessun profilo dal provider — il simbolo di mercato "
+            f"potrebbe essere cambiato (fondamentali EDGAR validi, prezzo da "
+            f"verificare)")
+
     # ---- BILANCI EDGAR: ricavi, utile netto, FCF, patrimonio ----
     fin = extract_financials(cf)
     ratios = compute_ratios(
@@ -576,6 +599,11 @@ def process_ticker(ticker: str, facts_source: CompanyFactsSource, freq: str = "D
         growth_basis=gest["basis"],
         growth_confidence=gest["confidence"],
         rebound_risk=gest["rebound_risk"],
+        # Il settore decide se applicare il multiplo delle cicliche, quindi la
+        # classificazione va passata INSIEME alla sua provenienza: un settore
+        # indovinato dal codice SIC non e' un settore accertato.
+        industry=industry,
+        classification_source=class_src,
     )
 
     # Fair value di categoria. L'ANCORA la decide classify_lynch, non questa
@@ -586,16 +614,26 @@ def process_ticker(ticker: str, facts_source: CompanyFactsSource, freq: str = "D
     # avuto bisogno di una base diversa avrebbe dovuto ricordarsi di modificarla.
     fair_pe = cls["fair_pe"]
     fv_peg = None
+    fv_base = None
     if cls["anchor"] == "book":
         bvps = ratios.get("book_value_per_share")
         if bvps and bvps > 0 and cls.get("fair_pb"):
             fv_peg = bvps * cls["fair_pb"]
     elif cls["anchor"] == "earnings" and fair_pe:
-        base_eps = eps_norm if cls["eps_base"] == "normalized" else eps_now
-        if base_eps and base_eps > 0:
-            fv_peg = base_eps * fair_pe
-    if not fair_value_is_plausible(fv_peg, price_today):
-        fv_peg = None
+        fv_base = eps_norm if cls["eps_base"] == "normalized" else eps_now
+        if fv_base and fv_base > 0:
+            fv_peg = fv_base * fair_pe
+    # Il cancello di plausibilita' non cancella soltanto: dice perche'. Un fair
+    # value soppresso e uno mai calcolato lasciano la stessa cella vuota ma sono
+    # due cose diverse, e l'interfaccia deve poterle distinguere.
+    if fv_peg is not None:
+        fv_ok, fv_reason = fair_value_check(fv_peg, price_today, fv_base,
+                                            cls["anchor"])
+        if not fv_ok:
+            fv_peg = None
+    else:
+        fv_reason = ("no valuation anchor for this category"
+                     if cls["anchor"] == "none" else "earnings base not usable")
     if fv_peg and price_today:
         peg_disc = (price_today / fv_peg - 1) * 100
         peg_val = "Undervalued" if price_today < fv_peg else "Overvalued"
@@ -628,6 +666,7 @@ def process_ticker(ticker: str, facts_source: CompanyFactsSource, freq: str = "D
         "sector": sector,
         "industry": industry,
         "classification_source": class_src,
+        "stale_symbol": stale_symbol,
         "exchange": meta.get("exchange"),
         "sic": meta.get("sic"),
         "sic_description": meta.get("sic_description"),
@@ -666,6 +705,7 @@ def process_ticker(ticker: str, facts_source: CompanyFactsSource, freq: str = "D
         "lynch_confidence": cls["confidence"],
         "lynch_confidence_note": cls["confidence_note"],
         "fair_value_peg": _round(fv_peg),
+        "fair_value_note": fv_reason,
         "discount_vs_peg_pct": _round(peg_disc, 1),
         "valuation_peg": peg_val,
         # growth_5y_cagr resta il nome storico della colonna (l'esporta lo

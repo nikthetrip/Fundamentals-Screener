@@ -80,6 +80,22 @@ _SECTOR_RANGES: tuple[tuple[int, int, str], ...] = (
     (7000, 7099, "Consumer Cyclical"),   # alberghi
     (7200, 7299, "Consumer Cyclical"),   # servizi alla persona
     (7300, 7369, "Industrials"),         # servizi alle imprese
+    # 7389 "Services-Business Services, NEC" e' il contenitore di tutto cio' che
+    # la SEC non sa dove mettere: sotto quel codice depositano Visa, Mastercard,
+    # PayPal, Accenture, Fiserv, Global Payments, Uber, eBay, DoorDash. Non e'
+    # un'industria, e' l'assenza di un'industria.
+    #
+    # Mandarlo in "Industrials" era doppiamente sbagliato: la societa' tipica non
+    # e' industriale, e Industrials e' un SETTORE CICLICO — quindi il ripiego
+    # rendeva quelle societa' idonee al multiplo fisso delle cicliche. Fiserv,
+    # priva di profilo su yfinance, finiva cosi' in Industrials/Specialty
+    # Business Services e da li' a un passo dal P/E 12.
+    #
+    # "Technology" e' il ripiego meno dannoso: e' dove sta la maggioranza dei
+    # filer sotto questo codice, e non e' un settore ciclico. Resta comunque una
+    # supposizione, e classify_lynch lo sa: un settore che viene dal SIC non
+    # basta a far scattare la regola delle cicliche.
+    (7389, 7389, "Technology"),
     (7380, 7599, "Industrials"),
     (7600, 7699, "Consumer Cyclical"),
     (8000, 8099, "Healthcare"),          # strutture sanitarie
@@ -124,7 +140,14 @@ _INDUSTRY_OVERRIDES: dict[int, str] = {
     6798: "REIT",
     7370: "Information Technology Services",
     7372: "Software — Application",
-    7389: "Specialty Business Services",
+    # Deliberatamente NON "Specialty Business Services": quel nome esiste gia'
+    # nella tassonomia di yfinance ed e' popolato da societa' vere. Far
+    # confluire li' dentro un titolo finito sotto il codice-contenitore
+    # significa costruire un gruppo di confronto meta' accertato e meta'
+    # indovinato, e poi mostrarne la mediana come se fosse un dato. Con un nome
+    # proprio il gruppo resta piccolo, non raggiunge le 5 societa' minime e il
+    # confronto ripiega dichiaratamente sul settore.
+    7389: "Business Services (SIC catch-all)",
     8731: "Biotechnology Research",
     1311: "Oil & Gas E&P",
     2911: "Oil & Gas Refining",
