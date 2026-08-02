@@ -48,6 +48,13 @@ except ImportError:
     commentary = None
     HAS_COMMENTARY = False
 
+try:
+    import overview
+    HAS_OVERVIEW = True
+except ImportError:
+    overview = None
+    HAS_OVERVIEW = False
+
 # Cartella dei CSV. Sovrascrivibile con LYNCH_DATA_DIR per aprire la dashboard
 # su un dataset diverso — un universo alternativo, o una build di prova — senza
 # spostare i file di quello buono.
@@ -864,7 +871,7 @@ METRICS: dict[str, dict] = {
              "on the trailing-twelve-month series.\n\n"
              "**How to read it** — the most reliable growth line, because "
              "revenue is the hardest number to massage. The two endpoints "
-             "behind it are shown on the Growth tab."),
+             "behind it are listed at the bottom of this section."),
     "cagr_eps_5y": dict(
         label="EPS CAGR 5y", kind="pct", better="high", group="growth",
         help="**What it is** — the average yearly rate at which earnings per "
@@ -1817,6 +1824,21 @@ def _col(a: pd.DataFrame, col: str):
     return a[col] if col in a.columns else None
 
 
+def _cik_str(r: pd.Series) -> str | None:
+    """
+    Il CIK nella forma che la SEC vuole negli URL: dieci cifre con gli zeri
+    davanti. Arriva dal CSV come numero in virgola mobile, quindi va convertito
+    e non formattato — `str(1750.0)` darebbe "1750.0".
+    """
+    cik = r.get("cik")
+    if pd.isna(cik):
+        return None
+    try:
+        return str(int(float(cik))).zfill(10)
+    except (TypeError, ValueError):
+        return None
+
+
 def _commentary(section: str, r: pd.Series, peers: pd.Series | None,
                 a: pd.DataFrame | None) -> None:
     """
@@ -2301,19 +2323,99 @@ def render_financials_tab(ticker: str, r: pd.Series) -> None:
     # CRESCITA A CINQUE ANNI                                              #
     # =================================================================== #
     with t_growth:
+        # QUESTA SOTTO-SCHEDA HA ASSORBITO LA VECCHIA SCHEDA "Growth (5y)".
+        # Erano due pagine con lo stesso nome e lo stesso argomento, una dentro
+        # Financials e una fra le schede principali: quella principale ha
+        # lasciato il posto a Overview, e cio' che aveva di suo — la misura di
+        # crescita che decide il multiplo, la matrice a tre finestre, i valori
+        # per azione, l'audit degli estremi — e' arrivato qui. Sostituire una
+        # pagina non vuol dire buttarne il contenuto.
+        st.markdown("##### The growth rate behind the valuation")
+        g_used = _num(r.get("growth_5y_cagr"))
+        g_trend = _num(r.get("growth_5y_trend"))
+        g_cagr = _num(r.get("growth_5y_cagr_raw"))
+        gk = st.columns(4)
+        gk[0].metric("Growth used for the multiple", fmt_pct(g_used),
+                     help="**What it is** — the growth rate that sets this "
+                          "company's fair P/E, under Lynch's PEG = 1 rule.\n\n"
+                          "**Formula** — picked from a ladder: 5-year trend "
+                          "first, then the 5-year CAGR, then the 3-year "
+                          "windows. The first measure that can be computed "
+                          "wins.\n\n**How to read it** — change this number "
+                          "and the fair value on the Valuation tab moves with "
+                          "it. It is the single most consequential figure in "
+                          "the model.")
+        gk[1].metric("5-year trend", fmt_pct(g_trend),
+                     help="**What it is** — the growth rate that best "
+                          "describes the whole five-year path, not just its "
+                          "two ends.\n\n**Formula** — least-squares regression "
+                          "on log(EPS) over five years.\n\n**How to read it** "
+                          "— it uses every point in the window, so one odd "
+                          "quarter barely moves it. This is why it sits first "
+                          "on the ladder.")
+        gk[2].metric("5-year CAGR", fmt_pct(g_cagr),
+                     help="**What it is** — the compound rate between the "
+                          "first and last point, ignoring everything in "
+                          "between.\n\n**How to read it** — shown next to the "
+                          "trend so the difference is visible: when the two "
+                          "disagree widely, one of the two endpoints is not "
+                          "representative.")
+        gk[3].metric("Earnings volatility",
+                     fmt_ratio(_num(r.get("earnings_volatility")), 0),
+                     help="**What it is** — how erratic the earnings have "
+                          "been.\n\n**Formula** — median absolute deviation of "
+                          "the year-on-year changes, not a standard deviation: "
+                          "one isolated shock must not make a stable company "
+                          "look cyclical.\n\n**How to read it** — the higher "
+                          "it is, the less any single growth rate on this page "
+                          "means.")
+        _gbasis = r.get("growth_basis")
+        if pd.notna(_gbasis):
+            st.caption(f"Measure actually used: **{_gbasis}**.")
+        if g_trend is not None and g_cagr is not None and abs(g_trend - g_cagr) > 10:
+            st.info(
+                f"The trend ({g_trend:+.0f}%) and the endpoint CAGR "
+                f"({g_cagr:+.0f}%) differ by {abs(g_trend - g_cagr):.0f} "
+                "points. That gap means one of the two endpoints is not "
+                "representative — usually a depressed starting quarter, which "
+                "inflates the CAGR. The model uses the trend precisely so that "
+                "a single quarter cannot set the fair multiple.")
+
+        st.divider()
         st.markdown("##### Five-year compound growth")
         st.caption(
             "Each rate is computed on the trailing-twelve-month series, so it "
             "compares twelve full months with twelve full months. A rate is "
             "blank when the starting value was zero or negative: a compound "
-            "rate from a loss has no meaning. The **Growth** tab shows the two "
-            "endpoints behind every one of these numbers.")
+            "rate from a loss has no meaning.")
         kpi_row(r, peers, ("cagr_revenue_5y", "cagr_eps_5y",
                            "cagr_net_income_5y", "cagr_fcf_5y"))
         kpi_row(r, peers, ("cagr_ocf_5y", "revenue_growth_yoy_pct",
                            "eps_growth_yoy", "fcf_growth_yoy_pct"))
 
         _commentary("growth", r, peers, a)
+
+        st.markdown("###### Compound growth, three windows")
+        st.caption(
+            "The same rates over three horizons. Reading them together is the "
+            "point: a company whose 3-year rate is far above its 10-year rate "
+            "is accelerating, one where it is far below has already had its "
+            "best years.")
+        cagr_rows = []
+        for base in CAGR_METRICS:
+            rowd = {"Metric": CAGR_LABELS[base]}
+            any_val = False
+            for h in CAGR_HORIZONS:
+                v = _num(r.get(f"{base}_{h}y"))
+                rowd[f"{h}y CAGR"] = fmt_pct(v) if v is not None else "—"
+                any_val = any_val or v is not None
+            if any_val:
+                cagr_rows.append(rowd)
+        if cagr_rows:
+            st.dataframe(pd.DataFrame(cagr_rows), use_container_width=True,
+                         hide_index=True)
+        else:
+            st.info("Not enough filed history to compute compound growth rates.")
 
         if a is not None:
             st.markdown("###### Who grew, and by how much")
@@ -2341,6 +2443,27 @@ def render_financials_tab(ticker: str, r: pd.Series) -> None:
                              "was, not growth.")
                 st.caption(note)
 
+            # ---------------- PER AZIONE ----------------
+            st.markdown("###### Per share")
+            st.caption(
+                "The only view that accounts for dilution and buybacks: a "
+                "company whose revenue grows while its share count grows "
+                "faster is not getting bigger for the person holding one "
+                "share.")
+            fig = charts.lines(a["year"], [("EPS", _col(a, "eps"))],
+                               ylab="$ per share", height=260, suffix="")
+            if fig is not None:
+                st.plotly_chart(fig, use_container_width=True,
+                                key="fin_growth_eps_line")
+            kpi_row(r, peers, ("eps_ttm", "revenue_per_share", "fcf_per_share",
+                               "book_value_per_share"))
+            kpi_row(r, peers, ("shares_outstanding",))
+
+        # ---------------- GLI ESTREMI DI OGNI TASSO ----------------
+        with st.expander("🔎 Every growth rate, with the two numbers it comes "
+                         "from", expanded=False):
+            render_cagr_audit(ticker, r)
+
         # ---------------- IL SALDO DI TUTTA LA SCHEDA ----------------
         #
         # STA IN FONDO, e in fondo alla SEZIONE DELLA CRESCITA. Una sintesi
@@ -2354,151 +2477,6 @@ def render_financials_tab(ticker: str, r: pd.Series) -> None:
             st.divider()
             st.markdown("##### The balance of the evidence")
             commentary.render_assessment(r, peers, a, fmt_metric)
-
-
-def render_growth_tab(ticker: str, r: pd.Series) -> None:
-    """
-    "Sta crescendo, e quanto?" — la scheda che alimenta il multiplo.
-
-    Qui e' arrivato l'audit dei CAGR, che stava in Data quality: gli estremi da
-    cui nasce un tasso di crescita non sono una questione di provenienza del
-    dato, sono la crescita stessa. E qui si dichiara, in testa, QUALE misura di
-    crescita ha determinato il multiplo equo nella scheda Valuation — perche' e'
-    la stessa domanda vista dai due lati.
-    """
-    a = annual_for(ticker)
-
-    # ---------------- LA MISURA CHE DECIDE IL MULTIPLO ----------------
-    st.markdown("#### The growth rate behind the valuation")
-    g_used = _num(r.get("growth_5y_cagr"))
-    g_trend = _num(r.get("growth_5y_trend"))
-    g_cagr = _num(r.get("growth_5y_cagr_raw"))
-    basis = r.get("growth_basis")
-
-    k = st.columns(4)
-    k[0].metric("Growth used for the multiple", fmt_pct(g_used),
-                help="**What it is** — the growth rate that sets this "
-                     "company's fair P/E, under Lynch's PEG = 1 rule.\n\n"
-                     "**Formula** — picked from a ladder: 5-year trend first, "
-                     "then the 5-year CAGR, then the 3-year windows. The first "
-                     "measure that can be computed wins.\n\n**How to read it** "
-                     "— change this number and the fair value on the Valuation "
-                     "tab moves with it. It is the single most consequential "
-                     "figure in the model.")
-    k[1].metric("5-year trend", fmt_pct(g_trend),
-                help="**What it is** — the growth rate that best describes the "
-                     "whole five-year path, not just its two ends.\n\n"
-                     "**Formula** — least-squares regression on log(EPS) over "
-                     "five years.\n\n**How to read it** — it uses every point "
-                     "in the window, so one odd quarter barely moves it. This "
-                     "is why it sits first on the ladder.")
-    k[2].metric("5-year CAGR", fmt_pct(g_cagr),
-                help="**What it is** — the compound rate between the first and "
-                     "last point, ignoring everything in between.\n\n"
-                     "**Formula** — ((EPS now ÷ EPS five years ago) ^ (1/5)) − "
-                     "1.\n\n**How to read it** — shown next to the trend so "
-                     "the difference is visible: when the two disagree widely, "
-                     "one of the two endpoints is not representative.")
-    k[3].metric("EPS growth YoY", fmt_pct(_num(r.get("eps_growth_yoy"))),
-                help="**What it is** — the most recent year of growth, on its "
-                     "own.\n\n**Formula** — trailing-twelve-month EPS against "
-                     "the point closest to one year earlier, compared by date "
-                     "and not by position in the series.\n\n**How to read it** "
-                     "— far above the five-year rate means the growth is "
-                     "accelerating, or that one exceptional quarter is in the "
-                     "window.")
-    if pd.notna(basis):
-        st.caption(f"Measure actually used: **{basis}**.")
-    if g_trend is not None and g_cagr is not None and abs(g_trend - g_cagr) > 10:
-        st.info(
-            f"The trend ({g_trend:+.0f}%) and the endpoint CAGR ({g_cagr:+.0f}%) "
-            f"differ by {abs(g_trend - g_cagr):.0f} points. That gap means one of "
-            "the two endpoints is not representative — usually a depressed "
-            "starting quarter, which inflates the CAGR. The model uses the trend "
-            "precisely so that a single quarter cannot set the fair multiple.")
-
-    # ---------------- MATRICE DEI CAGR ----------------
-    st.divider()
-    st.markdown("#### Compound growth, three windows")
-    st.caption(
-        "Each rate is computed on the trailing-twelve-month series, so it "
-        "compares twelve full months with twelve full months — never a quarter "
-        "against a quarter, which would measure seasonality. A rate is left "
-        "blank when the starting value is zero or negative: a compound rate "
-        "from a loss has no meaning.")
-    cagr_rows = []
-    for base in CAGR_METRICS:
-        rowd = {"Metric": CAGR_LABELS[base]}
-        any_val = False
-        for h in CAGR_HORIZONS:
-            v = _num(r.get(f"{base}_{h}y"))
-            rowd[f"{h}y CAGR"] = fmt_pct(v) if v is not None else "—"
-            any_val = any_val or v is not None
-        if any_val:
-            cagr_rows.append(rowd)
-    if cagr_rows:
-        st.dataframe(pd.DataFrame(cagr_rows), use_container_width=True,
-                     hide_index=True)
-    else:
-        st.info("Not enough filed history to compute compound growth rates.")
-
-    peers, peer_label, n_peers = peer_reference(r, ind_med, sec_med)
-    metric_grid([metric_item(k_, r, peers) for k_ in
-                 ("cagr_eps_5y", "cagr_revenue_5y", "cagr_fcf_5y",
-                  "cagr_net_income_5y")])
-    if peers is not None:
-        st.caption(f"Deltas vs the median of the {peer_label}.")
-
-    # ---------------- CHI E' CRESCIUTO DI PIU' ----------------
-    if a is not None:
-        st.divider()
-        st.markdown("#### Who grew, and by how much")
-        fig = charts.indexed(a["year"], [("Revenue", _col(a, "revenue")),
-                                         ("Net income", _col(a, "net_income")),
-                                         ("Free cash flow", _col(a, "fcf")),
-                                         ("EPS", _col(a, "eps"))])
-        if fig is not None:
-            st.plotly_chart(fig, use_container_width=True,
-                            key="growth_indexed")
-            skipped = getattr(fig, "_skipped", [])
-            note = ("Every series rebased to 100 at the first fiscal year shown, "
-                    "so quantities of completely different size — revenue in "
-                    "billions, EPS in dollars — sit on **one** axis and can "
-                    "actually be compared. A second vertical scale would have "
-                    "made their alignment arbitrary.")
-            if skipped:
-                note += (" Not shown: " + ", ".join(skipped) + " — the first "
-                         "year is negative, zero, or far below that series' own "
-                         "usual level. An index built on a base like that "
-                         "measures how unusual the first year was, not growth.")
-            st.caption(note)
-
-        # ---------------- PER AZIONE ----------------
-        st.markdown("#### Per share")
-        st.caption(
-            "The only view that accounts for dilution and buybacks: a company "
-            "whose revenue grows while its share count grows faster is not "
-            "getting bigger for the person holding one share.")
-        fig = charts.lines(a["year"], [("EPS", _col(a, "eps"))],
-                           ylab="$ per share", height=260, suffix="")
-        if fig is not None:
-            st.plotly_chart(fig, use_container_width=True,
-                            key="growth_eps_line")
-        peers_ps, _, _ = peer_reference(r, ind_med, sec_med)
-        kpi_row(r, peers_ps, ("eps_ttm", "revenue_per_share", "fcf_per_share",
-                              "book_value_per_share"))
-        kpi_row(r, peers_ps, ("shares_outstanding",), ncols=4)
-
-    # ---------------- GLI ESTREMI DI OGNI TASSO ----------------
-    #
-    # RICHIUSO. E' una tabella di quindici righe di controllo — metrica,
-    # finestra, i due estremi, gli anni, il tasso — che serve a rifare il conto
-    # a mano quando un numero sorprende, non a leggere la crescita. Aperta,
-    # occupava piu' spazio di tutto il resto della scheda.
-    st.divider()
-    with st.expander("🔎 Every growth rate, with the two numbers it comes from",
-                     expanded=False):
-        render_cagr_audit(ticker, r)
 
 
 # Come si ottiene ogni voce della scheda finanziaria: formula in chiaro, da
@@ -2817,8 +2795,9 @@ def render_quality_tab(ticker: str, r: pd.Series) -> None:
         "earnings date come from the market data provider, because no filing "
         "contains a share price. Everything else is derived from those two by "
         "the formulas listed below. The fair value derivation lives on "
-        "**Valuation**, the growth endpoints on **Growth**, and the filings "
-        "themselves on **Filings** — each next to the thing it explains. What "
+        "**Valuation**, the growth endpoints under **Financials → Growth "
+        "(5y)**, and the filings themselves on **Filings** — each next to the "
+        "thing it explains. What "
         "is left here is the material for checking the machine rather than the "
         "company.")
 
@@ -3058,26 +3037,38 @@ if nav == "Details":
                 bits.append(f"{lynch_icon(r0['lynch_category'])} {r0['lynch_category']}")
             st.markdown("&nbsp;\n\n" + " · ".join(bits))
 
-    # L'ORDINE E' UN PERCORSO: quanto vale, com'e' fatta, quanto cresce, da
-    # dove vengono i documenti, quanto fidarsi dei dati. I depositi alla SEC
-    # hanno una scheda propria — erano l'ultima sezione di Data quality, cioe'
-    # visibili solo a chi scorreva fino in fondo una pagina di diagnostica,
-    # mentre sono la fonte di tutto il resto.
-    tab_val, tab_fin, tab_growth, tab_fil, tab_qual = st.tabs(
-        ["📉 Valuation", "📊 Financials", "📈 Growth (5y)", "📄 Filings",
+    # L'ORDINE E' UN PERCORSO: che azienda e', quanto vale, com'e' fatta, da
+    # dove vengono i documenti, quanto fidarsi dei dati.
+    #
+    # OVERVIEW APRE. Prima si entrava direttamente nella valutazione: si poteva
+    # leggere il margine operativo di una societa', il suo ROIC e il suo debito
+    # senza mai incontrare la parola che dice che mestiere fa. Un multiplo
+    # giudicato senza sapere di che azienda si parla e' un numero senza
+    # contesto.
+    #
+    # LA VECCHIA SCHEDA "Growth (5y)" NON C'E' PIU': aveva lo stesso nome e lo
+    # stesso argomento della sotto-scheda dentro Financials, e due pagine
+    # gemelle costringono a ricordarsi in quale delle due sta una certa cosa.
+    # Il contenuto che aveva di suo e' dentro quella sotto-scheda.
+    tab_ov, tab_val, tab_fin, tab_fil, tab_qual = st.tabs(
+        ["📋 Overview", "📉 Valuation", "📊 Financials", "📄 Filings",
          "🔍 Data quality"])
     with tab_val:
         render_valuation_tab(ticker, row)
     if row.empty:
-        for tab in (tab_fin, tab_growth, tab_fil, tab_qual):
+        for tab in (tab_ov, tab_fin, tab_fil, tab_qual):
             with tab:
                 st.info("No summary row for this ticker in fundamentals.csv.")
     else:
         r_series = row.iloc[0]
+        with tab_ov:
+            if HAS_OVERVIEW:
+                overview.render(ticker, r_series, _cik_str(r_series))
+            else:
+                st.info("The overview page needs the market data provider "
+                        "(yfinance), which is not installed here.")
         with tab_fin:
             render_financials_tab(ticker, r_series)
-        with tab_growth:
-            render_growth_tab(ticker, r_series)
         with tab_fil:
             render_filings_tab(ticker, r_series)
         with tab_qual:
