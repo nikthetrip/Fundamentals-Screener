@@ -67,8 +67,8 @@ def _sec_headers() -> dict:
         raise RuntimeError(
             "Variabile SEC_USER_AGENT mancante o senza email.\n"
             "Impostala con un contatto reale prima di lanciare lo scraper:\n"
-            '  export SEC_USER_AGENT="Lynch Research tua@email.com"   (macOS/Linux)\n'
-            "  set SEC_USER_AGENT=Lynch Research tua@email.com         (Windows)"
+            '  export SEC_USER_AGENT="Fundamentals Screener tua@email.com"   (macOS/Linux)\n'
+            "  set SEC_USER_AGENT=Fundamentals Screener tua@email.com         (Windows)"
         )
     return {"User-Agent": ua, "Accept-Encoding": "gzip, deflate"}
 

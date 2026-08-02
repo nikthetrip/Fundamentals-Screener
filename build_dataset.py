@@ -235,7 +235,7 @@ def get_sp500_tickers() -> list[str]:
     # --- 1) Wikipedia con User-Agent ---
     try:
         url = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
-        ua = os.environ.get("SEC_USER_AGENT", "Lynch Valuation Tool")
+        ua = os.environ.get("SEC_USER_AGENT", "Fundamentals Screener")
         r = requests.get(url, headers={"User-Agent": ua}, timeout=30)
         r.raise_for_status()
         tables = pd.read_html(_io.StringIO(r.text))
@@ -301,7 +301,7 @@ def _wikipedia_symbols(url: str, min_rows: int, label: str) -> list[str]:
     noi con un contatto dichiarato.
     """
     import io as _io
-    ua = os.environ.get("SEC_USER_AGENT", "Lynch Valuation Tool")
+    ua = os.environ.get("SEC_USER_AGENT", "Fundamentals Screener")
     r = requests.get(url, headers={"User-Agent": ua}, timeout=40)
     r.raise_for_status()
     for t in pd.read_html(_io.StringIO(r.text)):

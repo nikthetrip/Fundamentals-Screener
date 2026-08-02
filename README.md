@@ -1,4 +1,4 @@
-# Lynch Valuation Dashboard
+# Fundamentals Screener
 
 Replica la **Peter Lynch earnings line** (tipo GuruFocus): prezzo reale vs
 "prezzo a P/E 15/20/25" nel tempo, più uno screener che ordina i titoli per
@@ -143,10 +143,10 @@ La SEC blocca (403) le richieste senza un User-Agent con un contatto reale. È u
 loro regola. Va messa in una variabile d'ambiente, non nel codice:
 
 ```bash
-export SEC_USER_AGENT="Lynch Research tua@email.com"
+export SEC_USER_AGENT="Fundamentals Screener tua@email.com"
 ```
 
-Su Windows (cmd): `set SEC_USER_AGENT=Lynch Research tua@email.com`
+Su Windows (cmd): `set SEC_USER_AGENT=Fundamentals Screener tua@email.com`
 
 Su GitHub Actions è il secret `SEC_USER_AGENT`.
 
@@ -295,7 +295,7 @@ Per aggiornare i dati serve il contatto per la SEC. Scrivilo una volta in un
 file locale (non versionato, vedi `.gitignore`):
 
 ```bash
-echo "Lynch Research tua@email.com" > .sec_user_agent
+echo "Fundamentals Screener tua@email.com" > .sec_user_agent
 ```
 
 ### ⚠️ Aprire la dashboard NON aggiorna i dati

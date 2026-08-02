@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-app.py — Lynch Valuation Dashboard (Streamlit)
+app.py — Fundamentals Screener (Streamlit)
 
 Two views:
   1. Screener — table sorted by discount to fair value, with sector/industry
@@ -97,7 +97,7 @@ def lynch_icon(cat: str | None) -> str:
     return next((v for k, v in LYNCH_ICONS.items() if cat.startswith(k)), "❓")
 
 
-st.set_page_config(page_title="Lynch Valuation", page_icon="📈",
+st.set_page_config(page_title="Fundamentals Screener", page_icon="📈",
                    layout="wide", initial_sidebar_state="collapsed")
 
 # --- minimal styling ---
@@ -1080,7 +1080,7 @@ filings = load_filings()
 annual = load_annual()
 cagr_detail = load_cagr_detail()
 
-st.title("📈 Lynch Valuation")
+st.title("📈 Fundamentals Screener")
 st.caption("Real price vs *fair value* (TTM earnings × P/E), with the financial "
            "statements behind it. Below the line = potentially undervalued · "
            "above = overvalued.")
@@ -3747,7 +3747,7 @@ if nav == "Screener":
     export_df = f[avail].rename(columns={c: exp_cols[c] for c in avail})
     st.download_button(
         "📥 Export full screener (CSV)", export_df.to_csv(index=False),
-        f"lynch_screener_{datetime.now():%Y%m%d}.csv", "text/csv",
+        f"fundamentals_screener_{datetime.now():%Y%m%d}.csv", "text/csv",
         help="Every column in the dataset: valuation, financial statement "
              "figures, all CAGRs (3/5/10 years for EPS, revenue, free cash "
              "flow, net income and operating cash flow) and the diagnostics.")

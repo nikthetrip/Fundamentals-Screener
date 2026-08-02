@@ -114,7 +114,7 @@ def _render_segments(ticker: str, cik_str: str) -> None:
             "Their APIs are free and need no key, but they do ask who is "
             "calling: without it they answer 403 and this section stays empty "
             "on every ticker. Set `SEC_USER_AGENT` — locally with "
-            "`echo 'Lynch Research you@email.com' > .sec_user_agent`, on "
+            "`echo 'Fundamentals Screener you@email.com' > .sec_user_agent`, on "
             "Streamlit Cloud as an environment variable in the app settings. "
             "It is the same variable the dataset build already uses.",
             icon="🔑")

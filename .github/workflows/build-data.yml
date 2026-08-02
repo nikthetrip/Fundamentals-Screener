@@ -99,7 +99,7 @@ jobs:
             echo "::error::Manca il secret SEC_USER_AGENT (o non contiene una email)."
             echo "Impostalo in Settings → Secrets and variables → Actions:"
             echo "  nome:   SEC_USER_AGENT"
-            echo "  valore: Lynch Research tua@email.com"
+            echo "  valore: Fundamentals Screener tua@email.com"
             exit 1
           fi
           echo "Contatto SEC configurato."

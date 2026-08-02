@@ -55,7 +55,7 @@ fi
 if [ "$UPDATE" = "1" ]; then
   if [ -z "${SEC_USER_AGENT:-}" ]; then
     echo "Per aggiornare i dati serve un contatto per la SEC. Scrivilo una volta:"
-    echo "  echo 'Lynch Research tua@email.com' > .sec_user_agent"
+    echo "  echo 'Fundamentals Screener tua@email.com' > .sec_user_agent"
     exit 1
   fi
   echo "→ Aggiorno i dati (universo: $UNIVERSE). Sono diversi minuti."
