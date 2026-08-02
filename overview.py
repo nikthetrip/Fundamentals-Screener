@@ -53,6 +53,29 @@ except ImportError:
 
 TONE_ICON = {"bull": "🟢", "bear": "🔴", "flag": "🟡", "neutral": "⚪"}
 
+# I codici di borsa grezzi del provider. `info["exchange"]` non restituisce il
+# nome della borsa ma la sigla interna del suo listino — "NMS" e' il Nasdaq
+# National Market System, "NYQ" il listino principale del NYSE — e stampata
+# cosi' com'e' non significa niente per chi legge: la scheda di Alphabet
+# dichiarava "Listed on: NMS". Il dataset porta gia' il nome corretto, preso
+# dall'elenco ufficiale della SEC, quindi quello VIENE PRIMA e questa tabella
+# resta solo per i casi in cui manchi.
+EXCHANGE_CODES = {
+    "NMS": "Nasdaq", "NGM": "Nasdaq", "NCM": "Nasdaq", "NAS": "Nasdaq",
+    "NYQ": "NYSE", "PCX": "NYSE Arca", "ASE": "NYSE American",
+    "BTS": "Cboe BZX", "CBO": "Cboe", "BATS": "Cboe BZX",
+}
+
+
+def _exchange_name(dataset_value, provider_code) -> str | None:
+    """Il nome della borsa: prima il dataset, poi la sigla del provider
+    tradotta, e come ultima risorsa la sigla stessa — mai niente."""
+    if dataset_value and pd.notna(dataset_value):
+        return str(dataset_value)
+    if not provider_code:
+        return None
+    return EXCHANGE_CODES.get(str(provider_code).upper(), str(provider_code))
+
 
 def _split_summary(text: str) -> tuple[str, str]:
     """
@@ -339,7 +362,8 @@ def render(ticker: str, r: pd.Series, cik_str: str | None = None) -> None:
                              prof.get("country")) if x]) or None),
             ("Employees", f"{int(prof['fullTimeEmployees']):,}"
              if prof.get("fullTimeEmployees") else None),
-            ("Listed on", prof.get("exchange") or r.get("exchange")),
+            ("Listed on", _exchange_name(r.get("exchange"),
+                                         prof.get("exchange"))),
             ("SIC classification", f"{r.get('sic')} — {r.get('sic_description')}"
              if pd.notna(r.get("sic")) else None),
         ]
