@@ -35,11 +35,11 @@ except ImportError:
     HAS_AGGRID = False
 
 try:
-    import valuation_chart
-    HAS_LWC = True
+    import price_chart
+    HAS_PRICE_CHART = True
 except ImportError:
-    valuation_chart = None
-    HAS_LWC = False
+    price_chart = None
+    HAS_PRICE_CHART = False
 
 # Cartella dei CSV. Sovrascrivibile con LYNCH_DATA_DIR per aprire la dashboard
 # su un dataset diverso — un universo alternativo, o una build di prova — senza
@@ -1670,29 +1670,30 @@ def render_valuation_tab(ticker: str, row: pd.DataFrame) -> None:
                       "around 1 fair, below 1 expensive. It is the reciprocal "
                       "of the PEG, so the reading flips.")
 
-    # DUE MOTORI PER LO STESSO GRAFICO, sugli stessi dati.
+    # DUE GRAFICI, DUE DOMANDE — non due motori per lo stesso disegno.
     #
-    # TradingView (lightweight-charts) da' zoom, scorrimento e mirino senza
-    # passare dal server; Plotly da' il riquadro che elenca tutte le grandezze
-    # insieme al passaggio del mouse. Sono due qualita' diverse, e finche' non
-    # e' chiaro quale conti di piu' restano entrambe selezionabili — anche
-    # perche' lightweight-charts arriva da un componente di terze parti e la
-    # scheda Valuation non puo' dipenderne per esistere.
-    if HAS_LWC:
-        _init("chart_engine", "TradingView")
-        st.radio("Chart engine", ["TradingView", "Plotly"], horizontal=True,
-                 key="chart_engine", label_visibility="collapsed",
-                 help="**TradingView**: zoom con la rotella, scorrimento, "
-                      "mirino agganciato ai punti. **Plotly**: riquadro con "
-                      "prezzo, fair value, differenza ed EPS tutti insieme.")
-    use_lwc = HAS_LWC and st.session_state.get("chart_engine") == "TradingView"
-
-    if use_lwc:
-        d = valuation_frame(ticker, use_norm_eps, pe, years)
-        if d is None:
-            st.info("No price history on file for this ticker.")
-        else:
-            valuation_chart.render(d, ticker, events, pe, use_norm_eps, scale)
+    # Prima c'era un interruttore «TradingView / Plotly»: chiedeva al lettore
+    # una decisione TECNICA (quale libreria?) al posto di una decisione di
+    # contenuto, e i due motori disegnavano la stessa identica cosa.
+    #
+    #   Valuation chart — prezzo contro fair value nel tempo. Plotly, perche'
+    #     la qualita' che serve qui e' il riquadro che al passaggio del mouse
+    #     elenca prezzo, fair value, differenza, scarto ed EPS INSIEME: e' un
+    #     grafico che si legge per confrontare due grandezze, non per navigare.
+    #   Price chart — come si e' mosso il titolo. Candele, volumi, medie mobili,
+    #     orizzonti e cadenze scegliibili: qui serve navigare, e lightweight-
+    #     charts lo fa senza passare dal server.
+    if HAS_PRICE_CHART:
+        t_val, t_price = st.tabs(["📉 Valuation chart", "🕯️ Price chart"])
+        with t_val:
+            d = render_valuation_chart(ticker, company, use_norm_eps, pe,
+                                       years, scale)
+        with t_price:
+            st.caption(
+                "Pure price action, with no fair value on it: the comparison "
+                "with what the company earns is the other chart. Here the "
+                "question is how the market has traded the stock.")
+            price_chart.render(ticker, fallback=d)
     else:
         d = render_valuation_chart(ticker, company, use_norm_eps, pe, years, scale)
 
