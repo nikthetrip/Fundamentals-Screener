@@ -24,6 +24,16 @@ import streamlit as st
 
 import charts
 
+# La tabella avanzata dello Screener dipende da un componente di terze parti.
+# Se non e' installato l'app deve continuare a partire con la tabella classica:
+# un componente mancante non puo' portarsi dietro l'intero screener.
+try:
+    import screener_grid
+    HAS_AGGRID = True
+except ImportError:
+    screener_grid = None
+    HAS_AGGRID = False
+
 # Cartella dei CSV. Sovrascrivibile con LYNCH_DATA_DIR per aprire la dashboard
 # su un dataset diverso — un universo alternativo, o una build di prova — senza
 # spostare i file di quello buono.
@@ -3119,7 +3129,12 @@ if nav == "Screener":
                                    "(Turnaround, Asset Play): the P/E isn't a "
                                    "valid basis. Remove N/A to hide them.")
     with c3:
-        only_profit = st.checkbox("Positive EPS only", value=True, key="screen_profit")
+        # Il valore iniziale si semina in session_state invece di passarlo come
+        # `value`: la casella e' fra quelle riscritte su se stesse a ogni run
+        # per non perdere lo stato, e dichiarare le due cose insieme fa
+        # scrivere a Streamlit un avviso a ogni rerun.
+        _init("screen_profit", True)
+        only_profit = st.checkbox("Positive EPS only", key="screen_profit")
         _n_neg = int((f["eps_ttm"] <= 0).sum()) if "eps_ttm" in f.columns else 0
         st.caption(f"{'Hides' if only_profit else 'Shows'} {_n_neg} tickers with EPS ≤ 0")
 
@@ -3314,37 +3329,76 @@ if nav == "Screener":
         if col in show.columns:
             css[col] = [fn(v) for v in show[col]]
     styled = disp.style.apply(lambda _: css, axis=None)
-    st.caption("💡 **Click on a row** to open that ticker's Details page.")
-    sel = st.dataframe(styled, use_container_width=True, height=480, hide_index=True,
-                       on_select="rerun", selection_mode="single-row",
-                       key="screen_table",
-                       column_config={
-                           "Δ P/E vs ind.": st.column_config.Column(
-                               help="Trailing P/E versus the MEDIAN P/E of the "
-                                    "same industry in this dataset. Negative = "
-                                    "cheaper than its peers. An asterisk means "
-                                    "the benchmark is the whole SECTOR, used "
-                                    f"when the industry has fewer than {MIN_PEERS} "
-                                    "companies here — a wider, less demanding "
-                                    "comparison. Blank when neither group "
-                                    "reaches that size."),
-                       })
+
+    # DUE TABELLE, UNA ACCANTO ALL'ALTRA NEL TEMPO.
+    #
+    # Quella avanzata (AG Grid) porta filtro per colonna, colonne bloccate e
+    # ordinamento sui numeri veri invece che sulle stringhe formattate. Ma e'
+    # un componente di terze parti, quindi la classica resta selezionabile: se
+    # il componente si rompe con un aggiornamento di Streamlit, lo Screener
+    # continua a funzionare cambiando una voce, non aspettando una patch.
+    _table_opts = ["Advanced (AG Grid)", "Classic"] if HAS_AGGRID else ["Classic"]
+    _init("screen_table_style", _table_opts[0])
+    chosen_tk = None
+    if HAS_AGGRID:
+        st.radio("Table", _table_opts, horizontal=True, key="screen_table_style",
+                 label_visibility="collapsed",
+                 help="**Advanced**: a filter box under every column heading, "
+                      "ticker and company frozen while you scroll, sorting on "
+                      "the real numbers. **Classic**: Streamlit's own table.")
+    use_grid = HAS_AGGRID and st.session_state["screen_table_style"].startswith("Advanced")
+
+    if use_grid:
+        st.caption("💡 **Click a row** to open that ticker's Details page · "
+                   "type in the boxes under the headings to filter each column "
+                   "· drag a column edge to resize · shift-click a heading to "
+                   "sort by more than one.")
+        chosen_tk = screener_grid.render(
+            show, f["pe_peer_basis"] if "pe_peer_basis" in f.columns else None,
+            MIN_PEERS)
+    else:
+        st.caption("💡 **Click on a row** to open that ticker's Details page.")
+        sel = st.dataframe(styled, use_container_width=True, height=480,
+                           hide_index=True,
+                           on_select="rerun", selection_mode="single-row",
+                           key="screen_table",
+                           column_config={
+                               "Δ P/E vs ind.": st.column_config.Column(
+                                   help="Trailing P/E versus the MEDIAN P/E of "
+                                        "the same industry in this dataset. "
+                                        "Negative = cheaper than its peers. An "
+                                        "asterisk means the benchmark is the "
+                                        "whole SECTOR, used when the industry "
+                                        f"has fewer than {MIN_PEERS} companies "
+                                        "here — a wider, less demanding "
+                                        "comparison. Blank when neither group "
+                                        "reaches that size."),
+                           })
+        rows_sel = (sel.get("selection", {}) or {}).get("rows", []) if sel else []
+        if rows_sel:
+            idx = rows_sel[0]
+            if 0 <= idx < len(f):
+                chosen_tk = f.iloc[idx]["ticker"]
 
     # clicking a row -> go to that ticker's Details view. We leave the request
     # in "_goto_nav": it gets applied at the start of the next run, before the
     # navigation radio is created.
-    rows_sel = (sel.get("selection", {}) or {}).get("rows", []) if sel else []
-    if rows_sel:
-        idx = rows_sel[0]
-        if 0 <= idx < len(f):
-            chosen = f.iloc[idx]["ticker"]
-            if st.session_state.get("goto_ticker") != chosen or nav != "Details":
-                st.session_state["goto_ticker"] = chosen
-                # the Details selectbox isn't instantiated in this run (we're in
-                # the Screener view), so setting its key is allowed
-                st.session_state["hist_ticker"] = chosen
-                st.session_state["_goto_nav"] = "Details"
-                st.rerun()
+    #
+    # SI NAVIGA SOLO QUANDO LA SELEZIONE CAMBIA, non ogni volta che c'e' una
+    # selezione. AG Grid la conserva: senza questo confronto, tornando allo
+    # Screener dopo aver aperto un titolo la riga risulterebbe ancora
+    # selezionata e la pagina rimbalzerebbe subito di nuovo sul dettaglio,
+    # rendendo impossibile tornare all'elenco.
+    if chosen_tk and st.session_state.get("_last_row_click") != chosen_tk:
+        st.session_state["_last_row_click"] = chosen_tk
+        st.session_state["goto_ticker"] = chosen_tk
+        # the Details selectbox isn't instantiated in this run (we're in
+        # the Screener view), so setting its key is allowed
+        st.session_state["hist_ticker"] = chosen_tk
+        st.session_state["_goto_nav"] = "Details"
+        st.rerun()
+    if not chosen_tk:
+        st.session_state.pop("_last_row_click", None)
 
     st.caption(
         "**EPS used × fair P/E = Fair Value** — the formula is visible in the "

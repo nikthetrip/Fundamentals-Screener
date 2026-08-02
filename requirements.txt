@@ -9,3 +9,8 @@ plotly>=5.18,<7.0
 streamlit>=1.38,<2.0
 lxml>=5.0,<7.0        # richiesto da pandas.read_html (lista SP500)
 jinja2>=3.1,<4.0      # richiesto da pandas Styler (show.style.map nello Screener)
+
+# Tabella avanzata dello Screener (filtro per colonna, colonne bloccate).
+# E' OPZIONALE: app.py rileva l'assenza del pacchetto e ripiega sulla tabella
+# classica, cosi' un componente di terze parti non puo' impedire l'avvio.
+streamlit-aggrid>=1.1,<2.0
