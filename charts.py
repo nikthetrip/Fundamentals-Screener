@@ -234,6 +234,53 @@ def indexed(x, series: list[tuple[str, object]], *, height: int = 320
                  legend=n > 1)
 
 
+def log_yaxis(fig: go.Figure, lo: float, hi: float, *, prefix: str = "$"
+              ) -> go.Figure:
+    """
+    Asse logaritmico con etichette che dicono il VALORE, non la mantissa.
+
+    IL DIFETTO CHE RIPARA. Sotto le due decadi Plotly etichetta le tacche
+    minori con la sola prima cifra: su un titolo che va da 20 a 400 dollari
+    l'asse si legge «2 3 4 5 6 7 8 9 100 2 3 4», dove i primi otto numeri
+    valgono 20-90 e gli ultimi tre 200-400. Lo stesso simbolo «2» compare due
+    volte a significare venti e duecento. Non e' un dettaglio estetico: chi
+    guarda il grafico legge il prezzo sull'asse, e un asse ambiguo fa sbagliare
+    di un fattore dieci.
+
+    Le tacche si mettono quindi a mano, sulla scala 1-2-5 di ogni decade — la
+    stessa che usano le piattaforme di mercato — e ognuna porta scritto quanto
+    vale.
+    """
+    if not lo or not hi or lo <= 0 or hi <= lo:
+        fig.update_yaxes(type="log")
+        return fig
+    import math
+    ticks: list[float] = []
+    start = math.floor(math.log10(lo))
+    for decade in range(start, math.ceil(math.log10(hi)) + 1):
+        for mult in (1, 2, 5):
+            value = mult * (10 ** decade)
+            if lo * 0.92 <= value <= hi * 1.08:
+                ticks.append(value)
+    # Su un intervallo stretto (meno di mezza decade) la scala 1-2-5 lascia due
+    # sole tacche: si infittisce, altrimenti l'asse non ha riferimenti.
+    if len(ticks) < 6:
+        ticks = []
+        for decade in range(start, math.ceil(math.log10(hi)) + 1):
+            for mult in (1, 1.5, 2, 3, 4, 5, 7):
+                value = mult * (10 ** decade)
+                if lo * 0.92 <= value <= hi * 1.08:
+                    ticks.append(value)
+    if len(ticks) < 2:
+        fig.update_yaxes(type="log")
+        return fig
+    fig.update_yaxes(
+        type="log", tickmode="array", tickvals=ticks,
+        ticktext=[f"{prefix}{v:,.0f}" if v >= 1 else f"{prefix}{v:,.2f}"
+                  for v in ticks])
+    return fig
+
+
 def donut(labels, values, *, height: int = 300, hole: float = 0.62
           ) -> go.Figure | None:
     """

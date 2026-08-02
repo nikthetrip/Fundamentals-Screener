@@ -1499,13 +1499,43 @@ def render_valuation_chart(ticker: str, company: str, use_norm_eps: bool,
                                textangle=-90, xanchor="left", yanchor="top")
 
     charts.style(fig, height=460, ylab="$")
-    fig.update_yaxes(type="log" if scale == "Log" else "linear")
+    if scale == "Log":
+        # Le tacche si dichiarano a mano: vedi charts.log_yaxis — lasciate a
+        # Plotly, su meno di due decadi diventano mantisse e lo stesso "2"
+        # significa venti in fondo all'asse e duecento in cima.
+        _lo = float(np.nanmin([d["price"].min(), d["fv"].min()]))
+        _hi = float(np.nanmax([d["price"].max(), d["fv"].max()]))
+        charts.log_yaxis(fig, _lo, _hi)
+    else:
+        fig.update_yaxes(type="linear", tickprefix="$")
     st.plotly_chart(fig, use_container_width=True,
                     key="chart_valuation_price")
     st.caption(
         f"**Blue** = market price · **orange** = fair value (EPS × P/E {pe}). "
         "Dotted lines = corporate events. Shaded band = negative earnings, where "
         "no fair value exists and the line breaks."
+    )
+    # DA DOVE PARTE LA LINEA, E PERCHE' NON PRIMA.
+    #
+    # Questo grafico comincia al primo utile depositato, non alla quotazione:
+    # senza EPS non esiste un fair value da disegnare. Il grafico del PREZZO,
+    # nella scheda accanto, non ha quel vincolo e per Alphabet parte dal 2004
+    # invece che dal 2017 — tredici anni di differenza fra due grafici
+    # affiancati, che senza una riga di spiegazione si leggono come un guasto.
+    # Il caso piu' frequente non e' nemmeno una lacuna dei dati: e' una
+    # societa' che alla SEC e' NATA dopo, perche' e' stata scorporata o
+    # riorganizzata — Alphabet deposita dal 2015, e i bilanci di Google Inc.
+    # stanno sotto un altro codice.
+    _first = d["date"].min()
+    _eps_start = d.loc[d["date"].idxmin(), "eps_date"]
+    st.caption(
+        f"The line starts in **{_first:%B %Y}**, with the first trailing-"
+        f"twelve-month earnings this company filed (period ending "
+        f"{pd.to_datetime(_eps_start):%b %Y}) — before that there is no EPS to "
+        "multiply, so there is no fair value to draw. The **Price chart** tab "
+        "has no such limit and often reaches further back: where a company was "
+        "spun off or reorganised it files under a new SEC identity, and the "
+        "earnings history of its predecessor sits under a different one."
     )
     return d
 
