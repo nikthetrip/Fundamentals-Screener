@@ -1646,14 +1646,50 @@ EQUITY_TAG_CANDIDATES = (
     "PartnersCapital",
 )
 
+# DEBITO: PRIMA I TAG GENERICI, POI QUELLI DELLO STRUMENTO.
+#
+# L'ordine e' la regola che tiene in piedi tutto il resto. `extract_instant_series`
+# sceglie, PER OGNI DATA, il tag meglio classificato fra quelli che hanno un
+# valore a quella data: non somma i candidati. Quindi una societa' che deposita
+# sia `LongTermDebtNoncurrent` (il totale) sia `ConvertibleDebtNoncurrent` (una
+# sua componente) usa il primo e ignora il secondo, senza contare due volte;
+# una che deposita solo il secondo ottiene finalmente un dato invece di niente.
+#
+# PERCHE' SERVIVA. Super Micro tagga il proprio debito come
+# `ConvertibleLongTermNotesPayable` — sono obbligazioni convertibili, e per il
+# filer sono quelle, non "debito a lungo termine generico". Il tag generico
+# esiste nei suoi depositi ma si ferma a marzo 2024, quando la societa' ha
+# cambiato modo di taggare: il controllo di obsolescenza scartava (giustamente)
+# un dato di due anni prima, e la scheda dichiarava zero debito su una societa'
+# che ne ha per miliardi. Su un campione di trentacinque societa' senza debito
+# nel dataset, VENTICINQUE avevano una voce recente sotto un altro tag.
 LONG_TERM_DEBT_TAG_CANDIDATES = (
     "LongTermDebtNoncurrent",
     "LongTermDebtAndCapitalLeaseObligations",
     "LongTermDebt",
-    # Ultima risorsa, e con una definizione piu' larga (include le quote in
-    # scadenza entro l'anno): senza di essa le banche, che usano solo questo
-    # tag, non hanno alcun dato sul debito.
+    # Ultima risorsa fra i generici, e con una definizione piu' larga (include
+    # le quote in scadenza entro l'anno): senza di essa le banche, che usano
+    # solo questo tag, non hanno alcun dato sul debito.
     "LongTermDebtAndCapitalLeaseObligationsIncludingCurrentMaturities",
+    # --- specifici dello strumento, usati solo dove i generici tacciono ---
+    "ConvertibleLongTermNotesPayable",
+    "ConvertibleDebtNoncurrent",
+    "SeniorNotesNoncurrent",
+    "SecuredDebtNoncurrent",
+    "UnsecuredDebtNoncurrent",
+    "NotesPayableToBankNoncurrent",
+    "LongTermNotesPayable",
+    "LongTermLoansPayable",
+    "LongTermLineOfCredit",
+    "OtherLongTermDebtNoncurrent",
+    # I leasing finanziari SONO debito: dal principio contabile ASC 842 stanno
+    # in bilancio con il loro valore attuale, e ogni fornitore di dati li conta
+    # come tali. Stanno per ultimi perche' vanno usati solo quando la societa'
+    # non ha altro debito da dichiarare — molte catene di negozi e compagnie di
+    # trasporto sono esattamente in quel caso. NON si sommano al debito
+    # ordinario: dove entrambi esistono vince il debito ordinario, che e' la
+    # scelta prudente finche' non si distingue una voce dall'altra.
+    "FinanceLeaseLiabilityNoncurrent",
 )
 
 # Debito a breve: quota corrente del debito a lungo piu' i finanziamenti
@@ -1666,6 +1702,27 @@ SHORT_TERM_DEBT_TAG_CANDIDATES = (
     "ShortTermBorrowings",
     "OtherShortTermBorrowings",
     "CommercialPaper",
+    # --- specifici dello strumento, stessa regola dei precedenti ---
+    "ConvertibleDebtCurrent",
+    "ConvertibleNotesPayableCurrent",
+    "SeniorNotesCurrent",
+    "SecuredDebtCurrent",
+    "NotesPayableCurrent",
+    "LoansPayableCurrent",
+    "LinesOfCreditCurrent",
+    "FinanceLeaseLiabilityCurrent",
+)
+
+# TOTALI GIA' PRONTI, come ultima risorsa.
+#
+# Alcuni filer non separano lungo e breve: dichiarano un solo importo
+# complessivo. Non possono stare nelle due liste sopra — sommati a una parte
+# corrente conterebbero quella parte due volte — quindi si usano solo quando
+# lungo + breve non produce nulla a quella data.
+TOTAL_DEBT_TAG_CANDIDATES = (
+    "DebtLongtermAndShorttermCombinedAmount",
+    "DebtAndCapitalLeaseObligations",
+    "FinanceLeaseLiability",
 )
 
 # Cassa e disponibilita' liquide. Il secondo tag include la cassa vincolata ed
@@ -1883,13 +1940,29 @@ def extract_financials(companyfacts: dict,
     # sommarlo a zero, ma la maggioranza dei filer che non taggano il debito
     # corrente semplicemente non ne ha, e rifiutare il totale renderebbe vuoto
     # il grafico della struttura del capitale per meta' del listino.
-    if out["short_term_debt"]:
-        out["total_debt"] = combine_series(
-            out["long_term_debt"], out["short_term_debt"], lambda a, b: a + b)
-        if not out["total_debt"]:
-            out["total_debt"] = out["long_term_debt"]
-    else:
-        out["total_debt"] = out["long_term_debt"]
+    # IL TOTALE SI COSTRUISCE SULL'UNIONE DELLE DATE, non sull'intersezione.
+    #
+    # `combine_series` incrocia le due serie e tiene solo le date presenti in
+    # entrambe: bastava che una societa' smettesse di taggare la parte corrente
+    # — cosa che succede appena il debito a breve si azzera — perche' il totale
+    # sparisse anche dalle date in cui il debito a lungo era regolarmente
+    # depositato. Su Super Micro il totale finiva addirittura SOTTO il solo
+    # lungo termine, che e' aritmeticamente impossibile e si vedeva.
+    #
+    # Dove esistono entrambe le parti si sommano; dove ne esiste una sola quella
+    # E' il totale — dichiarare un totale parziale e' piu' utile che dichiarare
+    # il nulla, e la parte mancante quasi sempre manca perche' vale zero.
+    ltd = dict(out["long_term_debt"] or [])
+    std = dict(out["short_term_debt"] or [])
+    total = {d: ltd.get(d, 0.0) + std.get(d, 0.0) for d in set(ltd) | set(std)}
+
+    # Solo per le date che nessuna delle due parti raggiunge si ricorre
+    # all'importo complessivo gia' pronto. Non sostituisce mai un totale
+    # costruito dalle parti: cambiare definizione a meta' serie produrrebbe nel
+    # grafico del debito un gradino che nella realta' non c'e'.
+    for d, v in extract_instant_series(companyfacts, TOTAL_DEBT_TAG_CANDIDATES):
+        total.setdefault(d, v)
+    out["total_debt"] = sorted(total.items())
 
     # Da QUALI tag XBRL sono venuti i numeri. Nessun tag e' obbligatorio e le
     # societa' cambiano il proprio nel tempo: senza questa mappa, "ricavi 44,1

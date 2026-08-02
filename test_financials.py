@@ -401,6 +401,69 @@ check("senza prezzo resta il dividendo per azione, senza rendimento",
       dividend_profile(_pays([0.5] * 4), None, asof=TODAY)["rate"] == 2.0
       and dividend_profile(_pays([0.5] * 4), None, asof=TODAY)["yield_pct"] is None)
 
+# ---------------------------------------------------------------------------
+# DEBITO TOTALE: unione delle date, non intersezione
+# ---------------------------------------------------------------------------
+print("\n[ debito totale ]")
+
+
+def _facts(tag_values: dict[str, list[tuple[str, float]]]) -> dict:
+    """companyfacts finto con soli fatti di istante."""
+    return {"facts": {"us-gaap": {
+        tag: {"units": {"USD": [{"end": d, "val": v, "filed": d}
+                                for d, v in rows]}}
+        for tag, rows in tag_values.items()}}}
+
+
+# Il caso Super Micro: la parte corrente smette di essere taggata, quella a
+# lungo continua. Con l'intersezione il totale spariva proprio dalle date piu'
+# recenti — e in una versione intermedia usciva addirittura SOTTO il solo lungo
+# termine, che e' aritmeticamente impossibile.
+fin = extract_financials(_facts({
+    "LongTermDebtNoncurrent": [("2024-03-31", 100.0), ("2025-03-31", 200.0),
+                               ("2026-03-31", 300.0)],
+    "DebtCurrent": [("2024-03-31", 10.0)],
+}))
+tot = dict(fin["total_debt"])
+check("il totale copre anche le date senza parte corrente",
+      tot.get(date(2026, 3, 31)) == 300.0, str(fin["total_debt"]))
+check("dove ci sono entrambe le parti si sommano",
+      tot.get(date(2024, 3, 31)) == 110.0, str(fin["total_debt"]))
+check("il totale non e' mai minore del solo lungo termine",
+      all(tot[d] >= dict(fin["long_term_debt"]).get(d, 0) - 1e-9 for d in tot))
+
+# Il debito taggato con il nome dello STRUMENTO invece che con quello generico:
+# senza i candidati specifici, queste societa' risultavano senza debito.
+fin2 = extract_financials(_facts({
+    "ConvertibleLongTermNotesPayable": [("2026-03-31", 4659.0)],
+    "ConvertibleNotesPayableCurrent": [("2026-03-31", 341.0)],
+}))
+check("le obbligazioni convertibili contano come debito",
+      dict(fin2["total_debt"]).get(date(2026, 3, 31)) == 5000.0,
+      str(fin2["total_debt"]))
+
+# Il tag generico e quello di strumento insieme NON si sommano: a ogni data
+# vince il generico, che gia' li comprende.
+fin3 = extract_financials(_facts({
+    "LongTermDebtNoncurrent": [("2026-03-31", 1000.0)],
+    "ConvertibleDebtNoncurrent": [("2026-03-31", 600.0)],
+}))
+check("un tag di strumento non si somma al generico che lo contiene",
+      dict(fin3["total_debt"]).get(date(2026, 3, 31)) == 1000.0,
+      str(fin3["total_debt"]))
+
+# L'importo complessivo gia' pronto riempie solo i buchi, non sostituisce.
+fin4 = extract_financials(_facts({
+    "LongTermDebtNoncurrent": [("2026-03-31", 800.0)],
+    "DebtLongtermAndShorttermCombinedAmount": [("2026-03-31", 500.0),
+                                               ("2020-03-31", 200.0)],
+}))
+tot4 = dict(fin4["total_debt"])
+check("il totale gia' pronto non sostituisce quello costruito dalle parti",
+      tot4.get(date(2026, 3, 31)) == 800.0, str(fin4["total_debt"]))
+check("ma copre le date che le parti non raggiungono",
+      tot4.get(date(2020, 3, 31)) == 200.0, str(fin4["total_debt"]))
+
 print("\n" + "=" * 72)
 if failures:
     print(f"❌ {len(failures)} TEST FALLITI")
