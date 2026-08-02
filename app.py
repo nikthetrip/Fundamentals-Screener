@@ -1877,11 +1877,20 @@ def render_financials_tab(ticker: str, r: pd.Series) -> None:
     peers, peer_label, n_peers = peer_reference(r, ind_med, sec_med)
     a = annual_for(ticker)
 
-    # ---------------- INTESTAZIONE: LE QUATTRO GRANDEZZE ----------------
-    kpi_row(r, peers, ("revenue_ttm", "ebit_ttm", "net_income_ttm", "fcf_ttm"))
+    # ---------------- INTESTAZIONE: LE CINQUE GRANDEZZE ----------------
+    #
+    # LA CAPITALIZZAZIONE VIENE PER PRIMA, prima dei ricavi. E' l'unico numero
+    # di questa riga che il mercato decide invece di depositarlo, ed e' la
+    # scala rispetto a cui si leggono tutti gli altri: 53 miliardi di cassa
+    # libera sono una cosa su una societa' da 300 miliardi e un'altra su una da
+    # 3.000. Senza, la scheda apriva sui ricavi e la dimensione andava cercata
+    # in un'altra pagina.
+    kpi_row(r, peers, ("market_cap", "revenue_ttm", "ebit_ttm",
+                       "net_income_ttm", "fcf_ttm"), ncols=5)
     if peers is not None:
         st.caption(
-            f"Trailing twelve months, from the company's own SEC filings. "
+            f"Trailing twelve months, from the company's own SEC filings — "
+            f"market cap excepted, which is today's price × shares. "
             f"Where a delta is shown it is measured against the **median of "
             f"the {peer_label}** ({n_peers} companies in this dataset): "
             "percentages compared in percentage points (pp), ratios in "
@@ -3130,102 +3139,159 @@ if nav == "Screener":
             "to impose a P/E."
         )
 
-    def _multi_filter(label: str, options: list[str], key: str, fmt=None):
-        """
-        Reusable multi-select filter (Sector / Category): aligned "All"/"None"
-        buttons, a counter of how many are selected, and — if available — the
-        clickable st.pills widget, otherwise an equivalent multiselect.
-        """
-        # A saved selection can name options that no longer exist (the dataset
-        # was rebuilt with a different universe): Streamlit raises on those.
-        _sanitize(key, options)
-        top = st.columns([3, 1, 1])
-        top[0].markdown(f"**{label}**")
-        if top[1].button("All", use_container_width=True, key=f"{key}_all"):
-            st.session_state[key] = list(options)
-            st.rerun()
-        if top[2].button("None", use_container_width=True, key=f"{key}_none"):
-            st.session_state[key] = []
-            st.rerun()
-        kwargs = dict(default=_dflt(key, options), key=key,
-                      label_visibility="collapsed")
-        if fmt:
-            kwargs["format_func"] = fmt
-        if hasattr(st, "pills"):
-            sel = st.pills(label, options, selection_mode="multi", **kwargs)
-        else:
-            sel = st.multiselect(label, options, **kwargs)
-        sel = sel or []
-        dot = "🟢" if sel else "⚪"
-        st.caption(f"{dot} {len(sel)} / {len(options)} selected")
-        return sel
+    # =================================================================== #
+    # I FILTRI                                                            #
+    # =================================================================== #
+    #
+    # UNA BARRA DI BOTTONI, NON UNA PAGINA DI PASTIGLIE.
+    #
+    # Prima settore e categoria erano due riquadri di pastiglie tutte accese:
+    # ventuno pastiglie che occupavano mezzo schermo per dire "nessun filtro
+    # attivo", e spingevano la tabella — cioe' la ragione per cui si e' qui —
+    # sotto la piega. Ora ogni filtro e' un bottone che dichiara il proprio
+    # stato ("Sector · all", "Sector · 3") e apre le sue opzioni solo quando
+    # serve.
+    #
+    # VUOTO SIGNIFICA "TUTTI", per tutti e quattro i filtri.
+    # Prima no, ed era una trappola: le pastiglie del settore nascevano tutte
+    # selezionate e il bottone "None" le spegneva, producendo ZERO righe. Un
+    # filtro svuotato deve smettere di filtrare, non azzerare i risultati —
+    # nessuno preme "cancella" per non vedere piu' niente. Il filtro Industry
+    # gia' si comportava cosi', quindi due filtri accanto con la stessa forma
+    # facevano due cose opposte.
+    #
+    # OGNI OPZIONE PORTA IL PROPRIO CONTEGGIO: "Technology (156)". Scegliere
+    # senza sapere quante societa' ci sono dietro significa scoprire solo dopo
+    # aver applicato il filtro che quel settore, in questo dataset, ne ha
+    # quattro.
 
-    c1, c2, c3 = st.columns(3)
-    with c1:
+    def _counts(df: pd.DataFrame, col: str) -> dict:
+        return df[col].value_counts().to_dict() if col in df.columns else {}
+
+    def _clean(key: str, options: list) -> list:
+        """La selezione salvata, ripulita di cio' che non esiste piu'."""
+        return [o for o in (st.session_state.get(key) or []) if o in options]
+
+    def _filter_popover(col, label: str, icon: str, options: list, key: str,
+                        counts: dict, *, fmt=None, help_txt: str = "",
+                        searchable: bool = False) -> list:
+        """
+        Un filtro: bottone con lo stato, opzioni dentro il riquadro a comparsa.
+
+        Il conteggio nell'etichetta e' il numero di voci SCELTE, non di quelle
+        disponibili: e' l'informazione che serve da fuori ("ho ristretto o no?").
+        Quando sono scelte tutte si scrive "all" — selezionare ogni voce e non
+        selezionarne nessuna danno lo stesso risultato, e il bottone deve dire
+        la stessa cosa nei due casi invece di far credere a un filtro attivo.
+        """
+        _sanitize(key, options)
+        sel = _clean(key, options)
+        active = 0 < len(sel) < len(options)
+        badge = f"{len(sel)}" if active else "all"
+        with col.popover(f"{icon} {label} · {badge}", use_container_width=True):
+            if help_txt:
+                st.caption(help_txt)
+            b1, b2 = st.columns(2)
+            if b1.button("Select all", key=f"{key}_all", use_container_width=True):
+                st.session_state[key] = list(options)
+                st.rerun()
+            if b2.button("Clear", key=f"{key}_none", use_container_width=True):
+                st.session_state[key] = []
+                st.rerun()
+
+            def _label(o):
+                base = fmt(o) if fmt else str(o)
+                n = counts.get(o)
+                return f"{base}  ({n})" if n else base
+
+            # Le pastiglie si leggono a colpo d'occhio ma occupano spazio: oltre
+            # una quindicina di voci (le industrie sono 132) diventano un muro,
+            # e serve invece una casella in cui si scrive per cercare.
+            if searchable or len(options) > 15:
+                st.multiselect(label, options, default=_dflt(key, []), key=key,
+                               format_func=_label, label_visibility="collapsed",
+                               placeholder="Type to search…")
+            else:
+                st.pills(label, options, selection_mode="multi",
+                         default=_dflt(key, []), key=key,
+                         format_func=_label, label_visibility="collapsed")
+        return _clean(key, options)
+
+    # --- modello e ricerca, sopra la barra ---
+    top_l, top_r = st.columns([2, 3])
+    with top_l:
         model = st.radio("Valuation model", ["Per category (PEG)", "Fixed P/E 15"],
                          horizontal=True, key="screen_model",
-                         help="Per category: multiple adapted to the type of "
-                              "company. P/E 15: quick filter, the same for everyone.")
-    with c2:
-        vals = st.multiselect("Valuation", ["Undervalued", "Overvalued", "N/A"],
-                              default=_dflt("screen_val",
-                                            ["Undervalued", "Overvalued", "N/A"]),
-                              key="screen_val",
-                              help="N/A = categories without a multiple "
-                                   "(Turnaround, Asset Play): the P/E isn't a "
-                                   "valid basis. Remove N/A to hide them.")
-    with c3:
+                         help="**Per category**: the multiple is adapted to the "
+                              "type of company (a fast grower is not judged by "
+                              "the same P/E as a utility). **Fixed P/E 15**: the "
+                              "classic Lynch line, the same for everyone — quick, "
+                              "blunt, comparable across the whole market.")
+    with top_r:
+        search = st.text_input("Search ticker or company", key="screen_search",
+                               placeholder="🔍  e.g. AAPL, Apple, Coca-Cola")
+
+    # --- la barra dei filtri ---
+    fb = st.columns(5)
+
+    vals = _filter_popover(
+        fb[0], "Valuation", "⚖️", ["Undervalued", "Overvalued", "N/A"],
+        "screen_val", _counts(f, "valuation_peg"),
+        help_txt="**N/A** = categories with no earnings multiple (Turnaround, "
+                 "Asset Play): for those the P/E is not a valid basis, so no "
+                 "verdict is given rather than a wrong one.")
+
+    sectors = sorted(f["sector"].dropna().unique())
+    sec = _filter_popover(
+        fb[1], "Sector", "🏭", sectors, "screen_sec", _counts(f, "sector"),
+        help_txt="The eleven standard sectors. Leave empty for all of them.")
+
+    # LE INDUSTRIE SEGUONO IL SETTORE: filtrare per «Banks» dentro «Technology»
+    # non ha senso, e un elenco di 132 voci in cui 120 non possono dare
+    # risultati e' un elenco che fa perdere tempo.
+    ind_sel = []
+    if has_industry:
+        ind_pool = f[f["sector"].isin(sec)] if sec else f
+        ind_options = sorted(ind_pool["industry"].dropna().unique())
+        ind_sel = _filter_popover(
+            fb[2], "Industry", "🔧", ind_options, "screen_ind",
+            _counts(ind_pool, "industry"), searchable=True,
+            help_txt="Type to search. The list follows the sector filter above, "
+                     "and this is the group every «vs peers» figure in the app "
+                     "is measured against.")
+
+    cat_sel = []
+    if "lynch_category" in f.columns:
+        # LE OPZIONI VENGONO DAI DATI, non da un elenco scritto a mano. Prima
+        # erano una costante, e ogni categoria non elencata spariva
+        # silenziosamente dallo Screener: undici societa' classificate
+        # "Stalwart (dimensione non disponibile)" non erano selezionabili in
+        # alcun modo e non comparivano in nessun filtro, nemmeno premendo
+        # "All". LYNCH_ORDER decide solo l'ORDINE; quello che non vi compare
+        # finisce in fondo.
+        present = sorted(f["lynch_category"].dropna().unique())
+        cat_options = ([c for c in LYNCH_ORDER if c in present]
+                       + [c for c in present if c not in LYNCH_ORDER])
+        cat_sel = _filter_popover(
+            fb[3], "Category", "🏷️", cat_options, "screen_cat",
+            _counts(f, "lynch_category"),
+            fmt=lambda c: f"{lynch_icon(c)} {c}",
+            help_txt="The Lynch type, which decides the fair multiple. Their "
+                     "definitions are in the panel at the top of the page.")
+
+    _n_neg = int((f["eps_ttm"] <= 0).sum()) if "eps_ttm" in f.columns else 0
+    with fb[4].popover("📉 Earnings", use_container_width=True):
         # Il valore iniziale si semina in session_state invece di passarlo come
         # `value`: la casella e' fra quelle riscritte su se stesse a ogni run
         # per non perdere lo stato, e dichiarare le due cose insieme fa
         # scrivere a Streamlit un avviso a ogni rerun.
         _init("screen_profit", True)
         only_profit = st.checkbox("Positive EPS only", key="screen_profit")
-        _n_neg = int((f["eps_ttm"] <= 0).sum()) if "eps_ttm" in f.columns else 0
-        st.caption(f"{'Hides' if only_profit else 'Shows'} {_n_neg} tickers with EPS ≤ 0")
-
-    c4, c5 = st.columns(2)
-    with c4:
-        with st.container(border=True):
-            sectors = sorted(f["sector"].dropna().unique())
-            sec = _multi_filter("Sector", sectors, "screen_sec")
-    with c5:
-        with st.container(border=True):
-            if "lynch_category" in f.columns:
-                # LE OPZIONI VENGONO DAI DATI, non da un elenco scritto a mano.
-                # Prima erano una costante, e ogni categoria non elencata
-                # spariva silenziosamente dallo Screener: undici societa'
-                # classificate "Stalwart (dimensione non disponibile)" non erano
-                # selezionabili in alcun modo e non comparivano in nessun
-                # filtro, nemmeno premendo "All". LYNCH_ORDER decide solo
-                # l'ORDINE; quello che non vi compare finisce in fondo.
-                present = sorted(f["lynch_category"].dropna().unique())
-                opts = ([c for c in LYNCH_ORDER if c in present]
-                        + [c for c in present if c not in LYNCH_ORDER])
-                cat_sel = _multi_filter("Lynch category", opts, "screen_cat",
-                                        fmt=lambda c: f"{lynch_icon(c)} {c}")
-            else:
-                cat_sel = None
-
-    c6, c7 = st.columns([3, 2])
-    with c6:
-        # Industry is a long list (hundreds on the full market), so it gets a
-        # searchable multiselect rather than pills — and an empty selection
-        # means "all", which keeps the common case one click away.
-        ind_sel = []
-        if has_industry:
-            ind_options = sorted(f.loc[f["sector"].isin(sec), "industry"]
-                                 .dropna().unique()) if sec else sorted(
-                f["industry"].dropna().unique())
-            _sanitize("screen_ind", ind_options)
-            ind_sel = st.multiselect(
-                "Industry", ind_options, default=_dflt("screen_ind", []),
-                key="screen_ind",
-                help="Leave empty for all industries in the selected sectors. "
-                     "The list follows the sector filter.")
-    with c7:
-        search = st.text_input("Search ticker or company", key="screen_search",
-                               placeholder="e.g. AAPL, Apple")
+        st.caption(
+            f"{'Hiding' if only_profit else 'Showing'} **{_n_neg}** tickers "
+            "with EPS ≤ 0. A company at a loss has no meaningful P/E, so its "
+            "fair value is left blank — useful to see when hunting for "
+            "turnarounds, noise otherwise.")
 
     use_peg = model.startswith("Per category")
     val_col = "valuation_peg" if (use_peg and "valuation_peg" in f.columns) else "valuation"
@@ -3234,8 +3300,15 @@ if nav == "Screener":
     fv_col_s = ("fair_value_peg" if (use_peg and "fair_value_peg" in f.columns)
                 else "fair_value_pe15")
 
-    f = f[f[val_col].isin(vals) & f["sector"].isin(sec)]
-    if cat_sel is not None:
+    # OGNI FILTRO VUOTO NON FILTRA. Vedi la nota sulla barra dei filtri: e' la
+    # regola che rende "cancella" un'operazione innocua invece di un modo per
+    # svuotare la tabella.
+    _n_all = len(f)
+    if vals:
+        f = f[f[val_col].isin(vals)]
+    if sec:
+        f = f[f["sector"].isin(sec)]
+    if cat_sel:
         f = f[f["lynch_category"].isin(cat_sel)]
     if ind_sel:
         f = f[f["industry"].isin(ind_sel)]
@@ -3248,8 +3321,73 @@ if nav == "Screener":
 
     f = f.sort_values(disc_col, na_position="last")
 
+    # --- che cosa e' attivo, in una riga, con il modo di annullarlo ---
+    #
+    # Un filtro dimenticato dentro un riquadro chiuso e' la causa piu' comune
+    # di "mancano dei titoli": qui si dichiara tutto quello che sta restringendo
+    # l'elenco, e il bottone accanto lo toglie in un colpo.
+    active_bits = []
+    if vals and len(vals) < 3:
+        active_bits.append(" / ".join(vals).lower())
+    if sec:
+        active_bits.append(f"{len(sec)} sector" + ("s" if len(sec) > 1 else ""))
+    if ind_sel:
+        active_bits.append(f"{len(ind_sel)} industr"
+                           + ("ies" if len(ind_sel) > 1 else "y"))
+    if cat_sel:
+        active_bits.append(f"{len(cat_sel)} categor"
+                           + ("ies" if len(cat_sel) > 1 else "y"))
+    if only_profit:
+        active_bits.append("positive EPS only")
+    if search:
+        active_bits.append(f"search «{search.strip()}»")
+
     label = ("per-category multiple" if use_peg else "fixed P/E 15")
-    st.markdown(f"**{len(f)} tickers** — sorted from most discounted · model: {label}")
+    head_l, head_r = st.columns([5, 1])
+    with head_l:
+        st.markdown(
+            f"**{len(f)} tickers** of {_n_all} — sorted from most discounted · "
+            f"model: {label}")
+        st.caption(("Filters active: " + " · ".join(active_bits)) if active_bits
+                   else "No filter active: the whole dataset is listed.")
+    with head_r:
+        # LA PULIZIA VA IN UNA CALLBACK, non nel corpo dello script.
+        #
+        # Streamlit vieta di ASSEGNARE la chiave di un widget dopo che il
+        # widget e' stato creato, e i filtri stanno tutti sopra questo bottone:
+        # scritto qui, `st.session_state["screen_profit"] = True` sollevava
+        # StreamlitAPIException a meta' esecuzione. Il risultato era il peggiore
+        # possibile — il bottone sembrava non fare NULLA, perche' l'eccezione
+        # arrivava dopo che la tabella era gia' stata disegnata.
+        #
+        # Le callback girano PRIMA dell'esecuzione successiva, quando nessun
+        # widget e' ancora istanziato: li' cancellare le chiavi e' lecito. E si
+        # cancella soltanto: ogni filtro rinasce al proprio valore iniziale,
+        # perche' vuoto significa "tutti" e `_init` rimette la spunta sugli
+        # utili positivi.
+        def _reset_filters():
+            for _k in ("screen_val", "screen_sec", "screen_ind", "screen_cat",
+                       "screen_search", "screen_profit"):
+                st.session_state.pop(_k, None)
+
+        # IL BOTTONE COMPARE SOLO SE C'E' QUALCOSA DA ANNULLARE, e "qualcosa"
+        # vuol dire scostamento dallo stato iniziale — non semplicemente un
+        # filtro attivo. La spunta sugli utili positivi e' accesa in partenza:
+        # contarla come filtro da azzerare lasciava il bottone sempre li' e,
+        # premuto, sembrava non fare nulla perche' riportava allo stato in cui
+        # gia' si era. Nella riga di riepilogo invece resta elencata, perche'
+        # li' la domanda e' un'altra — "perche' non vedo quel titolo?" — e 116
+        # societa' nascoste vanno dichiarate anche quando e' l'impostazione
+        # predefinita a nasconderle.
+        dirty = bool(vals or sec or ind_sel or cat_sel or search) or not only_profit
+        if dirty:
+            st.button("✕ Reset filters", use_container_width=True,
+                      on_click=_reset_filters)
+
+    if f.empty:
+        st.warning(
+            "**No ticker matches these filters.** The line above says which "
+            "ones are active — «Reset filters» clears them all.", icon="🔍")
     if skipped_tk is not None and not skipped_tk.empty:
         with st.expander(f"⚠️ {len(skipped_tk)} tickers missing from the dataset "
                          "(skipped during data collection)"):
