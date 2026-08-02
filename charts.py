@@ -36,7 +36,6 @@ DUE REGOLE CHE VALGONO PER TUTTI I GRAFICI DI QUESTO FILE.
 
 from __future__ import annotations
 
-import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
@@ -233,6 +232,53 @@ def indexed(x, series: list[tuple[str, object]], *, height: int = 320
     fig._skipped = skipped          # il chiamante lo dichiara in didascalia
     return style(fig, height=height, ylab="index (first year = 100)",
                  legend=n > 1)
+
+
+def donut(labels, values, *, height: int = 300, hole: float = 0.62
+          ) -> go.Figure | None:
+    """
+    Una ripartizione: quanta parte del tutto fa ciascuna voce.
+
+    E' l'UNICO caso in cui questo file disegna una torta, e vale la pena dire
+    perche'. Una torta risponde male a quasi ogni domanda — confrontare due
+    fette vicine per angolo e' piu' difficile che confrontare due barre — ma
+    qui la domanda e' esattamente "che frazione del totale", e la somma delle
+    parti E' il tutto per costruzione. Il buco centrale toglie l'area dal
+    confronto e lascia solo la lunghezza dell'arco, che si legge meglio.
+
+    LE VOCI SONO ORDINATE, dalla piu' grande alla piu' piccola, e i colori
+    seguono quell'ordine: cosi' la fetta principale prende sempre lo slot 1
+    della tavolozza, in questo grafico come in tutti gli altri.
+    """
+    p = palette()
+    pairs = [(str(lbl), float(v)) for lbl, v in zip(labels, values)
+             if v is not None and not pd.isna(v) and float(v) > 0]
+    if len(pairs) < 2:
+        return None
+    pairs.sort(key=lambda x: -x[1])
+    names = [x[0] for x in pairs]
+    vals = [x[1] for x in pairs]
+
+    fig = go.Figure(go.Pie(
+        labels=names, values=vals, hole=hole, sort=False, direction="clockwise",
+        marker=dict(colors=[p["series"][i % 8] for i in range(len(names))],
+                    line=dict(color=p["surface"], width=2)),
+        textinfo="none",
+        hovertemplate="%{label}<br>%{value:$,.3s} · %{percent}<extra></extra>",
+    ))
+    fig.update_layout(
+        height=height,
+        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(color=p["text"], size=12),
+        margin=dict(t=8, r=8, b=8, l=8),
+        hoverlabel=dict(bgcolor=p["surface"], font_size=12,
+                        bordercolor=p["grid"]),
+        showlegend=True,
+        legend=dict(orientation="h", yanchor="top", y=-0.02, x=0.5,
+                    xanchor="center", font=dict(color=p["muted"], size=11),
+                    bgcolor="rgba(0,0,0,0)"),
+    )
+    return fig
 
 
 def capital_structure(market_cap, debt, cash, *, height: int = 260

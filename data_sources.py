@@ -38,8 +38,31 @@ _BULK_COMPANYFACTS_URL = "https://www.sec.gov/Archives/edgar/daily-index/xbrl/co
 MAJOR_EXCHANGES = ("NYSE", "Nasdaq", "NYSE American", "CBOE", "NYSEArca")
 
 
-def _sec_headers() -> dict:
+def sec_user_agent() -> str:
+    """
+    Il contatto da dichiarare alla SEC, dall'ambiente o dal file locale.
+
+    `run.sh` legge gia' `.sec_user_agent` e lo esporta, ma l'applicazione non
+    si avvia sempre da li': lanciando `streamlit run app.py` a mano — o da una
+    configurazione dell'editor — la variabile non c'era, e le funzioni che
+    parlano con la SEC restavano spente senza che il file, presente sul disco a
+    due passi, venisse mai guardato. Il ripiego sta qui e non in `run.sh`
+    perche' questo e' il punto da cui passano TUTTE le chiamate alla SEC.
+    """
     ua = os.environ.get("SEC_USER_AGENT", "").strip()
+    if ua:
+        return ua
+    try:
+        path = Path(__file__).resolve().parent / ".sec_user_agent"
+        if path.exists():
+            return path.read_text(encoding="utf-8").strip()
+    except OSError:
+        pass
+    return ""
+
+
+def _sec_headers() -> dict:
+    ua = sec_user_agent()
     if not ua or "@" not in ua:
         raise RuntimeError(
             "Variabile SEC_USER_AGENT mancante o senza email.\n"

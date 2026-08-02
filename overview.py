@@ -21,24 +21,122 @@ scaricano su richiesta e restano in cache un'ora, come le candele del grafico
 del prezzo. Quando il provider non risponde, ogni riquadro lo dichiara da
 solo invece di sparire.
 
-QUELLO CHE NON C'E', E PERCHE'. La ripartizione dei ricavi PER PRODOTTO e PER
-AREA GEOGRAFICA non e' disponibile da nessuna delle due fonti di questa
-applicazione. Il provider di mercato non la espone; le API XBRL della SEC
-(`companyfacts`) restituiscono solo i valori consolidati, mentre la
-ripartizione per segmento vive nelle dimensioni del documento XBRL allegato a
-ogni singolo deposito, che andrebbe scaricato e interpretato deposito per
-deposito. Al suo posto c'e' la descrizione dell'azienda — che i prodotti e i
-mercati li nomina, con parole sue — e il collegamento diretto alla nota sui
-segmenti dell'ultimo 10-K, dove quella tabella sta davvero.
+LA RIPARTIZIONE DEI RICAVI viene invece dai depositi, e la legge `segments.py`:
+per divisione, per area e per prodotto, esattamente come la societa' la
+comunica alla SEC. Non e' nelle API `companyfacts` che il resto
+dell'applicazione usa — quelle danno solo i totali consolidati — ma un livello
+piu' sotto, nelle dimensioni del documento XBRL allegato al bilancio annuale.
+
+DOVE UN DATO MANCA, MANCA LA SEZIONE. Non ci sono note fisse che spiegano
+un'assenza: ripetute su novecento titoli non sono una spiegazione, sono rumore
+che occupa il posto di un'informazione. L'unica eccezione e' la configurazione
+mancante (il contatto per la SEC), che non riguarda la societa' ma
+l'applicazione, e che taciuta lascerebbe una funzione invisibile per sempre.
 """
 
 from __future__ import annotations
+
+import re
 
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
 import charts
+
+try:
+    import segments as segments_mod
+    HAS_SEGMENTS = True
+except ImportError:
+    segments_mod = None
+    HAS_SEGMENTS = False
+
+TONE_ICON = {"bull": "🟢", "bear": "🔴", "flag": "🟡", "neutral": "⚪"}
+
+
+def _split_summary(text: str) -> tuple[str, str]:
+    """
+    La prima frase da sola, il resto a parte.
+
+    La prima frase di una descrizione depositata dice sempre il mestiere
+    ("Alcoa Corporation... engages in the bauxite mining, alumina refining,
+    aluminum production..."); le quattordici righe successive elencano
+    controllate e clientele. Separarle e' la differenza fra una riga che si
+    legge e un paragrafo che si salta.
+    """
+    text = (text or "").strip()
+    if not text:
+        return "", ""
+    cut = re.search(r"(?<=[.!?])\s+(?=[A-Z])", text)
+    if not cut or cut.start() > 400:
+        return text[:400] + ("…" if len(text) > 400 else ""), text
+    return text[:cut.start()].strip(), text[cut.end():].strip()
+
+
+def _render_segments(ticker: str, cik_str: str) -> None:
+    """Le ripartizioni dei ricavi depositate nell'ultimo bilancio annuale."""
+    # DUE SILENZI DIVERSI, E VANNO DISTINTI.
+    #
+    # Una societa' che non deposita la ripartizione non merita una nota: la
+    # sezione semplicemente non c'e'. Ma un'APPLICAZIONE senza contatto per la
+    # SEC non e' un caso particolare della societa': e' la stessa configurazione
+    # che manca su ogni titolo, e taciuta produrrebbe una funzione che non
+    # compare mai senza che nessuno sappia perche'.
+    ua = segments_mod.ds.sec_user_agent()
+    if not ua or "@" not in ua:
+        st.divider()
+        st.markdown("#### Where the revenue comes from")
+        st.info(
+            "**The revenue breakdown needs a contact address for the SEC.** "
+            "Their APIs are free and need no key, but they do ask who is "
+            "calling: without it they answer 403 and this section stays empty "
+            "on every ticker. Set `SEC_USER_AGENT` — locally with "
+            "`echo 'Lynch Research you@email.com' > .sec_user_agent`, on "
+            "Streamlit Cloud as an environment variable in the app settings. "
+            "It is the same variable the dataset build already uses.",
+            icon="🔑")
+        return
+
+    data = segments_mod.fetch_segments(ticker, cik_str)
+    if not data:
+        return
+
+    st.divider()
+    st.markdown("#### Where the revenue comes from")
+    meta = data.get("_meta", {})
+    st.caption(
+        "Read out of the **segment note of the latest annual report**, filed "
+        f"{meta.get('filed', '—')}. These are the divisions and the regions the "
+        "company itself reports to the SEC — not an estimate, and not a "
+        "classification made by this app.")
+
+    blocks = [(k, v) for k, v in data.items() if k != "_meta"]
+    cols = st.columns(min(len(blocks), 2)) if len(blocks) > 1 else [st]
+    for i, (axis_key, blk) in enumerate(blocks):
+        target = cols[i % len(cols)] if len(blocks) > 1 else st
+        with target:
+            end = sorted(blk["periods"], reverse=True)[0]
+            members = blk["periods"][end]
+            st.markdown(f"**{blk['title']}** · FY {end[:4]}")
+            fig = charts.donut(list(members), list(members.values()))
+            if fig is not None:
+                st.plotly_chart(fig, use_container_width=True,
+                                key=f"seg_{ticker}_{axis_key}")
+            tone, note = segments_mod.concentration_note(members, blk["word"])
+            if note:
+                st.markdown(f"{TONE_ICON.get(tone, '⚪')}&nbsp; {note}")
+            growth = segments_mod.growth_note(blk["periods"])
+            if growth:
+                st.markdown(f"📈&nbsp; {growth}")
+            st.caption(blk["note"])
+
+    st.caption(
+        "Every breakdown shown here has been **checked against the "
+        "consolidated revenue** of the same year: where the parts did not add "
+        "up to the whole — because the company tags a subtotal alongside its "
+        "components — the offending line is removed, and where the sum still "
+        "refuses to reconcile nothing is drawn at all. A pie chart that does "
+        "not add up looks like information and is an error.")
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
@@ -225,14 +323,14 @@ def render(ticker: str, r: pd.Series, cik_str: str | None = None) -> None:
             "The financial statements elsewhere in the app come from SEC EDGAR "
             "via the company's CIK and are unaffected.", icon="📡")
     else:
-        summary = prof.get("longBusinessSummary")
-        if summary:
-            st.markdown(summary)
-            st.caption(
-                "The company's own description of its business, as filed with "
-                "the provider. It is the one place on this page where the "
-                "products and the markets are named — by the company itself, "
-                "in its own words.")
+        # PRIMA I FATTI, POI IL TESTO.
+        #
+        # La descrizione depositata e' un paragrafo unico di quindici righe,
+        # scritto dagli avvocati della societa' per essere completo e non per
+        # essere letto. Messo per primo era un muro: si scorreva senza leggerlo
+        # e si arrivava ai riquadri, che sono la parte che si guarda davvero.
+        # Ora i sei fatti stanno in cima, la prima frase — che e' quella che
+        # dice il mestiere — resta visibile, e il resto si apre a richiesta.
         facts = [
             ("Sector", prof.get("sector") or r.get("sector")),
             ("Industry", prof.get("industry") or r.get("industry")),
@@ -245,38 +343,39 @@ def render(ticker: str, r: pd.Series, cik_str: str | None = None) -> None:
             ("SIC classification", f"{r.get('sic')} — {r.get('sic_description')}"
              if pd.notna(r.get("sic")) else None),
         ]
+        shown = [f for f in facts if f[1]]
         cols = st.columns(3)
-        for i, (label, value) in enumerate([f for f in facts if f[1]]):
+        for i, (label, value) in enumerate(shown):
             cols[i % 3].markdown(
-                f"<span style='color:{p['muted']};font-size:0.85rem'>{label}</span><br>"
-                f"<span style='font-size:1.0rem'>{value}</span><br>&nbsp;",
-                unsafe_allow_html=True)
+                f"<span style='color:{p['muted']};font-size:0.85rem'>{label}"
+                f"</span><br><span style='font-size:1.0rem'>{value}</span>"
+                f"<br>&nbsp;", unsafe_allow_html=True)
+
+        summary = prof.get("longBusinessSummary")
+        if summary:
+            head, rest = _split_summary(summary)
+            st.markdown(f"**{head}**")
+            if rest:
+                with st.expander("Read the full business description",
+                                 expanded=False):
+                    st.markdown(rest)
+                    st.caption(
+                        "The company's own description, as filed with the "
+                        "provider — the one place on this page where products "
+                        "and markets are named in its own words. The chart "
+                        "below turns them into figures.")
         if prof.get("website"):
             st.markdown(f"🔗 [{prof['website']}]({prof['website']})")
 
-    # ---------------- PRODOTTI E MERCATI ----------------
-    st.divider()
-    st.markdown("#### Where the revenue comes from")
-    st.info(
-        "**A revenue split by product and by geography is not available from "
-        "either of this app's two sources.** The market data provider does not "
-        "publish one, and the SEC's XBRL `companyfacts` API returns only "
-        "consolidated figures — the segment breakdown lives inside the "
-        "dimensions of each filing's own XBRL document, which would have to be "
-        "downloaded and parsed filing by filing. The description above names "
-        "the products and the regions in the company's own words; the actual "
-        "table is in the **segment note** of the latest annual report, linked "
-        "below.", icon="🧭")
-    links = []
-    if cik_str:
-        links.append(f"[Latest 10-K and its segment note]"
-                     f"(https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany"
-                     f"&CIK={cik_str}&type=10-K&dateb=&owner=include&count=10)")
-    links.append(f"[Financial statements viewer]"
-                 f"(https://www.sec.gov/cgi-bin/viewer?action=view&ticker={ticker})")
-    links.append(f"[Provider profile]"
-                 f"(https://finance.yahoo.com/quote/{ticker}/profile)")
-    st.markdown("🔗 " + " · ".join(links))
+    # ---------------- DA DOVE ARRIVANO I RICAVI ----------------
+    #
+    # SE NON C'E' IL DATO, NON C'E' LA SEZIONE. Prima qui stava una nota fissa
+    # che spiegava perche' il dato mancava: compariva identica su ogni titolo,
+    # non diceva nulla di quella societa' e occupava il posto di
+    # un'informazione. Una spiegazione ripetuta novecento volte non e' una
+    # spiegazione, e' rumore.
+    if HAS_SEGMENTS and cik_str:
+        _render_segments(ticker, cik_str)
 
     # ---------------- COSA SI ASPETTANO GLI ANALISTI ----------------
     st.divider()
