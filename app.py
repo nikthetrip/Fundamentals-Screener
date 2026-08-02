@@ -41,6 +41,13 @@ except ImportError:
     price_chart = None
     HAS_PRICE_CHART = False
 
+try:
+    import commentary
+    HAS_COMMENTARY = True
+except ImportError:
+    commentary = None
+    HAS_COMMENTARY = False
+
 # Cartella dei CSV. Sovrascrivibile con LYNCH_DATA_DIR per aprire la dashboard
 # su un dataset diverso — un universo alternativo, o una build di prova — senza
 # spostare i file di quello buono.
@@ -1810,6 +1817,28 @@ def _col(a: pd.DataFrame, col: str):
     return a[col] if col in a.columns else None
 
 
+def _commentary(section: str, r: pd.Series, peers: pd.Series | None,
+                a: pd.DataFrame | None) -> None:
+    """
+    Il riquadro di commento fra i KPI e i grafici della sezione.
+
+    Passa `fmt_metric`, e non e' un dettaglio: e' la garanzia che un numero
+    citato nel testo e lo stesso numero nel riquadro sopra siano formattati
+    dalla stessa funzione e quindi non possano divergere. Un commento che
+    scrive 34,0% accanto a una scheda che dice 34% vale meno di nessun
+    commento.
+    """
+    if not HAS_COMMENTARY:
+        return
+    try:
+        commentary.render(section, r, peers, a, fmt_metric)
+    except Exception as exc:                                 # noqa: BLE001
+        # Il commento e' un di piu': se si rompe su una societa' con dati
+        # inusuali, la scheda deve restare leggibile. Meglio una riga che
+        # dichiara il guasto che una pagina che non si apre.
+        st.caption(f"⚠️ Commentary unavailable for this section ({exc}).")
+
+
 def kpi_row(r: pd.Series, peers: pd.Series | None, keys, ncols: int = 4) -> None:
     """
     Una fila di riquadri, saltando in silenzio le voci che questa societa' non
@@ -1932,6 +1961,8 @@ def render_financials_tab(ticker: str, r: pd.Series) -> None:
         kpi_row(r, peers, ("revenue_per_share", "shares_outstanding",
                            "revenue_latest_fy", "earnings_yield_pct"))
 
+        _commentary("income", r, peers, a)
+
         if a is not None:
             st.markdown("###### Revenue and profit, year by year")
             fig = charts.bars(a["year"], [("Revenue", _col(a, "revenue")),
@@ -2038,6 +2069,8 @@ def render_financials_tab(ticker: str, r: pd.Series) -> None:
                 "and technical reserves rather than debt. It does **not** mean "
                 "the company is debt-free: check the balance sheet in the "
                 "latest 10-K, linked from the Filings tab.", icon="🏦")
+
+        _commentary("balance", r, peers, a)
 
         # Il grafico chiesto: debito, cassa e cassa libera insieme. E' il
         # confronto che dice se il debito e' sostenibile — quanto se ne deve,
@@ -2148,6 +2181,8 @@ def render_financials_tab(ticker: str, r: pd.Series) -> None:
                 "💡 The current rate is well above what was paid over the last "
                 "year: the dividend has just been **raised or reinstated**.")
 
+        _commentary("cash", r, peers, a)
+
         if a is not None and (_has(a, "ocf") or _has(a, "fcf")):
             st.markdown("###### Cash in, cash invested, cash left")
             capex = (-a["capex"] if _has(a, "capex") else None)
@@ -2219,6 +2254,8 @@ def render_financials_tab(ticker: str, r: pd.Series) -> None:
         kpi_row(r, peers, ("net_debt_to_ebit", "net_debt_to_fcf",
                            "debt_to_assets_pct", "cash_to_debt_pct"))
 
+        _commentary("ratios", r, peers, a)
+
         if peers is not None:
             st.markdown("###### Side by side with the peer group")
             rows = []
@@ -2276,6 +2313,8 @@ def render_financials_tab(ticker: str, r: pd.Series) -> None:
         kpi_row(r, peers, ("cagr_ocf_5y", "revenue_growth_yoy_pct",
                            "eps_growth_yoy", "fcf_growth_yoy_pct"))
 
+        _commentary("growth", r, peers, a)
+
         if a is not None:
             st.markdown("###### Who grew, and by how much")
             fig = charts.indexed(a["year"],
@@ -2301,6 +2340,20 @@ def render_financials_tab(ticker: str, r: pd.Series) -> None:
                              "like that measures how unusual the first year "
                              "was, not growth.")
                 st.caption(note)
+
+        # ---------------- IL SALDO DI TUTTA LA SCHEDA ----------------
+        #
+        # STA IN FONDO, e in fondo alla SEZIONE DELLA CRESCITA. Una sintesi
+        # messa in cima verrebbe letta al posto dei numeri invece che dopo, ed
+        # e' esattamente il contrario di cio' che serve: il giudizio non e' un
+        # riassunto da cui partire, e' quello che resta dopo aver guardato i
+        # tre prospetti. Raccoglie i rilievi di TUTTE le sezioni, non solo di
+        # questa, perche' un verdetto costruito sulla sola crescita direbbe
+        # quanto e' cresciuta l'azienda, non se i conti la sostengono.
+        if HAS_COMMENTARY:
+            st.divider()
+            st.markdown("##### The balance of the evidence")
+            commentary.render_assessment(r, peers, a, fmt_metric)
 
 
 def render_growth_tab(ticker: str, r: pd.Series) -> None:
