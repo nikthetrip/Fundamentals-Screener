@@ -34,6 +34,13 @@ except ImportError:
     screener_grid = None
     HAS_AGGRID = False
 
+try:
+    import valuation_chart
+    HAS_LWC = True
+except ImportError:
+    valuation_chart = None
+    HAS_LWC = False
+
 # Cartella dei CSV. Sovrascrivibile con LYNCH_DATA_DIR per aprire la dashboard
 # su un dataset diverso — un universo alternativo, o una build di prova — senza
 # spostare i file di quello buono.
@@ -1373,13 +1380,18 @@ def fair_value_derivation(r: pd.Series, use_norm: bool) -> dict:
             "normalized": use_normalized}
 
 
-def render_valuation_chart(ticker: str, company: str, use_norm_eps: bool,
-                           pe: int, years: str, scale: str) -> pd.DataFrame | None:
-    """Prezzo reale contro fair value nel tempo. Un solo asse: sono entrambi $."""
-    p = charts.palette()
+def valuation_frame(ticker: str, use_norm_eps: bool, pe: int,
+                    years: str) -> pd.DataFrame | None:
+    """
+    La serie da disegnare: prezzo, fair value, EPS usato, scarto percentuale.
+
+    Sta FUORI dal disegno perche' i due grafici — Plotly e lightweight-charts —
+    devono mostrare esattamente gli stessi numeri. Se ognuno si preparasse i
+    dati per conto suo, prima o poi divergerebbero su un dettaglio (la finestra
+    della mediana mobile, il taglio della storia) e nessuno se ne accorgerebbe.
+    """
     d = hist[hist["ticker"] == ticker].copy().sort_values("date")
     if d.empty:
-        st.info("No price history on file for this ticker.")
         return None
     # La mediana mobile a 3 anni si calcola sulla serie INTERA, prima di
     # tagliarla per "History length": altrimenti i primi punti visibili
@@ -1398,9 +1410,19 @@ def render_valuation_chart(ticker: str, company: str, use_norm_eps: bool,
         d["fv"] = pd.to_numeric(d[f"fair_value_pe{pe}"], errors="coerce")
     d = d[d["price"].notna()]
     if d.empty:
-        st.info("No price history on file for this ticker.")
         return None
     d["premium_pct"] = np.where(d["fv"] > 0, (d["price"] / d["fv"] - 1) * 100, np.nan)
+    return d
+
+
+def render_valuation_chart(ticker: str, company: str, use_norm_eps: bool,
+                           pe: int, years: str, scale: str) -> pd.DataFrame | None:
+    """Prezzo reale contro fair value nel tempo. Un solo asse: sono entrambi $."""
+    p = charts.palette()
+    d = valuation_frame(ticker, use_norm_eps, pe, years)
+    if d is None:
+        st.info("No price history on file for this ticker.")
+        return None
 
     eps_label = "Normalized EPS (3y median)" if use_norm_eps else "TTM EPS"
     custom = np.column_stack((
@@ -1648,7 +1670,31 @@ def render_valuation_tab(ticker: str, row: pd.DataFrame) -> None:
                       "around 1 fair, below 1 expensive. It is the reciprocal "
                       "of the PEG, so the reading flips.")
 
-    d = render_valuation_chart(ticker, company, use_norm_eps, pe, years, scale)
+    # DUE MOTORI PER LO STESSO GRAFICO, sugli stessi dati.
+    #
+    # TradingView (lightweight-charts) da' zoom, scorrimento e mirino senza
+    # passare dal server; Plotly da' il riquadro che elenca tutte le grandezze
+    # insieme al passaggio del mouse. Sono due qualita' diverse, e finche' non
+    # e' chiaro quale conti di piu' restano entrambe selezionabili — anche
+    # perche' lightweight-charts arriva da un componente di terze parti e la
+    # scheda Valuation non puo' dipenderne per esistere.
+    if HAS_LWC:
+        _init("chart_engine", "TradingView")
+        st.radio("Chart engine", ["TradingView", "Plotly"], horizontal=True,
+                 key="chart_engine", label_visibility="collapsed",
+                 help="**TradingView**: zoom con la rotella, scorrimento, "
+                      "mirino agganciato ai punti. **Plotly**: riquadro con "
+                      "prezzo, fair value, differenza ed EPS tutti insieme.")
+    use_lwc = HAS_LWC and st.session_state.get("chart_engine") == "TradingView"
+
+    if use_lwc:
+        d = valuation_frame(ticker, use_norm_eps, pe, years)
+        if d is None:
+            st.info("No price history on file for this ticker.")
+        else:
+            valuation_chart.render(d, ticker, events, pe, use_norm_eps, scale)
+    else:
+        d = render_valuation_chart(ticker, company, use_norm_eps, pe, years, scale)
 
     # ------------------- COME NASCE QUESTO FAIR VALUE -------------------
     #

@@ -14,3 +14,7 @@ jinja2>=3.1,<4.0      # richiesto da pandas Styler (show.style.map nello Screene
 # E' OPZIONALE: app.py rileva l'assenza del pacchetto e ripiega sulla tabella
 # classica, cosi' un componente di terze parti non puo' impedire l'avvio.
 streamlit-aggrid>=1.1,<2.0
+
+# Grafico prezzo/fair value con lightweight-charts (TradingView). Anche questo
+# OPZIONALE: senza il pacchetto la scheda Valuation disegna con Plotly.
+streamlit-lightweight-charts>=0.7,<1.0
