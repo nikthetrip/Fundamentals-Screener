@@ -729,7 +729,7 @@ def dividend_profile(dividends: list[tuple[date, float]],
     # Solo la storia recente decide: una societa' passata da semestrale a
     # trimestrale dieci anni fa paga trimestralmente OGGI.
     recent = rows[-12:]
-    (prev_date, prev_amt), (last_date, last_amt) = recent[-2], recent[-1]
+    (_, prev_amt), (last_date, last_amt) = recent[-2], recent[-1]
     same_regime = abs(last_amt - prev_amt) <= SAME_REGIME_TOLERANCE * max(
         last_amt, prev_amt)
 
