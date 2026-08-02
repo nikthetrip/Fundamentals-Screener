@@ -555,8 +555,50 @@ prossima trimestrale.
 | **FCF conversion** | FCF ÷ utile netto, entrambi TTM (vuoto in perdita) |
 | **FCF yield** | FCF TTM ÷ capitalizzazione |
 | **Earnings yield** | 100 ÷ P/E trailing |
+| **Dividend yield** | ultima cedola **ordinaria** × cadenza ÷ prezzo |
+| **Dividendo pagato (12m)** | somma dei dividendi staccati negli ultimi 365 giorni ÷ prezzo (straordinari compresi) |
 | **Payout ratio** | (dividend yield × capitalizzazione) ÷ utile netto TTM |
 | **Debito a lungo termine** | debito non corrente dall'ultimo stato patrimoniale |
+
+### Il dividendo si ricostruisce dai pagamenti, non si copia
+
+Il campo `dividendRate` del provider dovrebbe essere il dividendo annuo corrente,
+e per la maggior parte delle società lo è. Cambia però significato **proprio nei
+casi in cui la risposta conta**, e sono i casi che un filtro "alto dividendo"
+pesca per primi:
+
+- **dopo un taglio** resta la somma dei quattro stacchi vecchi. Whirlpool ha
+  dimezzato la cedola da 1,75 a 0,90 $ e il rendimento usciva 11,7% invece di
+  9,5%; Conagra, tagliata da 0,35 a 0,175 $, usciva all'8,2% contro un 4,7%
+  reale — quasi il doppio;
+- **con i dividendi straordinari** ingloba la cedola una tantum. Progressive
+  paga 0,10 $ a trimestre più un variabile annuale che è stato 13,60 $: il campo
+  dava 6,5% come se quei 13,60 $ tornassero ogni anno.
+
+Il rendimento viene quindi ricostruito da `dividend_profile` (in
+`data_sources.py`) leggendo il **registro dei pagamenti**, che arriva dalla
+stessa chiamata già usata per prezzi e split — nessuna richiesta di rete in più.
+Le regole, ognuna nata da un caso trovato nel dataset e coperta da un test in
+`test_financials.py`:
+
+| Regola | Caso che la motiva |
+|---|---|
+| Le ultime due cedole simili definiscono importo e cadenza | STAG, passata da mensile 0,124 $ a trimestrale 0,388 $, risultava aver sospeso |
+| Un taglio vale dal primo stacco; un balzo oltre 2,5× è straordinario | Conagra (taglio) contro Nvidia (0,01 $ a trimestre e un pagamento isolato da 0,25 $) |
+| La cadenza si misura sulle sole cedole ordinarie | American Financial Group: gli straordinari fra un trimestre e l'altro la facevano sembrare mensile, 7,5% invece di 2,5% |
+| Un solo pagamento non fa una cedola | Arch Capital: 5,00 $ una volta sola diventavano un rendimento del 19,8% |
+| La cadenza annuale va provata con tre stacchi regolari, o due identici | TransDigm distribuisce 75-90 $ ogni tanto (non è una cedola), Vornado 0,74 $ ogni dicembre (lo è) |
+| Non si promettono più stacchi di quanti ne siano avvenuti | Crown Holdings ha due trimestri a 58 giorni: sembrava mensile, e il rendimento triplicava |
+| Un dividendo vecchio è un dividendo sospeso | Adobe ha smesso nel 2005, American Airlines nel 2020: annualizzare le loro cedole dava 0,01% e 3,3% |
+
+Il rendimento mostrato è quindi quello **corrente** — un taglio si vede il giorno
+stesso — e accanto compare il **dividendo effettivamente incassato** negli ultimi
+dodici mesi, straordinari compresi, perché escluderli dal rendimento è corretto
+ma nasconderli no. Su 989 società la correzione ha cambiato il rendimento di 84
+di esse, fino a 6,3 punti percentuali.
+
+`fix_dividends.py` applica lo stesso conto a un dataset già costruito, senza
+riscaricare i bilanci: serve a correggere i CSV esistenti senza un'ora di build.
 
 Il **ROIC** applica l'aliquota federale statunitense del 21% a tutte le società
 invece dell'aliquota effettiva di ciascuna, che il dataset non porta: un ROIC

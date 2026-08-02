@@ -519,17 +519,21 @@ def yf_call(fn, retries: int = 4, default=None):
 # ---------------------------------------------------------------------------
 
 def fetch_price_history(ticker: str) -> tuple[list[tuple[date, float]],
+                                              list[tuple[date, float]],
                                               list[tuple[date, float]], str]:
     """
-    Prezzi storici E split in UNA sola chiamata a yfinance.
+    Prezzi storici, split E dividendi in UNA sola chiamata a yfinance.
 
-    Chiedendo `actions=True` la stessa risposta porta anche la colonna degli
-    split, che serve a rettificare gli EPS depositati. Erano due richieste per
-    ticker: su settemila societa' fanno settemila richieste risparmiate, cioe'
-    un terzo in meno di occasioni di essere bloccati.
+    Chiedendo `actions=True` la stessa risposta porta anche le colonne degli
+    split — che servono a rettificare gli EPS depositati — e dei dividendi, da
+    cui si ricava il rendimento senza credere al campo `dividendRate` del
+    provider (vedi `dividend_profile`). Erano tre richieste per ticker: su
+    settemila societa' fanno quattordicimila richieste risparmiate, cioe'
+    altrettante occasioni in meno di essere bloccati.
 
-    Ritorna (prezzi, split, fonte). Su fallimento ripiega su Stooq, che pero'
-    non conosce gli split: in quel caso la lista degli split e' vuota.
+    Ritorna (prezzi, split, dividendi, fonte). Su fallimento ripiega su Stooq,
+    che pero' non conosce ne' split ne' dividendi: in quel caso le due liste
+    sono vuote.
     """
     import yfinance as yf
 
@@ -552,16 +556,24 @@ def fetch_price_history(ticker: str) -> tuple[list[tuple[date, float]],
                         splits.append((idx.date(), float(ratio)))
                 except (TypeError, ValueError, AttributeError):
                     continue
+        dividends: list[tuple[date, float]] = []
+        if "Dividends" in hist.columns:
+            for idx, amount in hist["Dividends"].items():
+                try:
+                    if amount and float(amount) > 0:
+                        dividends.append((idx.date(), float(amount)))
+                except (TypeError, ValueError, AttributeError):
+                    continue
         if prices:
-            return prices, sorted(splits), "yfinance"
+            return prices, sorted(splits), sorted(dividends), "yfinance"
 
     try:
         rows = fetch_prices_stooq(ticker)
         if rows:
-            return rows, [], "stooq"
+            return rows, [], [], "stooq"
     except Exception:
         pass
-    return [], [], "none"
+    return [], [], [], "none"
 
 
 def fetch_prices_yf(ticker: str) -> list[tuple[date, float]]:
@@ -587,8 +599,265 @@ def fetch_prices_stooq(ticker: str) -> list[tuple[date, float]]:
 
 def fetch_prices(ticker: str) -> tuple[list[tuple[date, float]], str]:
     """Prova yfinance, poi Stooq. Ritorna (righe, fonte)."""
-    prices, _, src = fetch_price_history(ticker)
+    prices, _, _, src = fetch_price_history(ticker)
     return prices, src
+
+
+# ---------------------------------------------------------------------------
+# Dividendi
+# ---------------------------------------------------------------------------
+
+# Cadenze di pagamento ammesse, in numero di stacchi all'anno. Non esiste una
+# societa' che paghi undici volte l'anno: la cadenza si sceglie fra queste
+# quattro, quella la cui distanza teorica somiglia di piu' a quella osservata.
+DIVIDEND_FREQUENCIES = (1, 2, 4, 12)
+
+# Due cedole si considerano LO STESSO regime se differiscono meno di questo:
+# un aumento del 10-15% e' l'aumento annuale tipico, non un cambio di natura.
+SAME_REGIME_TOLERANCE = 0.25
+
+# Un pagamento oltre DUE VOLTE E MEZZA il livello ordinario e' uno straordinario,
+# non un aumento: nessuna societa' alza la cedola di due volte e mezzo in un
+# colpo, mentre il variabile annuale di CME (7,45 $ contro 1,30 $) o quello di
+# Progressive (13,60 $ contro 0,10 $) stanno ampiamente oltre. Se invece
+# l'aumento e' vero, alla cedola successiva si ripete e diventa il regime da se'.
+SPECIAL_DIVIDEND_MULTIPLE = 2.5
+
+# UN DIVIDENDO ANNUALE VA PROVATO MEGLIO DI UNO TRIMESTRALE. Con stacchi
+# lontani un anno, due soli pagamenti sono indistinguibili da due elargizioni
+# una tantum: TransDigm ne ha fatte quattro in otto anni (22, 30, 18, 35, 75,
+# 90 $) e chiamarle "cedola annuale" dava un rendimento del 7,2% a una societa'
+# che dividendi ordinari non ne paga; Rocket ha distribuito tre volte in cinque
+# anni. Per la cadenza annuale servono quindi tre pagamenti E intervalli
+# regolari fra loro: se il piu' lungo supera il piu' corto di oltre la meta',
+# non e' una cadenza, sono occasioni.
+ANNUAL_MIN_PAYMENTS = 3
+ANNUAL_MAX_GAP_RATIO = 1.5
+# ...oppure due soli stacchi, ma di importo praticamente identico: e' la firma
+# di una politica di dividendo annuale (Vornado, 0,74 $ ogni dicembre), non di
+# due elargizioni decise volta per volta.
+ANNUAL_PAIR_TOLERANCE = 0.05
+
+# Entro quanti giorni dall'ultimo stacco la serie si considera ancora in corso.
+CURRENT_SERIES_DAYS = 120
+
+
+# Quanti intervalli di pagamento si aspetta prima di dichiarare INTERROTTO un
+# dividendo. Una societa' trimestrale che non stacca da otto mesi (91 × 2 + 60)
+# ha sospeso, non e' in ritardo — e un rendimento calcolato sull'ultima cedola
+# di una societa' che non paga piu' e' semplicemente falso.
+DIVIDEND_STALE_INTERVALS = 2.0
+DIVIDEND_STALE_GRACE_DAYS = 60
+
+
+def dividend_profile(dividends: list[tuple[date, float]],
+                     price: float | None,
+                     asof: date | None = None) -> dict:
+    """
+    Il rendimento da dividendo ricostruito dai PAGAMENTI EFFETTIVI.
+
+    PERCHE' NON SI USA `dividendRate` DEL PROVIDER. Quel campo dovrebbe essere
+    il dividendo annuo corrente, e per la maggior parte delle societa' lo e'.
+    Ma cambia significato proprio nei casi in cui la risposta conta:
+
+      - dopo un TAGLIO diventa la somma degli ultimi quattro stacchi, non il
+        nuovo passo. Whirlpool ha dimezzato la cedola da 1,75 a 0,90 $:
+        `dividendRate` restava 4,45 $ e il rendimento usciva 11,7% invece di
+        9,5%. Conagra, tagliata da 0,35 a 0,175 $, usciva all'8,2% contro un
+        4,7% reale — quasi il doppio, ed e' esattamente il tipo di titolo che
+        un filtro "alto dividendo" pesca per primo.
+      - con i dividendi STRAORDINARI ci finisce dentro anche la cedola una
+        tantum. Progressive paga 0,10 $ a trimestre piu' un variabile annuale
+        che nel 2025 e' stato 13,60 $: il campo dava 6,5% come se quel 13,60 $
+        tornasse ogni anno.
+
+    Qui il conto e' esplicito: si isolano le cedole ORDINARIE, si misura ogni
+    quanto arrivano, si annualizza l'ultima. Il totale davvero incassato negli
+    ultimi dodici mesi — straordinari inclusi — viene restituito a parte,
+    perche' e' un'altra domanda e merita un'altra riga.
+
+    LE REGOLE, e ognuna nasce da un caso vero trovato nel dataset.
+
+    1. LE ULTIME DUE CEDOLE UGUALI SONO IL REGIME. Se gli ultimi due stacchi si
+       somigliano (entro il 25%), sono loro a definire importo e cadenza, e non
+       serve altro. E' la via normale, e sistema da sola il caso di STAG
+       Industrial, passata da mensile 0,124 $ a trimestrale 0,388 $: guardando
+       la storia intera il cambio di cadenza sembrava una serie di cedole
+       straordinarie e la societa' risultava aver smesso di pagare.
+    2. QUANDO LE ULTIME DUE NON COINCIDONO, decide la direzione. Verso il basso
+       e' un TAGLIO e vale subito: Conagra e' passata da 0,35 a 0,175 $ e il
+       rendimento deve dimezzarsi lo stesso giorno. Verso l'alto oltre due volte
+       e mezza e' uno STRAORDINARIO e si ignora: Nvidia stacca 0,01 $ a
+       trimestre, e un pagamento da 0,25 $ non e' un aumento del 2.400%. Un
+       rialzo piu' contenuto e' un aumento vero e si accetta.
+    3. LA CADENZA SI MISURA SULLE SOLE CEDOLE ORDINARIE. American Financial
+       Group paga 0,88 $ a trimestre piu' straordinari infilati fra un trimestre
+       e l'altro: contando anche quelli la distanza mediana fra pagamenti
+       scendeva a due mesi, il codice deduceva cadenza MENSILE e annualizzava
+       0,88 × 12 = 10,56 $. Rendimento 7,5% invece di 2,5%.
+    4. UN SOLO PAGAMENTO NON FA UNA CEDOLA, e nemmeno due lontanissimi fra loro.
+       Arch Capital ha distribuito 5,00 $ una volta sola: annualizzarlo dava un
+       rendimento del 19,8% a una societa' che non paga dividendi. Rocket ha
+       pagato tre volte in cinque anni: non e' un dividendo annuale.
+    5. UN DIVIDENDO VECCHIO E' UN DIVIDENDO SOSPESO. Adobe ha smesso nel 2005,
+       American Airlines nel febbraio 2020: le loro cedole sono ancora nello
+       storico, e annualizzarle dava 0,01% e 3,3% a due societa' che non
+       distribuiscono nulla da anni.
+
+    Ritorna: rate (annuo ordinario per azione), yield_pct, ttm (incassato negli
+    ultimi 12 mesi), ttm_yield_pct, frequency, last_payment, has_special,
+    discontinued.
+    """
+    out = {"rate": None, "yield_pct": None, "ttm": None, "ttm_yield_pct": None,
+           "frequency": None, "last_payment": None, "has_special": False,
+           "discontinued": False}
+    rows = sorted((d, float(v)) for d, v in (dividends or []) if v and v > 0)
+    if not rows:
+        return out
+
+    asof = asof or date.today()
+    # Finestra APERTA a 365 giorni: con "<=" la cedola staccata esattamente un
+    # anno prima rientrerebbe insieme a quella di quest'anno, e un pagatore
+    # annuale risulterebbe aver distribuito il doppio.
+    ttm = sum(v for d, v in rows if 0 <= (asof - d).days < 365)
+    out["ttm"] = ttm
+    if price and price > 0 and ttm:
+        out["ttm_yield_pct"] = ttm / price * 100.0
+    if len(rows) < 2:                      # regola 4
+        return out
+
+    # Solo la storia recente decide: una societa' passata da semestrale a
+    # trimestrale dieci anni fa paga trimestralmente OGGI.
+    recent = rows[-12:]
+    (prev_date, prev_amt), (last_date, last_amt) = recent[-2], recent[-1]
+    same_regime = abs(last_amt - prev_amt) <= SAME_REGIME_TOLERANCE * max(
+        last_amt, prev_amt)
+
+    if same_regime:                                              # regola 1
+        peers = [(d, v) for d, v in recent
+                 if abs(v - last_amt) <= SAME_REGIME_TOLERANCE * max(v, last_amt)]
+        out["has_special"] = len(peers) != len(recent)
+    else:                                                        # regola 2
+        is_special = last_amt > SPECIAL_DIVIDEND_MULTIPLE * prev_amt
+        # Livello ordinario: la mediana della META' PIU' BASSA dei pagamenti
+        # recenti. La mediana semplice non basta quando gli straordinari sono
+        # frequenti quasi quanto le cedole — W. R. Berkley ne stacca uno ogni
+        # due trimestri — e finirebbe a meta' strada fra i due livelli.
+        amounts = sorted(v for _, v in recent)
+        low_half = amounts[:max(1, len(amounts) // 2)]
+        baseline = low_half[len(low_half) // 2]
+        peers = [(d, v) for d, v in recent
+                 if v <= SPECIAL_DIVIDEND_MULTIPLE * baseline]
+        out["has_special"] = len(peers) != len(recent)
+        if not is_special and (last_date, last_amt) not in peers:
+            peers.append((last_date, last_amt))   # taglio o aumento contenuto
+            peers.sort()
+    if len(peers) < 2:                      # regola 4
+        return out
+
+    # LA CADENZA SI MISURA SUL CALENDARIO, L'IMPORTO SUGLI IMPORTI. Sono due
+    # domande diverse e vanno tenute separate: quando le ultime due cedole non
+    # coincidono, il filtro degli straordinari serve solo a scegliere QUANTO
+    # vale l'ultima cedola ordinaria, mentre OGNI QUANTO si paga si legge su
+    # tutti i pagamenti. CNH ha ridotto il dividendo annuale da 0,47 a 0,10 $ in
+    # tre anni: filtrando gli importi "troppo alti" sparivano gli anni di mezzo,
+    # restava un buco di quattro anni fra due pagamenti e la cadenza annuale non
+    # veniva piu' riconosciuta.
+    cadence_from = peers if same_regime else recent
+    gaps = sorted((cadence_from[i + 1][0] - cadence_from[i][0]).days
+                  for i in range(len(cadence_from) - 1))
+    # Voto di maggioranza, non mediana: con uno straordinario infilato fra due
+    # trimestri la mediana cade a meta' strada fra due cadenze e sceglie quella
+    # sbagliata, mentre la maggioranza degli intervalli resta trimestrale.
+    votes: dict[int, int] = {}
+    for g in gaps:
+        f = min(DIVIDEND_FREQUENCIES, key=lambda x: abs(365.0 / x - g))
+        votes[f] = votes.get(f, 0) + 1
+    freq = max(votes, key=lambda f: (votes[f], -f))
+    expected_gap = 365.0 / freq
+
+    last_date, last_payment = peers[-1]
+    out.update(frequency=freq, last_payment=last_payment)
+
+    # regola 4: la cadenza annuale va provata meglio delle altre. Con tre o piu'
+    # stacchi bastano intervalli regolari; con due soli, gli importi devono
+    # coincidere quasi esattamente — Vornado paga 0,74 $ ogni dicembre, e sono
+    # due pagamenti identici a un anno esatto di distanza, mentre i 75 e 90 $ di
+    # TransDigm non sono una cedola che si ripete.
+    if freq == 1:
+        med = gaps[len(gaps) // 2]
+        last_gap = (cadence_from[-1][0] - cadence_from[-2][0]).days
+        # Regolare = l'intervallo tipico e' davvero un anno, la maggioranza
+        # degli intervalli gli somiglia, e l'ultimo non e' un salto. I tre test
+        # servono a cose diverse: Coeur Mining ha pagato ogni anno dal 1992 al
+        # 1997 e poi piu' nulla fino al 2026 — la maggioranza degli intervalli
+        # e' regolarissima, ed e' l'ULTIMO a dire che non e' una cadenza.
+        near = sum(1 for g in gaps if abs(g - med) <= 0.3 * med)
+        regular = (abs(med - 365) <= 0.3 * 365
+                   and near * 3 >= len(gaps) * 2
+                   and last_gap <= med * ANNUAL_MAX_GAP_RATIO)
+        pair = [v for _, v in cadence_from[-2:]]
+        identical = (len(pair) == 2 and max(pair) > 0
+                     and abs(pair[0] - pair[1]) <= ANNUAL_PAIR_TOLERANCE * max(pair))
+        enough = len(cadence_from) >= ANNUAL_MIN_PAYMENTS and regular
+        if not (enough or identical):
+            out["frequency"] = None
+            return out
+
+    # LA SOGLIA DI SOSPENSIONE E' LARGA DI PROPOSITO — due intervalli pieni piu'
+    # due mesi. Lo storico dei dividendi di questo fornitore ha dei buchi: Aon
+    # risulta saltare due trimestri che ha invece pagato. Con una soglia stretta
+    # ogni buco diventerebbe una "sospensione" e cancellerebbe il rendimento di
+    # una societa' che paga regolarmente — un errore peggiore di quello che si
+    # vuole evitare, perche' toglie un dato vero invece di correggerne uno
+    # falso.
+    stale_after = expected_gap * DIVIDEND_STALE_INTERVALS + DIVIDEND_STALE_GRACE_DAYS
+    if (asof - last_date).days > stale_after:        # regola 5
+        out["discontinued"] = True
+        return out
+
+    # ULTIMO CONTROLLO, CONTRO I PAGAMENTI DAVVERO AVVENUTI. Una cadenza non
+    # puo' promettere molti piu' stacchi di quanti se ne contino nell'ultimo
+    # anno. Crown Holdings ha due trimestri distanti 58 giorni — abbastanza da
+    # far sembrare mensile una cedola trimestrale, e da triplicare il
+    # rendimento — ma nell'anno ha pagato quattro volte, non dodici.
+    #
+    # Serve pero' che ci sia qualcosa da contare: lo storico di questo fornitore
+    # salta dei trimestri (Aon ne perde due), e un solo pagamento nell'anno non
+    # prova che la societa' paghi una volta l'anno. Sotto i due stacchi il
+    # controllo non si applica.
+    # E serve che la serie sia CORRENTE. Dentsply ha smesso di pagare a fine
+    # 2025: contare i suoi due stacchi rimasti nella finestra e dedurne una
+    # cadenza semestrale significherebbe leggere la sospensione come un cambio
+    # di politica, e dimezzare un rendimento che invece va o lasciato
+    # trimestrale o dichiarato interrotto — cosa di cui si occupa gia' la
+    # regola 5, poche righe sotto.
+    #
+    # La "corrente" si misura su una finestra FISSA e non sull'intervallo
+    # dedotto: e' proprio la cadenza a essere sotto accusa, e usarla per
+    # decidere se il controllo si applica lo disattiverebbe tutte le volte che
+    # serve. Quattro mesi coprono sia il mensile sia il trimestrale; i pagatori
+    # semestrali e annuali non arrivano comunque alla soglia dei due stacchi.
+    # Il conteggio si fa su DUE ANNI dimezzati, non su uno solo: con i buchi
+    # dello storico una societa' trimestrale puo' mostrare due soli stacchi
+    # nell'ultimo anno, e su quella base il controllo la declasserebbe a
+    # semestrale dimezzandole il rendimento — quindici titoli, fra cui Accenture
+    # e Chubb, sono stati dimezzati cosi' in una versione precedente di questo
+    # codice. Su due anni un buco pesa la meta'.
+    window = [d for d, _ in rows if 0 <= (asof - d).days < 730]
+    covered = max((asof - window[0]).days, 1) / 365.0 if window else 0.0
+    n_year = len(window) / covered if covered else 0.0
+    current = (asof - last_date).days <= CURRENT_SERIES_DAYS
+    if current and n_year >= 2 and freq > n_year * 1.5:
+        # A parita' di distanza si preferisce la cadenza PIU' FITTA: sbagliare
+        # per difetto dimezza un rendimento vero, sbagliare per eccesso lo
+        # gonfia — ma il caso per eccesso e' gia' stato escluso dal confronto.
+        freq = min(DIVIDEND_FREQUENCIES, key=lambda f: (abs(f - n_year), -f))
+        out["frequency"] = freq
+    out["rate"] = rate = last_payment * freq
+    if price and price > 0:
+        out["yield_pct"] = rate / price * 100.0
+    return out
 
 
 def fetch_splits(ticker: str) -> list[tuple[date, float]]:
@@ -691,9 +960,15 @@ def fetch_current_snapshot(ticker: str) -> dict:
     info = fetch_info(ticker)
     price = _finite(info.get("currentPrice")) or _finite(info.get("regularMarketPrice"))
 
-    # DIVIDENDO: il campo dividendYield di yfinance e' incoerente (a volte frazione,
-    # a volte percentuale). Lo calcoliamo in modo deterministico dal dividendo annuo
-    # per azione (dividendRate, in $) diviso il prezzo. Fonte singola e verificabile.
+    # DIVIDENDO — QUESTO E' SOLO IL RIPIEGO.
+    #
+    # Il campo dividendYield di yfinance e' incoerente (a volte frazione, a
+    # volte percentuale), quindi non lo si usa mai. Resta dividendRate, il
+    # dividendo annuo per azione, che pero' cambia significato dopo un taglio e
+    # ingloba le cedole straordinarie: vedi `dividend_profile`, che ricostruisce
+    # il rendimento dai pagamenti effettivi ed e' la fonte buona. Il build
+    # sovrascrive quanto calcolato qui non appena ha il registro dei dividendi;
+    # questo valore sopravvive solo per i ticker senza storico (Stooq).
     rate = _finite(info.get("dividendRate"))  # $ annui per azione
     div_yield = (rate / price * 100.0) if (rate and price) else None
 

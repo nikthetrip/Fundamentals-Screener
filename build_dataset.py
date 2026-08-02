@@ -54,6 +54,7 @@ from data_sources import (
     CompanyFactsSource, fetch_price_history, fetch_current_snapshot,
     fetch_submissions, parse_company_meta, parse_recent_filings,
     fetch_shares_outstanding, fetch_us_universe, resolve_cik,
+    dividend_profile,
 )
 from sic_map import sector_from_sic, industry_from_sic, non_operating_reason
 
@@ -391,12 +392,27 @@ def process_ticker(ticker: str, facts_source: CompanyFactsSource, freq: str = "D
     # la rettifica la fair value line "salta" al momento dello split. Entrambi
     # arrivano dalla stessa risposta: una richiesta in meno per ticker, cioe'
     # un terzo in meno di occasioni di farsi bloccare da Yahoo.
-    prices, splits, price_src = fetch_price_history(ticker)
+    prices, splits, dividends, price_src = fetch_price_history(ticker)
     if not prices:
         return [], None, [], [], [], [], "nessun prezzo storico (yfinance e Stooq irraggiungibili)"
     prices = resample_prices(prices, freq)
     if price_today is None:
         price_today = prices[-1][1]       # ultimo close come ripiego
+
+    # DIVIDENDO DAL REGISTRO DEI PAGAMENTI, non dal campo del provider.
+    # Va fatto QUI e non dentro lo snapshot: e' la chiamata dei prezzi a portare
+    # anche i dividendi, e serve il prezzo definitivo (che a questo punto puo'
+    # essere l'ultimo close, se il provider non aveva la quotazione). Quando lo
+    # storico manca — Stooq non lo ha — resta il valore dello snapshot.
+    div_prof = dividend_profile(dividends, price_today)
+    if div_prof["yield_pct"] is not None:
+        snap["dividend_yield"] = div_prof["yield_pct"]
+        snap["dividend_rate"] = div_prof["rate"]
+    elif dividends == [] and price_src == "yfinance":
+        # Storico completo e nessun dividendo: la societa' non ne paga. Va detto
+        # con un vuoto, non ereditando un campo del provider rimasto indietro.
+        snap["dividend_yield"] = None
+        snap["dividend_rate"] = None
 
     eps_series, method, eps_basis, eps_basis_note = resolve_eps_series(
         cf, ticker, splits, shares_hint=snap.get("shares_outstanding"))
@@ -728,6 +744,17 @@ def process_ticker(ticker: str, facts_source: CompanyFactsSource, freq: str = "D
         "n_splits": len(splits),
         "discount_vs_fv15_pct": _round(discount, 1),
         "dividend_yield": _round(snap.get("dividend_yield")),
+        # Il dividendo per azione da cui nasce il rendimento, cosi' che il conto
+        # si possa rifare a mano: rendimento × prezzo deve dare questo numero.
+        "dividend_rate": _round(snap.get("dividend_rate"), 4),
+        "dividend_frequency": div_prof.get("frequency"),
+        # Quanto e' stato DAVVERO incassato in dodici mesi, straordinari
+        # compresi. Sui titoli a cedola variabile — Progressive, CME — e' un
+        # multiplo del rendimento ordinario, e nasconderlo significherebbe dire
+        # che quel denaro non e' arrivato.
+        "dividend_ttm": _round(div_prof.get("ttm"), 4),
+        "dividend_ttm_yield_pct": _round(div_prof.get("ttm_yield_pct")),
+        "dividend_has_special": bool(div_prof.get("has_special")),
         "market_cap": snap.get("market_cap"),
         "shares_outstanding": snap.get("shares_outstanding"),
         "next_earnings_date": snap.get("next_earnings_date"),

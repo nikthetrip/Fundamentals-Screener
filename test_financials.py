@@ -233,6 +233,174 @@ check("tre mesi dopo l'ultimo deposito si porta avanti",
 check("asof_eps_dated riporta anche la data del dato usato",
       asof_eps_dated(eps_with_hole, date(2020, 6, 30)) == (date(2016, 12, 31), -0.23))
 
+section("11 — il rendimento da dividendo si ricostruisce dai pagamenti")
+# Il campo dividendRate del provider sbaglia proprio dove conta: dopo un taglio
+# resta la somma dei quattro stacchi vecchi, e con una cedola straordinaria la
+# ingloba come se tornasse ogni anno. Qui si verifica il conto fatto in casa.
+from datetime import timedelta                                      # noqa: E402
+from data_sources import dividend_profile                           # noqa: E402
+
+
+TODAY = date(2026, 8, 1)
+
+
+def _pays(amounts, last=date(2026, 7, 15), step=91):
+    """Pagamenti a ritroso dall'ultimo, cosi' la serie finisce sempre 'oggi'."""
+    n = len(amounts)
+    return [(last - timedelta(days=(n - 1 - i) * step), a)
+            for i, a in enumerate(amounts)]
+
+
+p = dividend_profile(_pays([0.485, 0.485, 0.51, 0.51, 0.51, 0.51, 0.53, 0.53]),
+                     88.49, asof=TODAY)
+check("cedola trimestrale stabile: annualizza l'ultimo stacco",
+      abs(p["rate"] - 2.12) < 1e-9 and p["frequency"] == 4, str(p))
+check("e il rendimento e' quello del passo corrente",
+      abs(p["yield_pct"] - 2.396) < 0.01, str(p["yield_pct"]))
+
+cut = dividend_profile(_pays([1.75, 1.75, 1.75, 1.75, 1.75, 0.90, 0.90, 0.90]),
+                       38.07, asof=TODAY)
+check("DOPO UN TAGLIO usa la cedola nuova, non la somma delle vecchie",
+      abs(cut["rate"] - 3.60) < 1e-9, str(cut["rate"]))
+check("il rendimento scende di conseguenza (9.5%, non 11.7%)",
+      abs(cut["yield_pct"] - 9.456) < 0.01, str(cut["yield_pct"]))
+
+spec = dividend_profile(
+    _pays([0.10, 4.60, 0.10, 0.10, 0.10, 13.60, 0.10, 0.10]), 213.28, asof=TODAY)
+check("la cedola STRAORDINARIA non entra nel rendimento ordinario",
+      abs(spec["rate"] - 0.40) < 1e-9, str(spec["rate"]))
+check("ma viene dichiarata, e il totale incassato la comprende",
+      spec["has_special"] and abs(spec["ttm"] - 13.90) < 1e-9, str(spec))
+
+# American Financial Group: 0,88 $ a trimestre con straordinari infilati in
+# mezzo. Contando anche quelli, la distanza mediana fra pagamenti crolla e la
+# cadenza sembra mensile: 0,88 × 12 dava un rendimento del 7,5% invece del 2,5%.
+afg = dividend_profile(
+    [(date(2025, 1, 14), 0.80), (date(2025, 3, 17), 2.00),
+     (date(2025, 4, 15), 0.80), (date(2025, 7, 15), 0.80),
+     (date(2025, 10, 15), 0.88), (date(2025, 11, 17), 2.00),
+     (date(2026, 1, 15), 0.88), (date(2026, 2, 13), 1.50),
+     (date(2026, 4, 15), 0.88), (date(2026, 7, 15), 0.88)], 141.70, asof=TODAY)
+check("la cadenza si misura sulle SOLE cedole ordinarie",
+      afg["frequency"] == 4 and abs(afg["rate"] - 3.52) < 1e-9, str(afg))
+check("gli straordinari fra un trimestre e l'altro non la rendono mensile",
+      abs(afg["yield_pct"] - 2.484) < 0.01, str(afg["yield_pct"]))
+
+monthly = dividend_profile(
+    [(date(2025, 8, 15) + timedelta(days=i * 30), 0.271) for i in range(12)],
+    64.43, asof=TODAY)
+check("cadenza mensile riconosciuta (12 stacchi, non 4)",
+      monthly["frequency"] == 12 and abs(monthly["rate"] - 3.252) < 1e-9, str(monthly))
+
+yearly = dividend_profile([(date(2024, 6, 1), 2.0), (date(2025, 6, 1), 2.2),
+                           (date(2026, 6, 1), 2.4)], 100.0, asof=TODAY)
+check("cadenza annuale: nessun raddoppio del totale a dodici mesi",
+      yearly["frequency"] == 1 and abs(yearly["ttm"] - 2.4) < 1e-9, str(yearly))
+
+# Arch Capital: un solo stacco straordinario, mai piu' nulla. Annualizzato
+# dava il 19,8% a una societa' che non paga dividendi.
+once = dividend_profile([(date(2024, 11, 18), 5.00)], 101.20, asof=TODAY)
+check("UN SOLO pagamento non fa una cedola: nessun rendimento",
+      once["rate"] is None and once["yield_pct"] is None, str(once))
+
+# American Airlines: sospeso a febbraio 2020. Adobe: smesso nel 2005.
+aal = dividend_profile(_pays([0.1] * 8, last=date(2020, 2, 4)), 12.0, asof=TODAY)
+check("un dividendo SOSPESO non produce un rendimento",
+      aal["rate"] is None and aal["discontinued"], str(aal))
+check("e nemmeno un totale a dodici mesi",
+      not aal["ttm"], str(aal["ttm"]))
+adbe = dividend_profile(_pays([0.0065] * 12, last=date(2005, 3, 24)), 247.90,
+                        asof=TODAY)
+check("vale anche per chi ha smesso vent'anni fa",
+      adbe["yield_pct"] is None and adbe["discontinued"], str(adbe))
+late = dividend_profile(_pays([0.5] * 6, last=date(2026, 5, 20)), 40.0, asof=TODAY)
+check("un trimestre in ritardo di poche settimane NON e' una sospensione",
+      late["rate"] == 2.0 and not late["discontinued"], str(late))
+
+# STAG Industrial: da mensile 0,124 $ a trimestrale 0,388 $. Guardando tutta la
+# storia il cambio di cadenza sembra una raffica di cedole straordinarie, e la
+# societa' risultava aver sospeso il dividendo.
+stag = dividend_profile(
+    [(date(2025, 9, 30), 0.124), (date(2025, 10, 31), 0.124),
+     (date(2025, 11, 28), 0.124), (date(2025, 12, 31), 0.124),
+     (date(2026, 3, 31), 0.388), (date(2026, 6, 30), 0.388)], 38.54, asof=TODAY)
+check("un CAMBIO DI CADENZA non e' una sospensione",
+      stag["frequency"] == 4 and not stag["discontinued"], str(stag))
+check("e il rendimento resta quello di prima (l'importo annuo non cambia)",
+      abs(stag["yield_pct"] - 4.03) < 0.05, str(stag["yield_pct"]))
+
+# Nvidia: 0,01 $ a trimestre e un pagamento isolato da 0,25 $. Un aumento del
+# 2.400% non esiste: e' uno straordinario.
+nvda = dividend_profile(
+    [(date(2025, 3, 12), 0.01), (date(2025, 6, 11), 0.01),
+     (date(2025, 9, 11), 0.01), (date(2025, 12, 4), 0.01),
+     (date(2026, 3, 11), 0.01), (date(2026, 6, 4), 0.25)], 195.04, asof=TODAY)
+check("un balzo di 25 volte e' uno straordinario, non un aumento",
+      abs(nvda["rate"] - 0.04) < 1e-9 and nvda["has_special"], str(nvda))
+
+# W. R. Berkley: cedola ordinaria di 0,09 $ e uno straordinario ogni due
+# trimestri. Con la mediana semplice il livello "ordinario" finiva a meta'
+# strada e il rendimento saliva a 3,3% invece di 0,5%.
+wrb = dividend_profile(
+    [(date(2025, 3, 3), 0.08), (date(2025, 6, 23), 0.59),
+     (date(2025, 9, 22), 0.09), (date(2025, 12, 15), 1.09),
+     (date(2026, 2, 23), 0.09), (date(2026, 6, 23), 0.60)], 73.38, asof=TODAY)
+check("straordinari frequenti non alzano il livello ordinario",
+      wrb["rate"] is not None and wrb["rate"] < 0.5, str(wrb))
+
+# Crown Holdings: due trimestri distanti 58 giorni. Bastano a far sembrare
+# mensile una cedola trimestrale, e a triplicare il rendimento — ma nell'anno
+# la societa' ha pagato quattro volte, non dodici.
+cck = dividend_profile(
+    [(date(2025, 3, 18), 0.26), (date(2025, 5, 15), 0.26),
+     (date(2025, 8, 7), 0.26), (date(2025, 11, 6), 0.26),
+     (date(2026, 3, 17), 0.35), (date(2026, 5, 14), 0.35)], 126.0, asof=TODAY)
+check("la cadenza non puo' promettere piu' stacchi di quanti ne siano avvenuti",
+      cck["frequency"] == 4 and abs(cck["rate"] - 1.40) < 1e-9, str(cck))
+
+# Dentsply: cedola trimestrale interrotta a fine 2025. I due stacchi rimasti
+# nella finestra non fanno di lei una societa' a cedola semestrale.
+xray = dividend_profile(
+    [(date(2025, 3, 28), 0.16), (date(2025, 6, 27), 0.16),
+     (date(2025, 9, 26), 0.16), (date(2025, 12, 26), 0.16)], 13.74, asof=TODAY)
+check("una serie che si e' fermata resta trimestrale, non diventa semestrale",
+      xray["frequency"] == 4, str(xray))
+
+# CNH: dividendo annuale sceso da 0,47 a 0,10 $ in tre anni, con un anno
+# saltato nel 2020. Filtrando gli importi "alti" sparivano gli anni di mezzo e
+# la cadenza annuale non veniva piu' riconosciuta.
+cnh = dividend_profile(
+    [(date(2019, 4, 23), 0.1767), (date(2021, 4, 19), 0.1149),
+     (date(2022, 4, 19), 0.302), (date(2023, 4, 24), 0.396),
+     (date(2024, 5, 10), 0.47), (date(2025, 5, 21), 0.25),
+     (date(2026, 5, 21), 0.10)], 10.32, asof=TODAY)
+check("un dividendo annuale in calo resta un dividendo annuale",
+      cnh["frequency"] == 1 and abs(cnh["rate"] - 0.10) < 1e-9, str(cnh))
+
+# Vornado: 0,74 $ ogni dicembre, due volte. Due pagamenti identici a un anno
+# esatto di distanza sono una politica; due importi diversi no.
+vno = dividend_profile([(date(2023, 12, 14), 0.30), (date(2024, 12, 16), 0.74),
+                        (date(2025, 12, 18), 0.74)], 40.15, asof=TODAY)
+check("due stacchi annuali IDENTICI bastano a stabilire la cadenza",
+      vno["frequency"] == 1 and abs(vno["rate"] - 0.74) < 1e-9, str(vno))
+
+# Rocket Companies: tre elargizioni in cinque anni. Non e' un dividendo annuale.
+rkt = dividend_profile([(date(2021, 3, 8), 1.11), (date(2022, 3, 7), 1.01),
+                        (date(2025, 3, 20), 0.80)], 13.26, asof=TODAY)
+check("pagamenti sporadici non fanno una cadenza",
+      rkt["rate"] is None, str(rkt))
+
+# Un aumento vero, invece, si accetta subito.
+raise_ = dividend_profile(_pays([0.50, 0.50, 0.50, 0.75]), 40.0, asof=TODAY)
+check("un aumento contenuto vale dal primo stacco",
+      abs(raise_["rate"] - 3.0) < 1e-9, str(raise_))
+
+check("chi non paga dividendi non ha un rendimento pari a zero, ma nessuno",
+      dividend_profile([], 10.0)["yield_pct"] is None)
+check("senza prezzo resta il dividendo per azione, senza rendimento",
+      dividend_profile(_pays([0.5] * 4), None, asof=TODAY)["rate"] == 2.0
+      and dividend_profile(_pays([0.5] * 4), None, asof=TODAY)["yield_pct"] is None)
+
 print("\n" + "=" * 72)
 if failures:
     print(f"❌ {len(failures)} TEST FALLITI")

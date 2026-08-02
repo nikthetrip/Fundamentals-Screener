@@ -396,13 +396,39 @@ METRICS: dict[str, dict] = {
     "dividend_yield": dict(
         label="Dividend yield", kind="pct", better="high", group="market",
         help="**What it is** — the part of the return that is paid to you in "
-             "cash rather than left inside the company.\n\n"
-             "**Formula** — annual dividend per share ÷ price.\n\n"
-             "**How to read it** — always read together with the payout ratio: "
-             "a high yield paid out of an unsustainable share of profits is a "
-             "cut waiting to happen. Computed from the dividend in dollars, "
-             "not from the provider's yield field, which mixes percent and "
-             "fraction."),
+             "cash rather than left inside the company, at the rate the "
+             "company is paying **now**.\n\n"
+             "**Formula** — the last regular dividend × how many times a year "
+             "it is paid, ÷ price. Rebuilt from the actual payment history, "
+             "not taken from the provider's field: that field keeps the old "
+             "figure for a year after a cut, and swallows one-off special "
+             "dividends as if they came back every year.\n\n"
+             "**How to read it** — this is the forward-looking rate: a cut "
+             "shows up the day it happens. Read it together with the payout "
+             "ratio — a high yield paid out of an unsustainable share of "
+             "profits is a cut waiting to happen — and with the trailing "
+             "figure next to it, which is what was actually paid."),
+    "dividend_ttm_yield_pct": dict(
+        label="Dividend paid (12m)", kind="pct", better="high", group="market",
+        help="**What it is** — everything the company actually distributed "
+             "over the last twelve months, special dividends included.\n\n"
+             "**Formula** — sum of the dividends paid in the last 365 days ÷ "
+             "price.\n\n"
+             "**How to read it** — the counterpart of the yield next to it. "
+             "Much **higher** means a special dividend was paid, or the "
+             "dividend has just been cut; much **lower** means it has just "
+             "been raised or reinstated. Specials are excluded from the "
+             "headline yield on purpose: by definition they do not repeat."),
+    "dividend_rate": dict(
+        label="Dividend / share", kind="usd", better="high", peer=False,
+        group="market",
+        help="**What it is** — the annual dividend one share is entitled to at "
+             "the current rate.\n\n"
+             "**Formula** — the last regular payment × the number of payments "
+             "per year.\n\n"
+             "**How to read it** — the number the yield is built from: "
+             "dividend ÷ price = yield. Compare it with EPS and with free cash "
+             "flow per share to see how much room the payout has."),
     "payout_ratio_pct": dict(
         label="Payout ratio", kind="pct", better=None, group="market",
         help="**What it is** — the slice of profit handed to shareholders as "
@@ -2035,6 +2061,26 @@ def render_financials_tab(ticker: str, r: pd.Series) -> None:
         st.markdown("###### What it does with that cash")
         kpi_row(r, peers, ("fcf_per_share", "fcf_yield_pct", "dividend_yield",
                            "payout_ratio_pct"))
+        kpi_row(r, peers, ("dividend_rate", "dividend_ttm_yield_pct"))
+        _dv = _num(r.get("dividend_yield"))
+        _dt = _num(r.get("dividend_ttm_yield_pct"))
+        if bool(r.get("dividend_has_special")) and _dv is not None and _dt is not None \
+                and _dt > _dv * 1.3:
+            st.caption(
+                "💡 This company paid **more than its regular dividend** over "
+                "the last twelve months: the gap between the two figures above "
+                "is a special or variable dividend. The headline yield "
+                "deliberately leaves it out — a one-off payment is not a rate "
+                "of return you can expect again.")
+        elif _dv is not None and _dt is not None and _dt > _dv * 1.3:
+            st.caption(
+                "💡 The trailing figure is well above the current rate: the "
+                "dividend has been **cut**, and the yield above already "
+                "reflects the new, lower payment.")
+        elif _dv is not None and _dt is not None and _dv > _dt * 1.3:
+            st.caption(
+                "💡 The current rate is well above what was paid over the last "
+                "year: the dividend has just been **raised or reinstated**.")
 
         if a is not None and (_has(a, "ocf") or _has(a, "fcf")):
             st.markdown("###### Cash in, cash invested, cash left")
