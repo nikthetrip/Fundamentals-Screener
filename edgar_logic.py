@@ -155,6 +155,58 @@ def _normalize_facts(rows: list[dict], concept: str,
     return out
 
 
+def merge_predecessor_eps(current: dict, previous: dict) -> dict:
+    """
+    Aggiunge alla societa' di oggi gli EPS depositati dal soggetto precedente.
+
+    PERCHE' SOLO L'EPS, e non tutto il bilancio. Il conto economico e lo stato
+    patrimoniale delle due entita' non hanno lo stesso perimetro — Alphabet e'
+    Google piu' Other Bets — e cucirli produrrebbe ricavi e attivo con un
+    gradino che nella realta' non c'e'. L'utile PER AZIONE e' l'unica grandezza
+    che sopravvive alla riorganizzazione: e' gia' normalizzata sul numero di
+    azioni, e la rettifica per gli split la riporta alla base di oggi. E' anche
+    l'unica di cui il grafico del fair value abbia bisogno.
+
+    LE DATE CHE ESISTONO GIA' NON SI TOCCANO. Dove i due soggetti si
+    sovrappongono — succede sempre, perche' i primi depositi della nuova
+    entita' ripetono i comparativi della vecchia — vince quella di OGGI: e' la
+    versione eventualmente rettificata, ed e' quella che il resto della scheda
+    usa. Il precedente riempie solo il vuoto davanti.
+
+    Restituisce una COPIA superficiale: `current` non viene modificato, perche'
+    e' la stessa struttura che la build passa a tutte le altre estrazioni.
+    """
+    if not previous or not current:
+        return current
+    cur_gaap = (current.get("facts") or {}).get("us-gaap") or {}
+    prev_gaap = (previous.get("facts") or {}).get("us-gaap") or {}
+    if not prev_gaap:
+        return current
+
+    merged_gaap = dict(cur_gaap)
+    for tag in EPS_TAG_CANDIDATES:
+        prev_rows = ((prev_gaap.get(tag) or {}).get("units", {})
+                     .get("USD/shares"))
+        if not prev_rows:
+            continue
+        node = dict(cur_gaap.get(tag) or {})
+        units = dict(node.get("units") or {})
+        cur_rows = list(units.get("USD/shares") or [])
+        have = {(r.get("start"), r.get("end")) for r in cur_rows}
+        extra = [r for r in prev_rows if (r.get("start"), r.get("end")) not in have]
+        if not extra:
+            continue
+        units["USD/shares"] = cur_rows + extra
+        node["units"] = units
+        merged_gaap[tag] = node
+
+    out = dict(current)
+    facts = dict(current.get("facts") or {})
+    facts["us-gaap"] = merged_gaap
+    out["facts"] = facts
+    return out
+
+
 def extract_eps_facts(companyfacts: dict) -> list[dict]:
     """
     Estrae i fatti EPS da un JSON companyfacts di EDGAR.

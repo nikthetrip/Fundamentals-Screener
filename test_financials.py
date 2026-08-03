@@ -464,6 +464,44 @@ check("il totale gia' pronto non sostituisce quello costruito dalle parti",
 check("ma copre le date che le parti non raggiungono",
       tot4.get(date(2020, 3, 31)) == 200.0, str(fin4["total_debt"]))
 
+# ---------------------------------------------------------------------------
+# CUCITURA CON IL SOGGETTO DEPOSITANTE PRECEDENTE
+# ---------------------------------------------------------------------------
+print("\n[ predecessore ]")
+
+from edgar_logic import merge_predecessor_eps                       # noqa: E402
+
+
+def _eps_facts(rows):
+    return {"facts": {"us-gaap": {"EarningsPerShareDiluted": {"units": {
+        "USD/shares": [{"start": s, "end": e, "val": v, "filed": e}
+                       for s, e, v in rows]}}}}}
+
+
+now = _eps_facts([("2016-01-01", "2016-03-31", 2.0),
+                  ("2016-04-01", "2016-06-30", 2.5)])
+old = _eps_facts([("2014-01-01", "2014-03-31", 1.0),
+                  ("2014-04-01", "2014-06-30", 1.2),
+                  # stesso periodo di uno gia' presente, con valore diverso:
+                  # deve vincere quello della societa' di oggi
+                  ("2016-01-01", "2016-03-31", 99.0)])
+rows = (merge_predecessor_eps(now, old)["facts"]["us-gaap"]
+        ["EarningsPerShareDiluted"]["units"]["USD/shares"])
+by_period = {(r["start"], r["end"]): r["val"] for r in rows}
+check("i trimestri del predecessore riempiono il vuoto davanti",
+      by_period.get(("2014-01-01", "2014-03-31")) == 1.0, str(sorted(by_period)))
+check("un periodo gia' presente NON viene sovrascritto dal predecessore",
+      by_period.get(("2016-01-01", "2016-03-31")) == 2.0,
+      str(by_period.get(("2016-01-01", "2016-03-31"))))
+check("nessun periodo duplicato dopo la fusione",
+      len(rows) == len(by_period), f"{len(rows)} righe, {len(by_period)} periodi")
+check("senza predecessore i fatti restano intatti",
+      merge_predecessor_eps(now, None) is now
+      and merge_predecessor_eps(now, {})["facts"] is now["facts"])
+check("la fusione non modifica il dizionario di partenza",
+      len(now["facts"]["us-gaap"]["EarningsPerShareDiluted"]
+          ["units"]["USD/shares"]) == 2)
+
 print("\n" + "=" * 72)
 if failures:
     print(f"❌ {len(failures)} TEST FALLITI")

@@ -48,13 +48,13 @@ from edgar_logic import (
     series_age_days, series_is_stale, max_age_for_method,
     max_usable_age_for_method,
     extract_financials, compute_ratios, compute_cagrs, annual_financial_table,
-    compute_cagr_details,
+    compute_cagr_details, merge_predecessor_eps,
 )
 from data_sources import (
     CompanyFactsSource, fetch_price_history, fetch_current_snapshot,
     fetch_submissions, parse_company_meta, parse_recent_filings,
     fetch_shares_outstanding, fetch_us_universe, resolve_cik,
-    dividend_profile,
+    dividend_profile, get_predecessor_cik, fetch_companyfacts_by_cik,
 )
 from sic_map import sector_from_sic, industry_from_sic, non_operating_reason
 
@@ -384,6 +384,20 @@ def process_ticker(ticker: str, facts_source: CompanyFactsSource, freq: str = "D
     cf = facts_source.get(ticker)
     if cf is None:
         return [], None, [], [], [], [], "non risolto su EDGAR (ticker->CIK o 404)"
+
+    # SOCIETA' CHE HANNO CAMBIATO IDENTITA' PRESSO LA SEC.
+    #
+    # Dopo una riorganizzazione la societa' continua a esistere ma deposita
+    # sotto un CIK nuovo, che nasce senza storia: Alphabet ha due soli EPS
+    # trimestrali prima del 2016, quindi la linea del fair value non poteva
+    # cominciare prima del dicembre 2016 pur essendo Google quotata dal 2004.
+    # Dove `predecessor_ciks.csv` dichiara il soggetto precedente, i suoi EPS
+    # riempiono il vuoto davanti — solo gli EPS, e solo le date mancanti.
+    prev_cik = get_predecessor_cik(ticker)
+    if prev_cik:
+        prev_cf = fetch_companyfacts_by_cik(prev_cik)
+        if prev_cf:
+            cf = merge_predecessor_eps(cf, prev_cf)
 
     recent_filings = parse_recent_filings(subs, resolve_cik(ticker), n=5)
 

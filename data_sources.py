@@ -167,6 +167,55 @@ _cache_lock = threading.Lock()
 CIK_OVERRIDES_FILE = "cik_overrides.csv"
 
 
+# File dei soggetti depositanti PRECEDENTI, opzionale, versionato nel repo.
+#
+# Diverso dagli override qui sopra, che sostituiscono un CIK sbagliato con
+# quello giusto. Qui i due CIK sono ENTRAMBI giusti, uno dopo l'altro nel
+# tempo: dopo una riorganizzazione societaria la societa' continua a esistere
+# ma deposita sotto una nuova identita', e quella nuova nasce senza storia.
+# Alphabet deposita dall'ottobre 2015 e ha due soli trimestri prima del 2016,
+# quindi la sua serie di utili — e con essa la linea del fair value — non puo'
+# cominciare prima del dicembre 2016; i trimestri dal 2008 al 2015 stanno sotto
+# Google Inc., che ha smesso di depositare.
+#
+# NON ESISTE UNA MAPPA PUBBLICA DELLE SUCCESSIONI SOCIETARIE, quindi questo
+# file si compila a mano, un caso alla volta, con la nota che dice perche'.
+PREDECESSOR_CIKS_FILE = "predecessor_ciks.csv"
+
+
+def _load_csv_map(filename: str) -> dict[str, str]:
+    """Legge un file (ticker,cik,nota). Assente = mappa vuota."""
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)
+    if not os.path.exists(path):
+        return {}
+    import csv
+    out: dict[str, str] = {}
+    with open(path, newline="", encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            t = (row.get("ticker") or "").strip().upper()
+            c = (row.get("cik") or "").strip()
+            if t and c.isdigit():
+                out[t] = c.zfill(10)
+    return out
+
+
+def get_predecessor_cik(ticker: str) -> str | None:
+    """Il CIK sotto cui la stessa societa' depositava prima."""
+    return _load_csv_map(PREDECESSOR_CIKS_FILE).get((ticker or "").upper())
+
+
+def fetch_companyfacts_by_cik(cik: str) -> dict | None:
+    """companyfacts per CIK, senza passare dalla mappa dei ticker — serve per i
+    soggetti che dalla mappa sono spariti perche' non depositano piu'."""
+    r = _sec_get(_COMPANYFACTS_URL.format(cik=cik), timeout=60)
+    if r is None or r.status_code != 200:
+        return None
+    try:
+        return r.json()
+    except ValueError:
+        return None
+
+
 def _load_cik_overrides() -> dict[str, str]:
     """Legge cik_overrides.csv (ticker,cik,nota). Assente = nessun override."""
     path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
