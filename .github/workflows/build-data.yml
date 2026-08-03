@@ -231,6 +231,29 @@ jobs:
       - name: Audit della classificazione sui dati appena costruiti
         run: python audit_dataset.py --data data
 
+      # Descrizione dell'attivita' e consenso degli analisti: sono i riquadri
+      # che la dashboard scarica al momento e che l'app iOS non puo' chiedere
+      # da sola (Yahoo protegge quelle API con un cookie piu' un crumb che
+      # cambia senza preavviso). Una chiamata leggera per titolo, pochi minuti.
+      #
+      # LA RIPARTIZIONE DEI RICAVI NON E' QUI. `--segments` scarica l'XBRL
+      # completo dell'ultimo bilancio di ogni societa': fra 1 e 15 MB a testa,
+      # cioe' alcuni gigabyte e ore di lavoro su mille titoli, ogni notte, per
+      # un dato che cambia una volta l'anno. Lo script tiene una cache per
+      # numero di deposito che rende gratuite le esecuzioni successive alla
+      # prima: per attivarlo servono quella cache (actions/cache) e la
+      # decisione di spendere la prima notte.
+      - name: Profili e obiettivi degli analisti
+        continue-on-error: true          # un riquadro in meno non ferma la build
+        run: python build_extras.py --workers 6
+
+      # DOPO l'audit, non prima. Il database mobile e' una copia degli stessi
+      # numeri in un altro contenitore: se l'audit boccia il dataset la build si
+      # ferma qui e l'app continua a scaricare l'ultimo database valido, invece
+      # di riceverne uno nuovo che contraddice se stesso.
+      - name: Impacchetta il database per l'app iOS
+        run: python build_mobile_db.py
+
       - name: Commit dei dati aggiornati
         env:
           # QUANTO PESA UNA BUILD AL GIORNO.
@@ -257,8 +280,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -f data/history.csv.gz data/fundamentals.csv
-          for f in events filings skipped financials_annual cagr_detail; do
+          git add -f data/history.csv.gz data/fundamentals.csv data/screener.sqlite.gz
+          for f in events filings skipped financials_annual cagr_detail profile segments; do
             git add -f "data/$f.csv" 2>/dev/null || true
           done
           git rm --cached -q data/history.csv 2>/dev/null || true

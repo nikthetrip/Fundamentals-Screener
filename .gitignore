@@ -28,6 +28,17 @@ data/*.part*.csv.gz
 # su universi ampi supera il limite di 100 MB di GitHub.
 data/history.csv
 
+# --- Database mobile non compresso ---
+# build_mobile_db.py scrive screener.sqlite (29 MB) e screener.sqlite.gz (7 MB).
+# Solo il secondo va nel repo: e' quello che scarica l'app iOS. Il primo e' la
+# copia ispezionabile a mano, si rigenera in due secondi.
+data/screener.sqlite
+
+# --- Cache dei segmenti ---
+# build_extras.py --segments ricorda quale deposito ha gia' letto per ogni
+# societa'. E' un file di lavoro, non un risultato: si ricostruisce da solo.
+data/.segments_cache.json
+
 # --- Copie di lavoro ---
 data_*backup*/
 *.bak
