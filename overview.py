@@ -133,11 +133,17 @@ def _render_segments(ticker: str, cik_str: str) -> None:
         "company itself reports to the SEC — not an estimate, and not a "
         "classification made by this app.")
 
+    # UNA COLONNA E' UN CONTENITORE, IL MODULO `st` NO.
+    #
+    # Con una sola ripartizione il codice usava `st` come destinazione e
+    # scriveva `with st:` — che solleva TypeError, perche' un modulo non e' un
+    # gestore di contesto. Non si era mai visto perche' quasi tutte le societa'
+    # provate ne avevano due; Waste Management ne deposita una sola, e la
+    # scheda si spezzava. Ora la colonna si crea sempre, anche quando e' una.
     blocks = [(k, v) for k, v in data.items() if k != "_meta"]
-    cols = st.columns(min(len(blocks), 2)) if len(blocks) > 1 else [st]
+    cols = st.columns(min(len(blocks), 2))
     for i, (axis_key, blk) in enumerate(blocks):
-        target = cols[i % len(cols)] if len(blocks) > 1 else st
-        with target:
+        with cols[i % len(cols)]:
             end = sorted(blk["periods"], reverse=True)[0]
             members = blk["periods"][end]
             st.markdown(f"**{blk['title']}** · FY {end[:4]}")

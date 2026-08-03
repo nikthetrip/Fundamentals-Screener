@@ -1394,6 +1394,42 @@ def fair_value_derivation(r: pd.Series, use_norm: bool) -> dict:
             "normalized": use_normalized}
 
 
+def _extend_price_backwards(d: pd.DataFrame, ticker: str) -> pd.DataFrame:
+    """
+    Aggiunge in testa i prezzi anteriori al primo utile depositato.
+
+    La cadenza si ricava dalla serie esistente invece di darla per scontata: il
+    dataset si puo' costruire giornaliero, settimanale o mensile, e attaccare
+    punti settimanali a una serie mensile produrrebbe un tratto iniziale piu'
+    fitto del resto — che si legge come volatilita' che non c'e'.
+    """
+    if not HAS_PRICE_CHART or d.empty:
+        return d
+    raw = price_chart.fetch_ohlc(ticker)
+    if raw is None or raw.empty:
+        return d
+    first = d["date"].min()
+    pre = raw[raw["date"] < first]
+    if pre.empty:
+        return d
+
+    gap = d["date"].diff().dt.days.median() if len(d) > 2 else 7
+    rule = "D" if gap <= 2 else "W" if gap <= 10 else "ME"
+    weekly = (pre.set_index("date")["close"].resample(rule).last()
+              .dropna().reset_index())
+    if weekly.empty:
+        return d
+    weekly = weekly.rename(columns={"close": "price"})
+    weekly["ticker"] = ticker
+    # Ogni altra colonna resta VUOTA, non azzerata: un EPS a zero significa
+    # "perdita" e farebbe comparire la banda rossa degli utili negativi su
+    # vent'anni in cui semplicemente non sappiamo quanto guadagnasse.
+    for col in d.columns:
+        if col not in weekly.columns:
+            weekly[col] = np.nan
+    return pd.concat([weekly[d.columns], d], ignore_index=True)
+
+
 def valuation_frame(ticker: str, use_norm_eps: bool, pe: int,
                     years: str) -> pd.DataFrame | None:
     """
@@ -1412,6 +1448,27 @@ def valuation_frame(ticker: str, use_norm_eps: bool, pe: int,
     # userebbero una finestra incompleta.
     d["eps_norm3y"] = (d.set_index("date")["eps"]
                        .rolling("1095D", min_periods=1).median().to_numpy())
+
+    # IL PREZZO ESISTE DA MOLTO PRIMA DEGLI UTILI DEPOSITATI.
+    #
+    # Il dataset tiene solo le date in cui c'e' un EPS, perche' senza EPS non
+    # c'e' fair value da calcolare. Ma cosi' spariva anche il PREZZO, che si
+    # conosce benissimo: la serie di Waste Management partiva dal 2009 mentre il
+    # titolo e' quotato dal 1988, e lo stesso vale per quasi tutte le grandi —
+    # ventidue anni in media. Il motivo e' che l'XBRL della SEC comincia con
+    # l'obbligo del 2009, non che manchino i prezzi.
+    #
+    # Si estende quindi la sola linea del prezzo, prendendo i prezzi dalla
+    # stessa fonte gia' usata dal Price chart e gia' in cache. Il fair value
+    # resta assente dove non esiste, esattamente come gia' accade nei periodi di
+    # perdita: la linea arancione comincia dove cominciano gli utili.
+    #
+    # NON si mette nel dataset: sarebbe il triplo delle righe in un file
+    # rigenerato ogni settimana e versionato, cioe' centinaia di megabyte di
+    # storia git l'anno per una linea che si puo' avere gratis a richiesta.
+    if years == "All":
+        d = _extend_price_backwards(d, ticker)
+
     if years != "All":
         cutoff = d["date"].max() - pd.DateOffset(years=int(years))
         d = d[d["date"] >= cutoff]
@@ -1439,13 +1496,24 @@ def render_valuation_chart(ticker: str, company: str, use_norm_eps: bool,
         return None
 
     eps_label = "Normalized EPS (3y median)" if use_norm_eps else "TTM EPS"
-    custom = np.column_stack((
-        d["fv"].round(2).to_numpy(dtype=float),
-        (d["price"] - d["fv"]).round(2).to_numpy(dtype=float),
-        d["premium_pct"].round(1).to_numpy(dtype=float),
-        d["eps_used"].round(2).to_numpy(dtype=float),
-        np.where(d["price"] < d["fv"], "BELOW fair value", "ABOVE fair value"),
-    ))
+    # IL RIQUADRO SI COSTRUISCE DI TESTO GIA' FORMATTATO, non di numeri.
+    #
+    # Sul tratto anteriore al primo bilancio depositato il fair value non
+    # esiste, e Plotly stampa "nan" — piu' il verdetto sbagliato, perche' un
+    # confronto con NaN e' falso e "prezzo < fair value" falso diventa "sopra il
+    # fair value". Formattando qui, l'assenza si dichiara a parole.
+    def _row_text(price, fv, diff, pct, eps):
+        if pd.isna(fv):
+            return ("not filed yet", "—", "no earnings filed for this date yet",
+                    "—" if pd.isna(eps) else f"${eps:,.2f}")
+        return (f"${fv:,.2f}", f"${diff:+,.2f} ({pct:+.1f}%)",
+                "BELOW fair value" if price < fv else "ABOVE fair value",
+                "—" if pd.isna(eps) else f"${eps:,.2f}")
+
+    custom = np.array([
+        _row_text(pr, fv, pr - fv, pct, eps)
+        for pr, fv, pct, eps in zip(d["price"], d["fv"], d["premium_pct"],
+                                    d["eps_used"])], dtype=object)
 
     fig = go.Figure()
     # Il PREZZO prende lo slot 1 della tavolozza in quanto grandezza principale;
@@ -1455,10 +1523,10 @@ def render_valuation_chart(ticker: str, company: str, use_norm_eps: bool,
         line=dict(color=p["series"][0], width=2), customdata=custom,
         hovertemplate=(
             "Price: <b>$%{y:,.2f}</b><br>"
-            "Fair value: $%{customdata[0]:,.2f}<br>"
-            "Difference: $%{customdata[1]:+,.2f} (%{customdata[2]:+.1f}%)<br>"
-            "%{customdata[4]}<br>"
-            f"{eps_label}: " + "$%{customdata[3]:,.2f}"
+            "Fair value: %{customdata[0]}<br>"
+            "Difference: %{customdata[1]}<br>"
+            "%{customdata[2]}<br>"
+            f"{eps_label}: " + "%{customdata[3]}"
             "<extra></extra>"),
     ))
     fv_name = f"Fair value (P/E {pe})" + (" · normalized EPS" if use_norm_eps else "")
@@ -1526,17 +1594,30 @@ def render_valuation_chart(ticker: str, company: str, use_norm_eps: bool,
     # societa' che alla SEC e' NATA dopo, perche' e' stata scorporata o
     # riorganizzata — Alphabet deposita dal 2015, e i bilanci di Google Inc.
     # stanno sotto un altro codice.
-    _first = d["date"].min()
-    _eps_start = d.loc[d["date"].idxmin(), "eps_date"]
-    st.caption(
-        f"The line starts in **{_first:%B %Y}**, with the first trailing-"
-        f"twelve-month earnings this company filed (period ending "
-        f"{pd.to_datetime(_eps_start):%b %Y}) — before that there is no EPS to "
-        "multiply, so there is no fair value to draw. The **Price chart** tab "
-        "has no such limit and often reaches further back: where a company was "
-        "spun off or reorganised it files under a new SEC identity, and the "
-        "earnings history of its predecessor sits under a different one."
-    )
+    _with_eps = d[d["eps"].notna()]
+    if not _with_eps.empty:
+        _fv_start = _with_eps["date"].min()
+        _price_start = d["date"].min()
+        _msg = (f"The **fair value** line starts in **{_fv_start:%B %Y}**, with "
+                "the first trailing-twelve-month earnings this company filed: "
+                "before that there is no EPS to multiply. ")
+        if (_fv_start - _price_start).days > 400:
+            _msg += (f"The **price** is drawn from **{_price_start:%B %Y}**, as "
+                     "far back as the market data goes: the earlier stretch is "
+                     "price alone, because the SEC's electronic filings only "
+                     "begin around 2009. Two cautions on that stretch — the "
+                     "comparison this chart exists for is not on it, so pick a "
+                     "shorter window to read it properly; and where the "
+                     "earnings begin late because the company was spun off or "
+                     "reorganised, the older prices belong to the **predecessor "
+                     "listing**, a different business under a different name.")
+        else:
+            _msg += ("The **Price chart** tab has no such limit and often "
+                     "reaches further back: where a company was spun off or "
+                     "reorganised it files under a new SEC identity, and the "
+                     "earnings history of its predecessor sits under a "
+                     "different one.")
+        st.caption(_msg)
     return d
 
 
