@@ -143,6 +143,7 @@ def fetch_segments_rows(ticker: str, cik: str, cache: dict) -> list[dict]:
             continue
         for period_end, members in (block.get("periods") or {}).items():
             total = (block.get("total") or {}).get(period_end)
+            coverage = (block.get("coverage") or {}).get(period_end)
             for member, value in members.items():
                 rows.append({
                     "ticker": ticker,
@@ -154,6 +155,10 @@ def fetch_segments_rows(ticker: str, cik: str, cache: dict) -> list[dict]:
                     "member": member,
                     "value": value,
                     "total": total,
+                    # Quanta parte del ricavo consolidato copre questa
+                    # ripartizione: sotto 1 la nota riguarda solo un pezzo
+                    # dell'attivita', e la scheda deve dirlo.
+                    "coverage": coverage,
                     "reliable": bool(block.get("reliable")),
                     "accession": meta.get("accession"),
                     "filed": meta.get("filed"),
@@ -273,8 +278,8 @@ def main() -> None:
     cache_path.write_text(json.dumps(cache))
     seg_out = data_dir / "segments.csv"
     columns = ["ticker", "axis", "title", "note", "word", "period_end",
-               "member", "value", "total", "reliable", "accession", "filed",
-               "source_url"]
+               "member", "value", "total", "coverage", "reliable", "accession",
+               "filed", "source_url"]
     pd.DataFrame(rows or [], columns=columns).to_csv(seg_out, index=False)
     print(f"  · segments.csv  {len(rows)} righe")
 

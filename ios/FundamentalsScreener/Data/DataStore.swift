@@ -166,10 +166,11 @@ final class DataStore: ObservableObject {
 
     func history(_ ticker: String) -> [HistoryPoint] {
         db?.query("""
-            SELECT date, price, eps FROM history
+            SELECT date, price, eps, eps_date FROM history
             WHERE ticker = ? ORDER BY date
             """, [.text(ticker)]) {
-            HistoryPoint(date: $0.int(0) ?? 0, price: $0.double(1), eps: $0.double(2))
+            HistoryPoint(date: $0.int(0) ?? 0, price: $0.double(1),
+                         eps: $0.double(2), epsDate: $0.int(3))
         } ?? []
     }
 
@@ -238,7 +239,7 @@ final class DataStore: ObservableObject {
     func segments(_ ticker: String) -> [String: [SegmentRow]] {
         guard availableTables.contains("segments") else { return [:] }
         let rows = db?.query("""
-            SELECT axis, title, note, period_end, member, value, total
+            SELECT axis, title, note, period_end, member, value, total, coverage
             FROM segments WHERE ticker = ?
               AND period_end = (SELECT MAX(period_end) FROM segments WHERE ticker = ?)
             ORDER BY axis, value DESC
@@ -246,9 +247,45 @@ final class DataStore: ObservableObject {
             SegmentRow(axis: $0.string(0) ?? "", title: $0.string(1),
                        note: $0.string(2), periodEnd: $0.string(3) ?? "",
                        member: $0.string(4) ?? "", value: $0.double(5) ?? 0,
-                       total: $0.double(6))
+                       total: $0.double(6), coverage: $0.double(7))
         } ?? []
         return Dictionary(grouping: rows, by: \.axis)
+    }
+
+    /// I commenti di un titolo, letti in una volta sola.
+    ///
+    /// UNA QUERY E NON SEI. Le sezioni della scheda finanziaria sono cinque e
+    /// si passa dall'una all'altra con un tocco: interrogare il database a ogni
+    /// cambio significherebbe sei letture per una scheda invece di una, per un
+    /// totale di venti righe di testo che stanno in memoria senza accorgersene.
+    func commentary(_ ticker: String) -> Commentary {
+        guard availableTables.contains("commentary") else { return Commentary() }
+        let rows = db?.query("""
+            SELECT section, position, tone, weight, text FROM commentary
+            WHERE ticker = ? ORDER BY section, position
+            """, [.text(ticker)]) {
+            (section: $0.string(0) ?? "", position: $0.int(1) ?? 0,
+             tone: $0.string(2) ?? "neutral", weight: $0.int(3) ?? 1,
+             text: $0.string(4) ?? "")
+        } ?? []
+
+        var out = Commentary()
+        for row in rows where !row.text.isEmpty {
+            switch row.section {
+            case "_assessment":
+                out.assessment = row.text
+            case "_context":
+                out.sectorContext = row.text
+            case let s where s.hasSuffix(":verdict"):
+                out.verdicts[String(s.dropLast(":verdict".count))] = row.text
+            default:
+                out.bySection[row.section, default: []].append(
+                    Finding(section: row.section, position: row.position,
+                            tone: Finding.Tone(rawValue: row.tone) ?? .neutral,
+                            weight: row.weight, text: row.text))
+            }
+        }
+        return out
     }
 
     func cagrDetail(_ ticker: String) -> [CagrDetail] {

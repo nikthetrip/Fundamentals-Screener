@@ -25,8 +25,13 @@ struct ValuationSection: View {
     let model: ValuationModel
     @EnvironmentObject private var store: DataStore
 
-    @State private var pe: Double = 15
-    @State private var normalized = false
+    /// La base vale per tutta l'applicazione e si cambia da qui o dai filtri:
+    /// e' la stessa impostazione, non due.
+    @Binding var epsBasis: EPSBasis
+
+    /// `nil` significa «il P/E equo della sua categoria», che varia da titolo
+    /// a titolo. Gli altri tre sono i multipli fissi del Lynch Chart.
+    @State private var pe: Double? = nil
     @State private var window: Window = .tenYears
     /// LOGARITMICA DI PARTENZA. Su dieci o vent'anni di storia una scala
     /// lineare schiaccia tutto il primo decennio contro l'asse: la earnings
@@ -37,6 +42,22 @@ struct ValuationSection: View {
     @State private var logScale = true
     @State private var history: [HistoryPoint] = []
     @State private var selectedDate: Date?
+    /// La mediana mobile, calcolata una volta sola quando cambia il titolo.
+    ///
+    /// ERA UNA PROPRIETA' CALCOLATA, e con 879 punti settimanali significava
+    /// centomila operazioni a ogni ridisegno — cioe' a ogni movimento del dito
+    /// sul grafico. Un valore che dipende solo dallo storico non ha ragione di
+    /// essere ricalcolato quando cambia la selezione.
+    @State private var normalizedEPS: [Int: Double] = [:]
+
+    /// LA BASE EFFETTIVA, non quella chiesta. Se la categoria impone gli utili
+    /// normalizzati — una ciclica, un turnaround — il grafico li usa anche
+    /// quando nei filtri c'e' scritto "corrente": diversamente la stessa
+    /// scheda mostrerebbe un fair value di 24 dollari in cima e una linea da
+    /// 72 sotto, e sarebbero entrambi giusti per basi diverse. Chi vuole
+    /// vedere gli utili correnti su una ciclica ha comunque il grafico a P/E
+    /// fisso, che e' l'altro modello.
+    private var normalized: Bool { usingNormalized }
 
     enum Window: String, CaseIterable, Identifiable {
         case fiveYears = "5 years"
@@ -56,13 +77,52 @@ struct ValuationSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
+            classification
             chartPanel
             headlineNumbers
             derivation
             modelsCompared
             normalizedEarnings
         }
-        .task(id: stock.ticker) { history = store.history(stock.ticker) }
+        .task(id: stock.ticker) {
+            history = store.history(stock.ticker)
+            normalizedEPS = Self.rollingMedian(history)
+        }
+    }
+
+    /// La categoria e il perche'.
+    ///
+    /// STA QUI E NON IN OVERVIEW. La classificazione di Lynch non dice che
+    /// azienda sia — dice con quale metro va valutata, ed e' l'ancora da cui
+    /// esce il fair value disegnato due riquadri piu' sotto. Metterla fra
+    /// l'attivita' e i segmenti, come avevo fatto, la faceva sembrare
+    /// un'anagrafica.
+    private var classification: some View {
+        Panel {
+            SectionHeader(title: "Lynch category")
+            HStack {
+                CategoryTag(category: stock.lynchCategory)
+                Spacer()
+                HStack(spacing: 5) {
+                    Circle()
+                        .fill(LynchCategory.confidenceColor(stock.lynchConfidence))
+                        .frame(width: 7, height: 7)
+                    Text(LynchCategory.confidenceLabel(stock.lynchConfidence))
+                        .font(.caption2)
+                        .foregroundStyle(Palette.inkMuted)
+                }
+            }
+            if let note = stock.lynchNote { Caption(text: note) }
+            Divider().overlay(Palette.separator)
+            KPIGrid(items: [
+                ("lynch_fair_pe", stock.lynchFairPE, nil),
+                ("growth_5y_cagr", stock.growth5yCAGR, peers["growth_5y_cagr"]),
+            ])
+            if let basis = stock.lynchPEBasis { Caption(text: "Anchor: \(basis)") }
+            if let reason = stock.lynchConfidenceNote {
+                Caption(text: "Confidence: \(reason)")
+            }
+        }
     }
 
     // -----------------------------------------------------------------------
@@ -87,7 +147,9 @@ struct ValuationSection: View {
                 HStack(spacing: 14) {
                     legend(color: Palette.ink, label: "Price")
                     legend(color: Palette.accent,
-                           label: "Fair value at P/E \(Int(pe))")
+                           label: pe == nil
+                               ? "Fair value at its category P/E \(Fmt.ratio(effectivePE))"
+                               : "Fair value at a flat P/E \(Fmt.ratio(effectivePE, digits: 0))")
                     Spacer()
                 }
             }
@@ -100,16 +162,37 @@ struct ValuationSection: View {
             .pickerStyle(.segmented)
 
             Picker("Multiple", selection: $pe) {
-                Text("P/E 15").tag(15.0)
-                Text("P/E 20").tag(20.0)
-                Text("P/E 25").tag(25.0)
+                if stock.lynchFairPE != nil {
+                    Text("Category").tag(Double?.none)
+                }
+                Text("15").tag(Double?.some(15))
+                Text("20").tag(Double?.some(20))
+                Text("25").tag(Double?.some(25))
             }
             .pickerStyle(.segmented)
 
-            Toggle("Normalized EPS (3-year median)", isOn: $normalized)
-                .font(.footnote)
             Toggle("Logarithmic scale", isOn: $logScale)
                 .font(.footnote)
+
+            // L'interruttore e' qui perche' e' qui che si guarda la linea, ma
+            // scrive la stessa impostazione dei filtri: cambiarlo qui la cambia
+            // per tutta l'applicazione.
+            Toggle(isOn: Binding(
+                get: { epsBasis == .normalized },
+                set: { epsBasis = $0 ? .normalized : .current })) {
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Normalized EPS (3-year median)").font(.footnote)
+                    if usingNormalized && epsBasis == .current {
+                        Text("required by this category — the multiple is "
+                             + "applied to mid-cycle earnings")
+                            .font(.caption2).foregroundStyle(Palette.caution)
+                    } else {
+                        Text("also changes the fair value below · shared with Filters")
+                            .font(.caption2).foregroundStyle(Palette.inkFaint)
+                    }
+                }
+            }
+            .disabled(usingNormalized && epsBasis == .current)
 
             if normalized {
                 Caption(text: "The three-year median takes the single "
@@ -244,24 +327,48 @@ struct ValuationSection: View {
     }
 
     /// La mediana mobile a tre anni dell'EPS, indicizzata per data.
-    private var normalizedEPS: [Int: Double] {
-        guard normalized else { return [:] }
+    ///
+    /// SI CALCOLA SUI DEPOSITI DISTINTI, non sulle righe della serie. La serie
+    /// e' settimanale e ogni EPS vi compare ripetuto per tutte le settimane in
+    /// cui resta valido: farne la mediana significa pesare ogni valore per
+    /// QUANTO E' DURATO invece che contarlo una volta. Su Alcoa la differenza
+    /// era fra 0,26 e 2,00 dollari — cioe' fra un fair value di 3 dollari e uno
+    /// di 24 — e il secondo e' quello che la pipeline scrive nel dataset.
+    ///
+    /// La dashboard Streamlit ha lo stesso difetto: usa una `rolling("1095D")`
+    /// sulla serie settimanale, e il suo grafico normalizzato non torna con il
+    /// proprio `eps_normalized_3y`.
+    ///
+    /// Sulla finestra intera, non su quella visibile: altrimenti i primi punti
+    /// mostrati userebbero tre anni che ne contengono tre mesi.
+    static func rollingMedian(_ history: [HistoryPoint]) -> [Int: Double] {
+        // Un'osservazione per deposito, nell'ordine in cui sono stati fatti.
+        var filings: [(date: Int, eps: Double)] = []
+        var seen = Set<Int>()
+        for point in history {
+            guard let eps = point.eps else { continue }
+            let key = point.epsDate ?? point.date
+            if seen.insert(key).inserted { filings.append((key, eps)) }
+        }
+        filings.sort { $0.date < $1.date }
+        guard !filings.isEmpty else { return [:] }
+
         var out: [Int: Double] = [:]
-        // Le date sono interi YYYYMMDD: tre anni indietro sono -30000, che e'
-        // esatto perche' il formato e' posizionale.
-        for (i, point) in history.enumerated() {
+        var first = 0
+        for point in history {
+            // Le date sono interi YYYYMMDD: tre anni indietro sono -30000, che
+            // e' esatto perche' il formato e' posizionale.
             let floor = point.date - 30_000
-            var values: [Double] = []
-            var j = i
-            while j >= 0, history[j].date >= floor {
-                if let e = history[j].eps { values.append(e) }
-                j -= 1
-            }
-            guard !values.isEmpty else { continue }
-            values.sort()
-            let m = values.count / 2
-            out[point.date] = values.count % 2 == 1
-                ? values[m] : (values[m - 1] + values[m]) / 2
+            while first < filings.count, filings[first].date < floor { first += 1 }
+            var last = first
+            while last < filings.count, filings[last].date <= point.date { last += 1 }
+            guard last > first else { continue }
+
+            var window = filings[first..<last].map(\.eps)
+            window.sort()
+            let m = window.count / 2
+            out[point.date] = window.count % 2 == 1
+                ? window[m] : (window[m - 1] + window[m]) / 2
         }
         return out
     }
@@ -272,10 +379,52 @@ struct ValuationSection: View {
         return history.filter { $0.date >= last - years * 10_000 }
     }
 
+    // -----------------------------------------------------------------------
+    // IL CONTO DEL FAIR VALUE
+    //
+    // LA BASE SCELTA DAL LETTORE VINCE SU QUELLA DEL MODELLO. E' la stessa
+    // regola di `fair_value_derivation` in app.py: chiedere di vedere tutto
+    // normalizzato e poi trovare un fair value costruito sugli utili correnti
+    // vorrebbe dire avere sotto gli occhi una linea e un numero che poggiano
+    // su due basi diverse.
+    // -----------------------------------------------------------------------
+
+    private var usingNormalized: Bool {
+        epsBasis == .normalized || (stock.lynchEPSBase ?? "current") == "normalized"
+    }
+
+    private var anchorBase: Double? {
+        usingNormalized ? stock.epsNormalized3y : stock.epsTTM
+    }
+
+    private var derivedFairValue: Double? {
+        switch stock.lynchAnchor ?? "earnings" {
+        case "book":
+            guard let bvps = stock.bookValuePerShare, let pb = stock.lynchFairPB,
+                  bvps > 0 else { return nil }
+            return bvps * pb
+        case "earnings":
+            guard let base = anchorBase, base > 0,
+                  let fairPE = stock.lynchFairPE else { return nil }
+            return base * fairPE
+        default:
+            return nil
+        }
+    }
+
+    private var derivedPremium: Double? {
+        guard let fv = derivedFairValue, fv > 0,
+              let price = stock.currentPrice else { return nil }
+        return (price / fv - 1) * 100
+    }
+
+    /// Il multiplo in uso: quello scelto, oppure il P/E equo della categoria.
+    private var effectivePE: Double? { pe ?? stock.lynchFairPE }
+
     private func fairValue(_ p: HistoryPoint) -> Double? {
         let base = normalized ? normalizedEPS[p.date] : p.eps
-        guard let base, base > 0 else { return nil }
-        return base * pe
+        guard let base, base > 0, let multiple = effectivePE else { return nil }
+        return base * multiple
     }
 
     // -----------------------------------------------------------------------
@@ -315,9 +464,8 @@ struct ValuationSection: View {
                 MetricRow(label: "× Fair price-to-book",
                           value: Fmt.ratio(stock.lynchFairPB, digits: 2))
             } else if anchor == "earnings" {
-                let useNorm = (stock.lynchEPSBase ?? "current") == "normalized"
-                MetricRow(label: useNorm ? "3-year normalized EPS" : "EPS (TTM)",
-                          value: Fmt.usd(useNorm ? stock.epsNormalized3y : stock.epsTTM))
+                MetricRow(label: usingNormalized ? "3-year normalized EPS" : "EPS (TTM)",
+                          value: Fmt.usd(anchorBase))
                 MetricRow(label: "× Fair P/E for the category",
                           value: Fmt.ratio(stock.lynchFairPE))
             } else {
@@ -326,14 +474,20 @@ struct ValuationSection: View {
             }
 
             Divider().overlay(Palette.separator)
-            MetricRow(label: "= Fair value", value: Fmt.usd(stock.fairValuePEG),
+            MetricRow(label: "= Fair value", value: Fmt.usd(derivedFairValue),
                       tone: Palette.ink)
             MetricRow(label: "Current price", value: Fmt.usd(stock.currentPrice))
             HStack {
                 Text("Price vs fair value")
                     .font(.subheadline).foregroundStyle(Palette.inkMuted)
                 Spacer()
-                DeltaText(value: stock.premiumVsPEG, invert: true)
+                DeltaText(value: derivedPremium, invert: true)
+            }
+            if usingNormalized, (stock.lynchEPSBase ?? "current") != "normalized" {
+                Caption(text: "You asked to see everything on normalized "
+                        + "earnings, so this fair value is rebuilt on them too "
+                        + "— the model's own choice for this company was the "
+                        + "trailing figure.")
             }
 
             if let basis = stock.lynchPEBasis { Caption(text: basis) }

@@ -49,6 +49,11 @@ struct Filters {
 
 struct FilterSheet: View {
     @Binding var filters: Filters
+    /// Le due unita' di misura non sono filtri — non tolgono titoli dalla
+    /// lista — ma e' qui che si va a cercarle, ed e' l'unico posto dove
+    /// c'e' spazio per spiegare cosa cambiano.
+    @Binding var model: ValuationModel
+    @Binding var epsBasis: EPSBasis
     let universe: [Stock]
     @Environment(\.dismiss) private var dismiss
 
@@ -70,6 +75,23 @@ struct FilterSheet: View {
     var body: some View {
         NavigationStack {
             Form {
+                Section {
+                    Picker("Fair value model", selection: $model) {
+                        ForEach(ValuationModel.allCases) { m in
+                            Text(m.rawValue).tag(m)
+                        }
+                    }
+                    Picker("Earnings basis", selection: $epsBasis) {
+                        ForEach(EPSBasis.allCases) { b in
+                            Text(b.rawValue).tag(b)
+                        }
+                    }
+                } header: {
+                    Text("How value is measured")
+                } footer: {
+                    Text(measureFooter)
+                }
+
                 Section {
                     Toggle("Profitable only", isOn: $filters.profitableOnly)
                     Toggle("Pays a dividend", isOn: $filters.payingDividend)
@@ -139,6 +161,18 @@ struct FilterSheet: View {
             }
         }
         .presentationDetents([.medium, .large])
+    }
+
+    /// Cosa cambiano le due scelte, detto in due frasi. Senza, restano due
+    /// menu a tendina di cui non si capisce l'effetto.
+    private var measureFooter: String {
+        let m = model == .peg
+            ? "Fair value comes from the anchor of each company's Lynch category — a growth-derived P/E, book value for an asset play, mid-cycle earnings for a cyclical."
+            : "Fair value is trailing EPS × 15 for every company alike: one yardstick, useful for scanning, blind to what kind of business it is."
+        let e = epsBasis == .current
+            ? "Built on the last twelve months as filed."
+            : "Built on the three-year median of trailing EPS, which takes the single exceptional period out of the multiplicand. It changes both the chart and the fair value."
+        return m + "\n\n" + e
     }
 
     private func verdictLabel(_ raw: String) -> String {

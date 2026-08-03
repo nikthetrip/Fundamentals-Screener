@@ -10,6 +10,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 // ---------------------------------------------------------------------------
 // STOCK — una riga di `fundamentals`
@@ -390,14 +391,27 @@ struct Stock: Identifiable, Hashable {
 
 /// I due modelli, che sono davvero due e non due modi di dire lo stesso.
 enum ValuationModel: String, CaseIterable, Identifiable {
-    case pe15 = "Lynch Chart"
-    case peg  = "Lynch Fair Value"
+    // I NOMI DICONO IL MULTIPLO, non il capitolo del libro. «Lynch Chart» e
+    // «Lynch Fair Value» sono i titoli che hanno nella dashboard, ma messi uno
+    // accanto all'altro in un menu non dicono in cosa differiscono: sono
+    // entrambi di Lynch ed entrambi un fair value.
+    case pe15 = "Flat P/E 15"
+    case peg  = "Lynch P/E"
     var id: String { rawValue }
+
+    /// Il nome corto, per il menu e la striscia di riepilogo: dice CONTRO
+    /// COSA si sta misurando, non come si chiama il modello.
+    var shortName: String {
+        switch self {
+        case .pe15: return "a flat P/E 15"
+        case .peg:  return "the Lynch P/E of its category"
+        }
+    }
 
     var subtitle: String {
         switch self {
-        case .pe15: return "TTM EPS × 15, the same yardstick for everyone"
-        case .peg:  return "category anchor, PEG = 1"
+        case .pe15: return "TTM EPS × 15 — the same multiple for every company"
+        case .peg:  return "The multiple its Lynch category earns, stock by stock"
         }
     }
 }
@@ -411,6 +425,10 @@ struct HistoryPoint: Identifiable, Hashable {
     let date: Int          // YYYYMMDD
     let price: Double?
     let eps: Double?
+    /// La data del deposito da cui viene quell'EPS. Serve a distinguere le
+    /// osservazioni vere dalle ripetizioni: la serie e' settimanale, ma un EPS
+    /// resta lo stesso per tutte le settimane fino al deposito successivo.
+    let epsDate: Int?
     var id: Int { date }
 
     /// Le date del database sono interi: qui tornano `Date` per Swift Charts.
@@ -463,6 +481,21 @@ struct CorporateEvent: Identifiable, Hashable {
     var id: String { date + type + detail }
 }
 
+/// Su quale base di utili poggiano il grafico e il conto del fair value.
+///
+/// NON E' SOLO UNA SCELTA DEL GRAFICO. Nella dashboard il selettore «EPS basis»
+/// vince anche sul conto del fair value: se si chiede di vedere tutto
+/// normalizzato, anche il fair value viene ricalcolato sugli utili normalizzati
+/// invece che su quelli correnti. Diversamente si otterrebbe una scheda in cui
+/// la linea disegnata e il numero scritto sotto poggiano su due basi diverse.
+enum EPSBasis: String, CaseIterable, Identifiable {
+    case current    = "Current (TTM)"
+    case normalized = "Normalized (3-year median)"
+    var id: String { rawValue }
+
+    var short: String { self == .current ? "TTM EPS" : "normalized EPS" }
+}
+
 /// Il profilo: che cosa fa la societa' e cosa se ne aspettano gli analisti.
 /// Lo produce build_extras.py; se quel passaggio non e' ancora girato, la
 /// tabella e' vuota e la scheda lo dichiara invece di restare muta.
@@ -512,7 +545,53 @@ struct SegmentRow: Identifiable, Hashable {
     let member: String
     let value: Double
     let total: Double?
+    /// Quanta parte del ricavo consolidato copre questa ripartizione. Sotto 1
+    /// la nota riguarda solo un pezzo dell'attivita' — Alphabet ripartisce per
+    /// prodotto solo Google Services, non Cloud e Other Bets — e mostrarla
+    /// senza dirlo la farebbe sembrare il quadro completo.
+    let coverage: Double?
     var id: String { axis + periodEnd + member }
+}
+
+/// Un rilievo di commentary.py: cosa dicono i numeri di una sezione.
+///
+/// NON E' UN'OPINIONE SULL'AZIENDA ed e' importante che l'interfaccia non lo
+/// faccia sembrare tale: e' aritmetica sulle cifre della stessa scheda, con un
+/// verso e un peso. Il peso serve solo alla somma finale — nel testo tutti i
+/// rilievi hanno la stessa dignita'.
+struct Finding: Identifiable, Hashable {
+    enum Tone: String {
+        case bull, bear, flag, neutral
+
+        /// Niente pallini colorati a caso: il verso di un rilievo e' la stessa
+        /// informazione del verde e del rosso usati ovunque nell'app.
+        var color: Color {
+            switch self {
+            case .bull:    return Palette.positive
+            case .bear:    return Palette.negative
+            case .flag:    return Palette.caution
+            case .neutral: return Palette.inkFaint
+            }
+        }
+    }
+
+    let section: String
+    let position: Int
+    let tone: Tone
+    let weight: Int
+    let text: String
+    var id: String { section + String(position) }
+}
+
+/// Tutto il commento di un titolo: i rilievi per sezione, i verdetti, il
+/// giudizio complessivo e la nota di contesto settoriale.
+struct Commentary {
+    var bySection: [String: [Finding]] = [:]
+    var verdicts: [String: String] = [:]
+    var assessment: String?
+    var sectorContext: String?
+
+    var isEmpty: Bool { bySection.isEmpty && assessment == nil }
 }
 
 /// Una riga di `cagr_detail`: il CAGR con i due estremi da cui esce.

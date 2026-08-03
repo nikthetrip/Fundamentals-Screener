@@ -46,7 +46,7 @@ from derived_metrics import derive_ratios
 # all'apertura: se il file scaricato dichiara uno schema che non conosce,
 # preferisce tenersi quello vecchio in cache piuttosto che aprire un database
 # le cui colonne non corrispondono piu' a quello che si aspetta di leggere.
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 
 # Le tabelle piccole: una riga per ticker, o poche decine. Vanno nel database
 # come sono, con un indice su `ticker` perche' e' sempre da li' che si entra.
@@ -62,6 +62,10 @@ TABLES: list[tuple[str, str, list[str]]] = [
     # sezioni che ci sono e dichiara quelle che no.
     ("profile",           "profile.csv",           ["ticker"]),
     ("segments",          "segments.csv",          ["ticker"]),
+    # Prodotta da build_commentary.py: i rilievi di commentary.py, gia'
+    # calcolati. L'indice e' su (ticker, section) perche' la scheda ne chiede
+    # una sezione alla volta.
+    ("commentary",        "commentary.csv",        ["ticker", "ticker,section"]),
 ]
 
 # Colonne che nei CSV sono date e che nel database restano testo ISO. SQLite non

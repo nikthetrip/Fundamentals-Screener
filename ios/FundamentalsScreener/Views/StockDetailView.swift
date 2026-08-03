@@ -16,7 +16,19 @@ import SwiftUI
 
 struct StockDetailView: View {
     let stock: Stock
-    let model: ValuationModel
+    /// UN LEGAME, NON UNA COPIA. La base si puo' cambiare da due posti — i
+    /// filtri e la scheda Valuation — e devono essere la stessa impostazione:
+    /// due stati separati vorrebbero dire un interruttore che dice «corrente»
+    /// mentre l'altro dice «normalizzato».
+    @Binding var epsBasis: EPSBasis
+
+    /// LA SCHEDA E' SEMPRE ANCORATA ALLA CATEGORIA, qualunque metro si stia
+    /// usando nella lista. Il P/E 15 fisso serve a scorrere novecento titoli
+    /// con un solo righello; quando se ne apre uno, la domanda cambia — non
+    /// piu' «come si colloca fra gli altri» ma «quanto vale QUESTA azienda» —
+    /// e a quella risponde l'ancora della sua categoria. Il confronto fra i due
+    /// modelli resta, esplicito, dentro la scheda Valuation.
+    private let model: ValuationModel = .peg
 
     @EnvironmentObject private var store: DataStore
     @State private var section: Section = .overview
@@ -50,7 +62,8 @@ struct StockDetailView: View {
 
                     switch section {
                     case .overview:   OverviewSection(stock: stock, model: model)
-                    case .valuation:  ValuationSection(stock: stock, model: model)
+                    case .valuation:  ValuationSection(stock: stock, model: model,
+                                                       epsBasis: $epsBasis)
                     case .financials: FinancialsSection(stock: stock)
                     case .filings:    FilingsSection(stock: stock)
                     case .quality:    QualitySection(stock: stock)

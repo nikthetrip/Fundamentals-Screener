@@ -1,15 +1,26 @@
 //
-//  ScreenerView.swift — La lista: novecento titoli ordinati per sconto.
+//  ScreenerView.swift — La schermata che si apre.
 //
-//  E' LA SCHERMATA CHE SI APRE, quindi la prima domanda a cui risponde deve
-//  essere quella per cui si apre l'applicazione: che cosa costa meno di quanto
-//  vale. Ordinata per sconto, decrescente, senza doverlo chiedere.
+//  DUE ERRORI GIA' FATTI, tenuti scritti qui perche' sono facili da rifare.
 //
-//  IL MODELLO SI SCEGLIE IN CIMA, non dentro un menu. I due fair value sono
-//  due cose diverse — P/E 15 uguale per tutti, oppure l'ancora della categoria
-//  — e la stessa societa' puo' essere a sconto in uno e a premio nell'altro.
-//  Nascondere quale dei due si sta guardando renderebbe la lista ambigua
-//  proprio nella colonna per cui la si legge.
+//  1. LE SCHEDE SENZA ETICHETTE. La prima versione scriveva `$84.45 / $338.10`
+//     e nessuno poteva sapere quale fosse il prezzo e quale il fair value.
+//  2. LA TABELLA A SEDICI COLONNE. La seconda le intestava, ma su 390 punti si
+//     leggeva scorrendo avanti e indietro una griglia di numeri: corretta e
+//     inutilizzabile. Una tabella e' lo strumento giusto su uno schermo largo,
+//     dove si vedono tutte le colonne insieme; qui non se ne vedono tre.
+//
+//  QUINDI: righe, non celle. Ogni titolo occupa due righe con l'informazione
+//  gerarchizzata — chi e', come e' giudicato, quanto e' lo scarto, da quale
+//  prezzo a quale fair value — e la freccia dice da sola cosa sono i due
+//  numeri. Le altre dodici colonne vivono nella scheda, che e' fatta per
+//  quello.
+//
+//  E IL SELETTORE DEL MODELLO NON C'E' PIU' IN CIMA. Due linguette larghe mezzo
+//  schermo facevano sembrare che ci fossero due liste di titoli diverse. Sono
+//  due METRI sugli stessi novecento titoli: la scelta di un'unita' di misura
+//  sta accanto all'ordinamento, non al posto d'onore. Il metro predefinito e'
+//  l'ancora della categoria, l'unico che tiene conto di che azienda sia.
 //
 
 import SwiftUI
@@ -17,11 +28,16 @@ import SwiftUI
 struct ScreenerView: View {
     @EnvironmentObject private var store: DataStore
 
-    @State private var model: ValuationModel = .pe15
+    @State private var model: ValuationModel = .peg
+    /// La base degli utili vale per tutta l'applicazione, non per un grafico:
+    /// se si sceglie di ragionare su utili normalizzati, la scheda di ogni
+    /// titolo deve seguirla.
+    @State private var epsBasis: EPSBasis = .current
     @State private var search = ""
     @State private var sort: SortKey = .discount
     @State private var filters = Filters()
     @State private var showFilters = false
+    @State private var showModelHelp = false
     @State private var path = NavigationPath()
 
     var body: some View {
@@ -29,14 +45,13 @@ struct ScreenerView: View {
             ZStack {
                 Palette.background.ignoresSafeArea()
                 VStack(spacing: 0) {
-                    modelPicker
+                    summaryStrip
                     Divider().overlay(Palette.separator)
-                    freshness
                     list
                 }
             }
-            .navigationDestination(for: Stock.self) { stock in
-                StockDetailView(stock: stock, model: model)
+            .navigationDestination(for: Stock.self) {
+                StockDetailView(stock: $0, epsBasis: $epsBasis)
             }
             .navigationTitle("Screener")
             .navigationBarTitleDisplayMode(.inline)
@@ -47,68 +62,84 @@ struct ScreenerView: View {
             .searchable(text: $search, placement: .navigationBarDrawer(displayMode: .always),
                         prompt: "Ticker or company name")
             .sheet(isPresented: $showFilters) {
-                FilterSheet(filters: $filters, universe: store.stocks)
+                FilterSheet(filters: $filters, model: $model,
+                            epsBasis: $epsBasis, universe: store.stocks)
             }
+            .sheet(isPresented: $showModelHelp) { ModelExplanation() }
             .refreshable { await store.refresh(force: true) }
             .onAppear(perform: openTickerFromLaunchArguments)
         }
     }
 
     // -----------------------------------------------------------------------
+    // LA STRISCIA IN CIMA
+    //
+    // Quanti titoli, quanti sotto il fair value, con quale metro e di quando
+    // sono i dati. Quattro fatti su una riga e mezza: e' quello che serve
+    // sapere prima di cominciare a scorrere.
+    // -----------------------------------------------------------------------
 
-    private var modelPicker: some View {
-        VStack(spacing: 6) {
-            Picker("Model", selection: $model) {
-                ForEach(ValuationModel.allCases) { m in
-                    Text(m.rawValue).tag(m)
+    private var summaryStrip: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            HStack(spacing: 6) {
+                Text("\(rows.count)")
+                    .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                    .foregroundStyle(Palette.ink)
+                Text(rows.count == 1 ? "stock" : "stocks")
+                    .font(.caption).foregroundStyle(Palette.inkMuted)
+                if undervaluedCount > 0 {
+                    Text("·").font(.caption).foregroundStyle(Palette.inkFaint)
+                    Text("\(undervaluedCount) below fair value")
+                        .font(.caption).foregroundStyle(Palette.positive)
+                }
+                Spacer()
+                if store.isOffline {
+                    Text("cached").font(.caption2).foregroundStyle(Palette.caution)
+                } else if let generated = store.dataGeneratedAt {
+                    Text(Fmt.date(generated))
+                        .font(.caption2).foregroundStyle(Palette.inkFaint)
                 }
             }
-            .pickerStyle(.segmented)
 
-            Text(model.subtitle)
-                .font(.caption2)
-                .foregroundStyle(Palette.inkFaint)
+            Button { showModelHelp = true } label: {
+                HStack(spacing: 4) {
+                    Text("Measured against \(model.shortName)")
+                        .font(.caption2)
+                        .foregroundStyle(Palette.inkFaint)
+                    Image(systemName: "questionmark.circle")
+                        .font(.system(size: 10))
+                        .foregroundStyle(Palette.accent)
+                }
+            }
+            .buttonStyle(.plain)
         }
         .padding(.horizontal, 16)
-        .padding(.top, 8)
-        .padding(.bottom, 10)
+        .padding(.vertical, 9)
         .background(Palette.surface)
     }
 
-    /// Quanti titoli si stanno guardando e di quando sono i dati.
-    ///
-    /// STA SOTTO IL SELETTORE, non nella barra di navigazione: li' iOS gli
-    /// dava una sessantina di punti e la data usciva come "dati in…". Un
-    /// riferimento temporale troncato e' peggio di nessun riferimento — fa
-    /// credere che ci sia scritto qualcosa di leggibile.
-    private var freshness: some View {
-        HStack(spacing: 6) {
-            Text("\(rows.count) stocks")
-                .font(.caption2.weight(.medium))
-                .foregroundStyle(Palette.inkMuted)
-            Text("·").font(.caption2).foregroundStyle(Palette.inkFaint)
-            if store.isOffline {
-                Text("cached data, the network did not answer")
-                    .font(.caption2)
-                    .foregroundStyle(Palette.caution)
-            } else if let generated = store.dataGeneratedAt {
-                Text("updated \(Fmt.date(generated))")
-                    .font(.caption2)
-                    .foregroundStyle(Palette.inkFaint)
-            }
-            Spacer()
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 6)
-        .background(Palette.background)
+    private var undervaluedCount: Int {
+        rows.filter { ($0.premium(model: model) ?? 1) < 0 }.count
     }
+
+    // -----------------------------------------------------------------------
 
     private var sortMenu: some View {
         Menu {
             Picker("Sort by", selection: $sort) {
-                ForEach(SortKey.allCases) { key in
-                    Text(key.label).tag(key)
-                }
+                ForEach(SortKey.allCases) { Text($0.label).tag($0) }
+            }
+            Divider()
+            // IL MODELLO STA QUI. E' un'unita' di misura, esattamente come la
+            // chiave di ordinamento: appartiene allo stesso menu, non a un
+            // selettore che occupa mezzo schermo e sembra un cambio di
+            // contenuto.
+            Picker("Measure against", selection: $model) {
+                ForEach(ValuationModel.allCases) { Text($0.shortName).tag($0) }
+            }
+            Divider()
+            Button { showModelHelp = true } label: {
+                Label("What is the difference?", systemImage: "questionmark.circle")
             }
         } label: {
             Image(systemName: "arrow.up.arrow.down")
@@ -123,42 +154,136 @@ struct ScreenerView: View {
         }
     }
 
+    // -----------------------------------------------------------------------
+    // LA LISTA, DIVISA IN FASCE
+    //
+    // Novecento righe di seguito sono un rotolo: si scorre senza sapere se si
+    // e' a un terzo o alla fine, e senza capire se il titolo che si sta
+    // guardando sia un'occasione o uno dei tanti in mezzo. Le fasce danno una
+    // struttura allo scorrimento e rispondono da sole alla domanda «quanti ce
+    // ne sono davvero a forte sconto».
+    // -----------------------------------------------------------------------
+
     @ViewBuilder
     private var list: some View {
         if rows.isEmpty {
             VStack(spacing: 10) {
                 Spacer()
                 Text("No stocks match these filters")
-                    .font(.subheadline)
-                    .foregroundStyle(Palette.inkMuted)
+                    .font(.subheadline).foregroundStyle(Palette.inkMuted)
                 if filters.isActive {
-                    Button("Clear filters") { filters = Filters() }
-                        .font(.footnote)
+                    Button("Clear filters") { filters = Filters() }.font(.footnote)
                 }
                 Spacer()
             }
             .frame(maxWidth: .infinity)
         } else {
-            List(rows) { stock in
-                NavigationLink(value: stock) {
-                    ScreenerRow(stock: stock, model: model)
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 0,
+                           pinnedViews: [.sectionHeaders]) {
+                    ForEach(orderedBands, id: \.self) { band in
+                        Section {
+                            ForEach(grouped[band] ?? []) { stock in
+                                Button { path.append(stock) } label: {
+                                    ScreenerRow(stock: stock, model: model)
+                                }
+                                .buttonStyle(.plain)
+                                Divider().overlay(Palette.separator.opacity(0.5))
+                                    .padding(.leading, 16)
+                            }
+                        } header: {
+                            bandHeader(band, count: (grouped[band] ?? []).count)
+                        }
+                    }
                 }
-                .listRowBackground(Palette.background)
-                .listRowSeparatorTint(Palette.separator)
             }
-            .listStyle(.plain)
-            .scrollContentBackground(.hidden)
         }
     }
 
-    /// Apre direttamente la scheda di un titolo se l'app e' stata avviata con
-    /// la variabile `OPEN_TICKER`.
-    ///
-    /// SERVE A VEDERE UNA SCHERMATA SENZA POTERLA TOCCARE. Su questa macchina
-    /// il pannello del simulatore e l'automazione dell'interfaccia non sono
-    /// disponibili, e una scheda che nessuno ha mai aperto e' una scheda che
-    /// nessuno ha verificato: compilare non e' funzionare. Solo in Debug, cosi'
-    /// non esiste nella versione che finisce sul telefono.
+    /// Le fasce presenti, nell'ordine. Quando si ordina per qualcosa che non e'
+    /// lo scarto — la capitalizzazione, il dividendo — raggrupparle non ha piu'
+    /// senso: la lista viene mostrata di seguito, in un'unica sezione.
+    private var orderedBands: [Band] {
+        guard sort == .discount else { return [.all] }
+        return Band.allCases.filter { !(grouped[$0] ?? []).isEmpty }
+    }
+
+    private func bandHeader(_ band: Band, count: Int) -> some View {
+        HStack(spacing: 8) {
+            RoundedRectangle(cornerRadius: 1)
+                .fill(band.color).frame(width: 3, height: 12)
+            Text(band.title.uppercased())
+                .font(.system(size: 10, weight: .semibold)).tracking(0.7)
+                .foregroundStyle(Palette.inkMuted)
+            Text("\(count)")
+                .font(.system(size: 10, design: .monospaced))
+                .foregroundStyle(Palette.inkFaint)
+            Spacer()
+            Text(band.detail)
+                .font(.system(size: 9))
+                .foregroundStyle(Palette.inkFaint)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 7)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Palette.panel)
+    }
+
+    /// Le fasce di scarto. I tagli non sono arbitrari: sotto il 10% la
+    /// differenza fra prezzo e fair value sta dentro l'incertezza della stima,
+    /// e chiamarla sconto sarebbe una precisione che il modello non ha.
+    enum Band: String, CaseIterable, Identifiable, Hashable {
+        case deep, discount, fair, premium
+        /// Sezione unica, usata quando l'ordinamento non e' lo scarto.
+        case all
+        var id: String { rawValue }
+
+        static var allCases: [Band] { [.deep, .discount, .fair, .premium] }
+
+        var title: String {
+            switch self {
+            case .deep:     return "Deep discount"
+            case .discount: return "Discount"
+            case .fair:     return "Around fair value"
+            case .premium:  return "Above fair value"
+            case .all:      return "All stocks"
+            }
+        }
+        var detail: String {
+            switch self {
+            case .deep:     return "more than 40% below"
+            case .discount: return "10% to 40% below"
+            case .fair:     return "within 10% either way"
+            case .premium:  return "priced above the model"
+            case .all:      return "sorted by your choice"
+            }
+        }
+        var color: Color {
+            switch self {
+            case .deep:     return Palette.positive
+            case .discount: return Palette.positive.opacity(0.55)
+            case .fair:     return Palette.inkFaint
+            case .premium:  return Palette.negative
+            case .all:      return Palette.accent
+            }
+        }
+
+        static func of(_ premium: Double?) -> Band {
+            guard let p = premium else { return .fair }
+            if p <= -40 { return .deep }
+            if p <= -10 { return .discount }
+            if p <   10 { return .fair }
+            return .premium
+        }
+    }
+
+    private var grouped: [Band: [Stock]] {
+        guard sort == .discount else { return [.all: rows] }
+        return Dictionary(grouping: rows) { Band.of($0.premium(model: model)) }
+    }
+
+    // -----------------------------------------------------------------------
+
     private func openTickerFromLaunchArguments() {
         #if DEBUG
         guard path.isEmpty,
@@ -168,10 +293,6 @@ struct ScreenerView: View {
         path.append(stock)
         #endif
     }
-
-    // -----------------------------------------------------------------------
-    // SELEZIONE E ORDINAMENTO
-    // -----------------------------------------------------------------------
 
     private var rows: [Stock] {
         var out = store.stocks.filter { filters.accepts($0, model: model) }
@@ -183,31 +304,22 @@ struct ScreenerView: View {
             }
         }
 
-        // I titoli senza il numero su cui si ordina finiscono in fondo, non in
-        // cima: un valore mancante non e' uno sconto del 100%.
         return out.sorted { a, b in
             switch sort {
             case .discount:
                 // ATTENZIONE AL SEGNO. La colonna del dataset e' il PREZZO
-                // rispetto al fair value: +85% vuol dire che il titolo costa
-                // l'85% in piu' di quanto vale, non che e' a sconto dell'85%.
-                // Quindi si ordina crescente — prima i piu' negativi, che sono
-                // i piu' a buon mercato. Ordinandola decrescente la schermata
-                // di apertura proponeva per primi i titoli piu' cari del
-                // listino, con il numero scritto in verde.
+                // rispetto al fair value: +85% vuol dire che costa l'85% in
+                // piu' di quanto vale. Si ordina crescente — prima i piu' a
+                // buon mercato.
                 return sortAsc(a.premium(model: model), b.premium(model: model))
-            case .marketCap:
-                return sortDesc(a.marketCap, b.marketCap)
-            case .pe:
-                return sortAsc(a.peRatio, b.peRatio)
-            case .growth:
-                return sortDesc(a.growth5yCAGR, b.growth5yCAGR)
-            case .roe:
-                return sortDesc(a.roePct, b.roePct)
+            case .marketCap: return sortDesc(a.marketCap, b.marketCap)
+            case .pe:        return sortAsc(a.peRatio, b.peRatio)
+            case .growth:    return sortDesc(a.growth5yCAGR, b.growth5yCAGR)
+            case .roe:       return sortDesc(a.roePct, b.roePct)
             case .dividend:
-                return sortDesc(a.dividendTTMYieldPct ?? a.dividendYield, b.dividendTTMYieldPct ?? b.dividendYield)
-            case .ticker:
-                return a.ticker < b.ticker
+                return sortDesc(a.dividendTTMYieldPct ?? a.dividendYield,
+                                b.dividendTTMYieldPct ?? b.dividendYield)
+            case .ticker:    return a.ticker < b.ticker
             }
         }
     }
@@ -236,7 +348,7 @@ struct ScreenerView: View {
 
         var label: String {
             switch self {
-            case .discount:  return "Price vs fair value"
+            case .discount:  return "Discount to fair value"
             case .marketCap: return "Market cap"
             case .pe:        return "P/E, lowest first"
             case .growth:    return "5-year growth"
@@ -251,9 +363,10 @@ struct ScreenerView: View {
 // ---------------------------------------------------------------------------
 // LA RIGA
 //
-// Tre livelli di lettura: il ticker per trovarlo, lo sconto per giudicarlo, il
-// resto per capire perche'. In quest'ordine di peso visivo, cosi' che
-// scorrendo si legga la sola colonna che conta.
+// Due righe di testo, gerarchizzate in ordine di quello che si cerca: di chi si
+// tratta, come e' giudicato, quanto e' lo scarto, da quale prezzo a quale fair
+// value. La freccia fra i due numeri dice da sola cosa sono — ed e' esattamente
+// cio' che mancava alla prima versione.
 // ---------------------------------------------------------------------------
 struct ScreenerRow: View {
     let stock: Stock
@@ -261,34 +374,46 @@ struct ScreenerRow: View {
 
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
-            VStack(alignment: .leading, spacing: 3) {
-                HStack(spacing: 6) {
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 7) {
                     Text(stock.ticker)
                         .font(.system(.subheadline, design: .monospaced).weight(.semibold))
                         .foregroundStyle(Palette.ink)
+                    Text(stock.company)
+                        .font(.caption)
+                        .foregroundStyle(Palette.inkMuted)
+                        .lineLimit(1)
+                }
+                HStack(spacing: 8) {
+                    CategoryTag(category: stock.lynchCategory, compact: true)
                     ValuationTag(verdict: stock.verdict(model: model))
                 }
-                Text(stock.company)
-                    .font(.caption)
-                    .foregroundStyle(Palette.inkMuted)
-                    .lineLimit(1)
-                CategoryTag(category: stock.lynchCategory, compact: true)
             }
 
             Spacer(minLength: 4)
 
             VStack(alignment: .trailing, spacing: 3) {
                 DeltaText(value: stock.premium(model: model),
-                          font: .system(.subheadline, design: .rounded).weight(.semibold).monospacedDigit(),
+                          font: .system(.title3, design: .rounded)
+                              .weight(.semibold).monospacedDigit(),
                           invert: true)
-                Text("\(Fmt.usd(stock.currentPrice)) / \(Fmt.usd(stock.fairValue(model: model)))")
-                    .font(.system(size: 11, design: .monospaced))
-                    .foregroundStyle(Palette.inkFaint)
-                Text(Fmt.money(stock.marketCap, digits: 1))
-                    .font(.system(size: 10, design: .monospaced))
+                HStack(spacing: 4) {
+                    Text(Fmt.usd(stock.currentPrice))
+                        .foregroundStyle(Palette.inkMuted)
+                    Image(systemName: "arrow.right")
+                        .font(.system(size: 7))
+                        .foregroundStyle(Palette.inkFaint)
+                    Text(Fmt.usd(stock.fairValue(model: model)))
+                        .foregroundStyle(Palette.accent)
+                }
+                .font(.system(size: 11, design: .monospaced))
+                Text("price → fair value")
+                    .font(.system(size: 8))
                     .foregroundStyle(Palette.inkFaint)
             }
         }
-        .padding(.vertical, 5)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .contentShape(Rectangle())
     }
 }

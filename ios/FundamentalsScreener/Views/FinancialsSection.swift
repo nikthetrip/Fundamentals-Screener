@@ -22,6 +22,7 @@ struct FinancialsSection: View {
 
     @State private var page: Page = .income
     @State private var rows: [AnnualRow] = []
+    @State private var comments = Commentary()
 
     enum Page: String, CaseIterable, Identifiable {
         case income  = "Income"
@@ -30,6 +31,17 @@ struct FinancialsSection: View {
         case ratios  = "Ratios"
         case growth  = "Growth"
         var id: String { rawValue }
+
+        /// Il nome con cui commentary.py registra questa sezione.
+        var commentaryKey: String {
+            switch self {
+            case .income:  return "income"
+            case .balance: return "balance"
+            case .cash:    return "cash"
+            case .ratios:  return "ratios"
+            case .growth:  return "growth"
+            }
+        }
     }
 
     private var group: (medians: [String: Double], label: String?) { store.peers(for: stock) }
@@ -37,6 +49,35 @@ struct FinancialsSection: View {
 
     private func kpi(_ key: String) -> (String, Double?, Double?) {
         (key, stock.value(for: key), peers[key])
+    }
+
+    /// Il commento della sezione, con il suo verdetto e la nota di settore.
+    /// Sta subito sotto i KPI, come nella dashboard: prima i numeri, poi cosa
+    /// dicono — non il contrario, o si legge un giudizio prima delle cifre su
+    /// cui poggia.
+    private func commentary(_ section: String) -> some View {
+        CommentaryPanel(findings: comments.bySection[section] ?? [],
+                        verdict: comments.verdicts[section],
+                        sectorContext: comments.sectorContext)
+    }
+
+    /// I rilievi nell'ordine delle sezioni della scheda, non quello casuale
+    /// del dizionario: chi apre il dettaglio del punteggio ritrova la stessa
+    /// successione che percorrerebbe scorrendo le sotto-schede.
+    private var orderedFindings: [(section: String, findings: [Finding])] {
+        Page.allCases.compactMap { page in
+            let key = page.commentaryKey
+            guard let found = comments.bySection[key], !found.isEmpty else { return nil }
+            return (key, found)
+        }
+    }
+
+    /// Quanti rilievi per verso, su tutte le sezioni.
+    private var toneCounts: (bull: Int, bear: Int, flag: Int) {
+        let all = comments.bySection.values.flatMap { $0 }
+        return (all.filter { $0.tone == .bull }.count,
+                all.filter { $0.tone == .bear }.count,
+                all.filter { $0.tone == .flag }.count)
     }
 
     /// Gli ultimi cinque esercizi, DAL PIU' RECENTE.
@@ -49,6 +90,10 @@ struct FinancialsSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
+            if let assessment = comments.assessment {
+                AssessmentPanel(assessment: assessment, counts: toneCounts,
+                                breakdown: orderedFindings)
+            }
             ChipPicker(options: Page.allCases, selection: $page, label: { $0.rawValue })
 
             switch page {
@@ -59,7 +104,10 @@ struct FinancialsSection: View {
             case .growth:  growth
             }
         }
-        .task(id: stock.ticker) { rows = store.annual(stock.ticker) }
+        .task(id: stock.ticker) {
+            rows = store.annual(stock.ticker)
+            comments = store.commentary(stock.ticker)
+        }
     }
 
     // -----------------------------------------------------------------------
@@ -123,6 +171,7 @@ struct FinancialsSection: View {
                     Caption(text: "Basis: \(basis).")
                 }
             }
+            commentary("income")
             Panel {
                 SectionHeader(title: "Income statement", note: "Filed fiscal years")
                 yearTable([
@@ -150,6 +199,7 @@ struct FinancialsSection: View {
                     kpi("book_value_per_share"),
                 ])
             }
+            commentary("balance")
             Panel {
                 SectionHeader(title: "Leverage and solidity")
                 KPIGrid(items: [
@@ -194,10 +244,19 @@ struct FinancialsSection: View {
                     kpi("fcf_yield_pct"),
                     kpi("fcf_growth_yoy_pct"),
                 ])
+                Divider().overlay(Palette.separator)
+                SectionHeader(title: "What it does with that cash")
+                KPIGrid(items: [
+                    kpi("dividend_yield"),
+                    kpi("dividend_ttm_yield_pct"),
+                    kpi("dividend_rate"),
+                    kpi("payout_ratio_pct"),
+                ])
                 Caption(text: "Cash conversion is free cash flow over net "
                         + "income: persistently below 100% and the accounting "
                         + "profit is not turning into money.")
             }
+            commentary("cash")
             Panel {
                 SectionHeader(title: "Cash flow statement", note: "Filed fiscal years")
                 yearTable([
@@ -225,6 +284,7 @@ struct FinancialsSection: View {
                     kpi("fcf_margin_pct"),
                 ])
             }
+            commentary("ratios")
             Panel {
                 SectionHeader(title: "Multiples")
                 KPIGrid(items: [
@@ -269,6 +329,7 @@ struct FinancialsSection: View {
                         + "uses every point in the window, which is why it is "
                         + "preferred whenever it exists.")
             }
+            commentary("growth")
 
             Panel {
                 SectionHeader(title: "Five-year rates",

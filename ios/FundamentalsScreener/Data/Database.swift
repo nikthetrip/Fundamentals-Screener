@@ -41,10 +41,11 @@ final class Database {
     /// cambiasse le colonne, un database nuovo aperto da un'app vecchia
     /// mostrerebbe campi vuoti senza dire perche': meglio rifiutarlo e
     /// tenersi quello in cache.
-    /// Versione 2: la tabella `fundamentals` porta anche i rapporti derivati
-    /// (ROIC, conversione in cassa, payout, earnings yield), calcolati dalla
-    /// pipeline con derived_metrics.py invece che dall'app.
-    static let supportedSchema = 2
+    /// Versione 2: `fundamentals` porta anche i rapporti derivati (ROIC,
+    /// conversione in cassa, payout, earnings yield), calcolati dalla pipeline
+    /// con derived_metrics.py invece che dall'app.
+    /// Versione 3: c'e' la tabella `commentary` con i rilievi di commentary.py.
+    static let supportedSchema = 3
 
     private let handle: OpaquePointer
 

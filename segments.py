@@ -176,6 +176,40 @@ def _full_year(start: str, end: str) -> bool:
     return months >= 11
 
 
+def _drop_internal_subtotals(members: dict[str, float]) -> dict[str, float]:
+    """
+    Toglie le voci che sono somme di altre voci della STESSA nota, senza
+    guardare il totale consolidato.
+
+    SERVE DOVE LA RIPARTIZIONE E' PARZIALE. Alphabet elenca per prodotto
+    "Google Search & other", "YouTube ads", "Google Network", il loro subtotale
+    "Google advertising", e "Subscriptions, platforms and devices". Quelle voci
+    coprono Google Services e basta: Cloud e Other Bets non sono ripartiti per
+    prodotto, quindi la somma non tornera' MAI al ricavo consolidato e il
+    confronto con quello non puo' individuare il subtotale.
+
+    Qui il subtotale si riconosce per quello che e': una voce il cui valore e'
+    la somma di altre due o piu' voci dell'elenco. Se non lo si togliesse,
+    l'advertising verrebbe contato due volte e la torta direbbe che la
+    pubblicita' vale il doppio di quanto vale.
+    """
+    from itertools import combinations
+
+    keys = sorted(members, key=lambda k: -members[k])
+    drop: set[str] = set()
+    for k in keys:
+        others = [x for x in keys if x != k and x not in drop]
+        target = members[k]
+        # Da due voci in su: una voce uguale a un'altra sola non e' un
+        # subtotale, e' un duplicato — e non e' questo il caso da risolvere.
+        for size in range(2, min(len(others), 6) + 1):
+            if any(abs(sum(members[x] for x in combo) / target - 1) <= TOLERANCE
+                   for combo in combinations(others, size) if target):
+                drop.add(k)
+                break
+    return {k: v for k, v in members.items() if k not in drop}
+
+
 def _drop_subtotals(members: dict[str, float], total: float
                     ) -> tuple[dict[str, float], bool]:
     """
@@ -285,6 +319,9 @@ def fetch_segments(ticker: str, cik: str) -> dict | None:
     # --- fatti di ricavo, con e senza dimensioni ---
     by_axis: dict[tuple[str, str], dict[str, float]] = defaultdict(dict)
     eliminations: dict[tuple[str, str], dict[str, float]] = defaultdict(dict)
+    # I MARGINI DELLE MATRICI, tenuti a parte. Vedi la nota sotto.
+    cross: dict[tuple[str, str], dict[str, float]] = defaultdict(
+        lambda: defaultdict(float))
     totals: dict[str, float] = {}
     for el in root.iter():
         if el.tag.split("}")[-1] not in REVENUE_TAGS:
@@ -310,9 +347,27 @@ def fetch_segments(ticker: str, cik: str) -> dict | None:
         breakdown = [(ax, m) for ax, m in dims.items()
                      if ax.split(":")[-1] in {a for a, _, _, _ in AXES}]
         others = [(ax, m) for ax, m in dims.items() if (ax, m) not in breakdown]
-        # Una sola ripartizione per fatto: due assi di suddivisione insieme
-        # (segmento × area) sono la MATRICE della nota, e sommarli conterebbe
-        # ogni ricavo due volte.
+        # DUE ASSI INSIEME SONO UNA MATRICE (prodotto × segmento, segmento ×
+        # area). Sommarne le celle dentro un asse solo conterebbe ogni ricavo
+        # due volte, ed e' per questo che la prima versione le scartava. Ma il
+        # MARGINE di una matrice — la somma lungo l'altro asse — e' un dato
+        # legittimo, ed e' l'unico che alcune societa' pubblicano.
+        #
+        # Alphabet tagga TUTTI i suoi ricavi per prodotto incrociati con il
+        # segmento: "Google Services × Google Search & other" e cosi' via.
+        # Scartandoli spariva l'intera ripartizione per prodotto — la piu'
+        # interessante che quella societa' pubblichi — e la scheda dichiarava
+        # che non esisteva.
+        #
+        # Si tengono quindi da parte, sommati per membro di ciascun asse, e si
+        # usano SOLO dove non ci sono fatti a un asse solo: quelli, quando ci
+        # sono, sono la ripartizione che la societa' ha voluto dichiarare.
+        if len(breakdown) > 1:
+            if not any(m.split(":")[-1] in ELIMINATION_MEMBERS
+                       for _, m in dims.items()):
+                for ax, member in breakdown:
+                    cross[(ax.split(":")[-1], end)][member] += value
+            continue
         if len(breakdown) != 1:
             continue
         if any(ax.split(":")[-1] not in QUALIFIER_AXES for ax, _ in others):
@@ -330,8 +385,11 @@ def fetch_segments(ticker: str, cik: str) -> dict | None:
         periods = {end: members for (ax, end), members in by_axis.items()
                    if ax == axis_key and len(members) >= 2}
         if not periods:
+            periods = {end: dict(members) for (ax, end), members in cross.items()
+                       if ax == axis_key and len(members) >= 2}
+        if not periods:
             continue
-        cleaned, reliable_any = {}, False
+        cleaned, reliable_any, coverage = {}, False, {}
         for end in sorted(periods, reverse=True):
             # Dal lordo al netto: si toglie a ogni segmento cio' che ha
             # fatturato agli altri segmenti dello stesso gruppo. E' il passaggio
@@ -345,11 +403,33 @@ def fetch_segments(ticker: str, cik: str) -> dict | None:
             if ok:
                 reliable_any = True
                 cleaned[end] = {_pretty(m, labels): v for m, v in members.items()}
+                coverage[end] = 1.0
+                continue
+
+            # NON TORNA AL CONSOLIDATO: due casi molto diversi.
+            #
+            # Se la somma SUPERA il totale c'e' un doppio conteggio che non si
+            # e' riusciti a togliere, e mostrare quella torta sarebbe peggio che
+            # non mostrarne nessuna. Se invece resta SOTTO, la nota copre solo
+            # una parte dell'attivita' — ed e' un'informazione vera, che va
+            # mostrata dicendo quanta parte copre.
+            total = totals.get(end)
+            partial = _drop_internal_subtotals(members)
+            if not total or not partial:
+                continue
+            share = sum(partial.values()) / total
+            if share <= 1 + TOLERANCE:
+                cleaned[end] = {_pretty(m, labels): v for m, v in partial.items()}
+                coverage[end] = share
         if not cleaned:
             continue
         out[axis_key] = {
             "title": title, "note": note, "word": word, "periods": cleaned,
             "reliable": reliable_any,
+            # Quanta parte del ricavo consolidato copre la ripartizione. 1.0
+            # significa che le parti fanno il tutto; meno significa che la nota
+            # riguarda solo un pezzo dell'attivita', e la scheda lo dichiara.
+            "coverage": coverage,
             "total": {e: totals.get(e) for e in cleaned},
         }
 

@@ -251,6 +251,12 @@ jobs:
       # numeri in un altro contenitore: se l'audit boccia il dataset la build si
       # ferma qui e l'app continua a scaricare l'ultimo database valido, invece
       # di riceverne uno nuovo che contraddice se stesso.
+      # I commenti sono aritmetica sui numeri appena verificati: girano dopo
+      # l'audit e prima dell'impacchettamento, cosi' un dataset bocciato non
+      # produce nemmeno le frasi che lo descrivono.
+      - name: Commenti di valutazione
+        run: python build_commentary.py
+
       - name: Impacchetta il database per l'app iOS
         run: python build_mobile_db.py
 
@@ -281,7 +287,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -f data/history.csv.gz data/fundamentals.csv data/screener.sqlite.gz
-          for f in events filings skipped financials_annual cagr_detail profile segments; do
+          for f in events filings skipped financials_annual cagr_detail profile segments commentary; do
             git add -f "data/$f.csv" 2>/dev/null || true
           done
           git rm --cached -q data/history.csv 2>/dev/null || true
