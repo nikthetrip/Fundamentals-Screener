@@ -37,6 +37,7 @@ affidabile e la scheda rimanda alla nota sui segmenti del 10-K.
 
 from __future__ import annotations
 
+import html
 import re
 import xml.etree.ElementTree as ET
 from collections import defaultdict
@@ -82,6 +83,24 @@ QUALIFIER_AXES = {"ConsolidationItemsAxis", "StatementConsolidationItemsAxis"}
 QUALIFIER_MEMBERS = {"OperatingSegmentsMember", "ReportableSegmentsMember",
                      "ReportableSubsegmentsMember"}
 
+# GLI SCAMBI FRA SEGMENTI, che sono la ragione per cui la somma non torna.
+#
+# Un gruppo con piu' divisioni si vende servizi al proprio interno: le
+# discariche di Waste Management fatturano alle sue societa' di raccolta. I
+# ricavi di ciascun segmento sono quindi al LORDO di quelle partite, e il
+# totale consolidato le elimina — 30,89 miliardi di ricavi di segmento contro
+# 25,20 consolidati, cinque miliardi e mezzo di differenza. Sommando i segmenti
+# lordi nessuna verifica di quadratura poteva riuscire, e l'intera ripartizione
+# veniva scartata su ogni gruppo che dichiara le eliminazioni — cioe' su quasi
+# tutti gli industriali con piu' divisioni.
+#
+# L'eliminazione e' depositata segmento per segmento, sullo stesso asse ma con
+# questo qualificatore: si sottrae a ciascuno e si ottiene il ricavo NETTO, che
+# e' anche la grandezza giusta da mostrare — quella che arriva da clienti veri.
+ELIMINATION_MEMBERS = {"IntersegmentEliminationMember",
+                       "IntersegmentEliminationsMember",
+                       "EliminationsMember", "ConsolidationEliminationsMember"}
+
 # Membri standard del vocabolario comune, che la societa' non ridefinisce e che
 # quindi nel suo label linkbase non ci sono.
 STANDARD_LABELS = {
@@ -116,6 +135,9 @@ def _tidy(text: str) -> str:
     deposito di Nike il marchio si chiama davvero «N I K E Brand». Sono
     lettere singole separate da spazi, quindi si riconoscono e si riuniscono.
     """
+    # Le etichette arrivano da XML e portano le entita' HTML come sono state
+    # depositate: Caterpillar chiama un segmento "Power &amp; Energy".
+    text = html.unescape(text or "")
     text = re.sub(r"\s*\[(Member|Domain|Axis)\]\s*$", "", text).strip()
     text = re.sub(r"\b(?:[A-Z] ){1,}[A-Z]\b",
                   lambda m: m.group(0).replace(" ", ""), text)
@@ -262,6 +284,7 @@ def fetch_segments(ticker: str, cik: str) -> dict | None:
 
     # --- fatti di ricavo, con e senza dimensioni ---
     by_axis: dict[tuple[str, str], dict[str, float]] = defaultdict(dict)
+    eliminations: dict[tuple[str, str], dict[str, float]] = defaultdict(dict)
     totals: dict[str, float] = {}
     for el in root.iter():
         if el.tag.split("}")[-1] not in REVENUE_TAGS:
@@ -292,12 +315,15 @@ def fetch_segments(ticker: str, cik: str) -> dict | None:
         # ogni ricavo due volte.
         if len(breakdown) != 1:
             continue
-        if any(ax.split(":")[-1] not in QUALIFIER_AXES
-               or m.split(":")[-1] not in QUALIFIER_MEMBERS
-               for ax, m in others):
+        if any(ax.split(":")[-1] not in QUALIFIER_AXES for ax, _ in others):
+            continue
+        quals = {m.split(":")[-1] for _, m in others}
+        is_elimination = bool(quals & ELIMINATION_MEMBERS)
+        if not is_elimination and not quals <= QUALIFIER_MEMBERS:
             continue
         axis, member = breakdown[0]
-        by_axis[(axis.split(":")[-1], end)][member] = value
+        target = eliminations if is_elimination else by_axis
+        target[(axis.split(":")[-1], end)][member] = value
 
     out: dict[str, dict] = {}
     for axis_key, title, note, word in AXES:
@@ -307,7 +333,15 @@ def fetch_segments(ticker: str, cik: str) -> dict | None:
             continue
         cleaned, reliable_any = {}, False
         for end in sorted(periods, reverse=True):
-            members, ok = _drop_subtotals(dict(periods[end]), totals.get(end))
+            # Dal lordo al netto: si toglie a ogni segmento cio' che ha
+            # fatturato agli altri segmenti dello stesso gruppo. E' il passaggio
+            # che rende confrontabile la somma con il totale consolidato, ed e'
+            # anche la grandezza giusta da mostrare — i ricavi da clienti veri.
+            elim = eliminations.get((axis_key, end), {})
+            gross = dict(periods[end])
+            members = {m: v - elim.get(m, 0.0) for m, v in gross.items()}
+            members = {m: v for m, v in members.items() if v > 0}
+            members, ok = _drop_subtotals(members, totals.get(end))
             if ok:
                 reliable_any = True
                 cleaned[end] = {_pretty(m, labels): v for m, v in members.items()}
