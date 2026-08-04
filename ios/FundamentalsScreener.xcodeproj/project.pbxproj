@@ -18,6 +18,27 @@
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		SP0000000000000000000001 /* Generate Metrics.swift */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 0;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/../metrics_catalog.py",
+				"$(SRCROOT)/../tools/export_metrics.py",
+			);
+			name = "Generate Metrics.swift";
+			outputPaths = (
+				"$(SRCROOT)/FundamentalsScreener/Design/Metrics.swift",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Rigenera Design/Metrics.swift da metrics_catalog.py.\n#\n# PERCHE' STA NELLA BUILD. Quel file e' una COPIA delle spiegazioni delle\n# metriche, che vivono nel Python. Lasciarne la rigenerazione a un comando da\n# ricordare significa che prima o poi la dashboard e l'app mostreranno due\n# testi diversi per la stessa voce — ed e' il genere di incoerenza che fa\n# dubitare di tutti gli altri numeri.\n#\n# Xcode lo esegue solo quando il catalogo e' piu' recente del file generato,\n# grazie a inputPaths/outputPaths: nelle build normali non costa niente.\nset -e\ncd \"$SRCROOT/..\"\nfor PY in .venv/bin/python python3; do\n  command -v \"$PY\" >/dev/null 2>&1 && break\n  [ -x \"$PY\" ] && break\ndone\nif ! \"$PY\" tools/export_metrics.py; then\n  echo \"error: non sono riuscito a rigenerare Metrics.swift. Lancia a mano:\"\n  echo \"error:   python tools/export_metrics.py\"\n  exit 1\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXFrameworksBuildPhase section */
 		BP0000000000000000000002 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
@@ -52,6 +73,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = CL0000000000000000000002 /* Build configuration list for PBXNativeTarget "FundamentalsScreener" */;
 			buildPhases = (
+				SP0000000000000000000001 /* Generate Metrics.swift */,
 				BP0000000000000000000001 /* Sources */,
 				BP0000000000000000000002 /* Frameworks */,
 				BP0000000000000000000003 /* Resources */,
@@ -135,7 +157,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -167,7 +189,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;

@@ -457,7 +457,7 @@ enum Metrics {
             better: .high,
             comparable: true,
             group: "returns",
-            help: "**What it is** — the return on *all* the capital at work, borrowed as well as owned. The one profitability measure leverage cannot flatter.\n\n**Formula** — EBIT × (1 − 21%) ÷ (equity + total debt − cash). The 21% US federal rate is applied to every company rather than each one's own effective rate, which the dataset does not carry — comparable beats individually exact.\n\n**How to read it** — the benchmark is a flat 9% cost of capital: above it the company creates value by growing, below it growth destroys value. That figure is a fixed order of magnitude applied to every company, not a WACC computed for this one — the dataset carries neither beta nor the cost of its debt. Blank when invested capital is negative."),
+            help: "**What it is** — the return on *all* the capital at work, borrowed as well as owned. The one profitability measure leverage cannot flatter.\n\n**Formula** — EBIT × (1 − 21%) ÷ (equity + total debt − cash). The 21% US federal rate is applied to every company rather than each one's own effective rate, which the dataset does not carry — comparable beats individually exact.\n\n**How to read it** — compare it with what this company's capital costs, which the app shows next to it as **Cost of capital**: above it, growing creates value; below it, growing consumes it. That bar used to be a flat 9% for everyone, which was wrong in a consistent direction — too high for a utility, too low for a software company. Blank when invested capital is negative."),
         "wacc_pct": MetricSpec(
             label: "Cost of capital",
             kind: .pct,
