@@ -1,5 +1,4 @@
 ticker,motivo
-AEP,non risolto su EDGAR (ticker->CIK o 404)
 ALM,nessun tag EPS ne' utile netto in us-gaap (possibile filer estero/IFRS)
 AS,nessun tag EPS ne' utile netto in us-gaap (possibile filer estero/IFRS)
 ASND,nessun tag EPS ne' utile netto in us-gaap (possibile filer estero/IFRS)

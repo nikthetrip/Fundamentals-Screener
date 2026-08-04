@@ -402,6 +402,21 @@ AEIS,growth,2,bear,2,Current earnings sit **+76%** above their own three-year me
 AEIS,growth:verdict,0,neutral,0,"Bearish — 0 for, 2 against"
 AEIS,_assessment,0,neutral,0,"Mixed — 11 for, 14 against — evenly balanced"
 AEIS,_context,0,neutral,0,"Order books follow the investment cycle, so single-year growth figures move more than the underlying business does."
+AEP,income,0,bull,2,An operating margin of **24.3%** means the company keeps a wide slice of every sale after the cost of running the business — usually the fingerprint of pricing power.
+AEP,income,1,bull,2,The operating margin has been **widening** across the filed years (+3.9 pp): the company is keeping more of each sale than it used to.
+AEP,income,2,bull,2,"Earnings per share are growing faster than revenue (**30.5%** against **8.2%**): margins are widening, the share count is shrinking, or both."
+AEP,income:verdict,0,neutral,0,"Bullish — 6 weighted points for, 0 against"
+AEP,balance,0,bear,3,"Only **27.0%** of the assets is equity: the rest belongs to creditors, and it is the creditors who set the terms when results disappoint."
+AEP,balance,1,bear,3,"Net debt is **9.1× operating profit**: at this level the balance sheet starts dictating strategy, because refinancing has to be arranged whatever the business is doing."
+AEP,balance:verdict,0,neutral,0,"Bearish — 0 for, 6 against"
+AEP,cash,0,bull,2,"Free cash flow is up **+14%** across the filed years: the cash engine is getting stronger, not just the reported profit."
+AEP,cash:verdict,0,neutral,0,"Bullish — 2 weighted points for, 0 against"
+AEP,ratios,0,bear,2,A PEG of **2.5** says you are paying more than two years of growth for each point of multiple.
+AEP,ratios:verdict,0,neutral,0,"Bearish — 0 for, 2 against"
+AEP,growth,0,flag,3,"Profit has compounded much faster than cash (**8.1%** against **-2.8%** for free cash flow). Over five years that gap is the classic early warning: it is cash, not profit, that eventually has to show up."
+AEP,growth:verdict,0,neutral,0,Inconclusive — not enough comparable figures
+AEP,_assessment,0,neutral,0,"Mixed — 8 for, 8 against — evenly balanced"
+AEP,_context,0,neutral,0,"Regulated utilities invest heavily and carry high debt against predictable, rate-set revenue: capex intensity and leverage that would be alarming elsewhere are the business model here."
 AES,income,0,bear,2,"The operating margin is thin at **2.7%**: small moves in costs or prices swing the profit a long way, in both directions."
 AES,income:verdict,0,neutral,0,"Bearish — 0 for, 2 against"
 AES,balance,0,bear,3,"Only **8.4%** of the assets is equity: the rest belongs to creditors, and it is the creditors who set the terms when results disappoint."
@@ -1406,7 +1421,7 @@ ATI,growth,1,flag,2,"This is a **cyclical** business: a five-year compound rate 
 ATI,growth:verdict,0,neutral,0,"Bullish — 3 weighted points for, 0 against"
 ATI,_assessment,0,neutral,0,"Leaning bullish — 10 for, 4 against"
 ATI,_context,0,neutral,0,"Order books follow the investment cycle, so single-year growth figures move more than the underlying business does."
-ATO,income,0,bull,2,An operating margin of **35.9%** means the company keeps a wide slice of every sale after the cost of running the business — usually the fingerprint of pricing power. It is **+14.5 pp** above the peer median.
+ATO,income,0,bull,2,An operating margin of **35.9%** means the company keeps a wide slice of every sale after the cost of running the business — usually the fingerprint of pricing power. It is **+13.9 pp** above the peer median.
 ATO,income,1,bull,2,The operating margin has been **widening** across the filed years (+8.6 pp): the company is keeping more of each sale than it used to.
 ATO,income:verdict,0,neutral,0,"Bullish — 4 weighted points for, 0 against"
 ATO,balance:verdict,0,neutral,0,Inconclusive — not enough comparable figures
@@ -1574,7 +1589,7 @@ AWI,growth,0,bull,2,"Earnings per share have compounded faster than revenue (**1
 AWI,growth:verdict,0,neutral,0,"Bullish — 2 weighted points for, 0 against"
 AWI,_assessment,0,neutral,0,"Bullish — 16 weighted points for, 0 against"
 AWI,_context,0,neutral,0,"Order books follow the investment cycle, so single-year growth figures move more than the underlying business does."
-AWK,income,0,bull,2,An operating margin of **37.0%** means the company keeps a wide slice of every sale after the cost of running the business — usually the fingerprint of pricing power. It is **+15.6 pp** above the peer median.
+AWK,income,0,bull,2,An operating margin of **37.0%** means the company keeps a wide slice of every sale after the cost of running the business — usually the fingerprint of pricing power. It is **+15.0 pp** above the peer median.
 AWK,income,1,bull,2,The operating margin has been **widening** across the filed years (+4.6 pp): the company is keeping more of each sale than it used to.
 AWK,income,2,flag,2,There is a wide gap between the operating margin (**37.0%**) and the net margin (**21.4%**): interest and tax are eating a large part of what the business itself earns.
 AWK,income:verdict,0,neutral,0,"Bullish — 4 weighted points for, 0 against"
@@ -4264,7 +4279,7 @@ CWEN,cash,1,bull,2,"**7,288.9%** of the reported profit arrives as cash: the ear
 CWEN,cash,2,bear,2,Free cash flow has fallen **-27%** across the filed years. One heavy investment year can do that innocently — several in a row usually cannot.
 CWEN,cash,3,bear,3,"The dividend costs **4,994.8%** of profit — more than the company earns. That is funded from cash or debt, and it is the state a business is in shortly before a cut."
 CWEN,cash:verdict,0,neutral,0,"Mixed — 5 for, 5 against — evenly balanced"
-CWEN,ratios,0,bear,2,At a P/E of **855.3** the stock trades **+3894%** against its peer group: the market is already paying for something better than average here.
+CWEN,ratios,0,bear,2,At a P/E of **855.3** the stock trades **+3917%** against its peer group: the market is already paying for something better than average here.
 CWEN,ratios,1,bull,2,The cash yield (**8.5%**) is above the earnings yield (**0.1%**): the business produces more cash than its reported profit suggests.
 CWEN,ratios:verdict,0,neutral,0,"Mixed — 2 for, 2 against — evenly balanced"
 CWEN,growth,0,bear,2,Earnings per share have grown more slowly than revenue over five years (**-30.9%** against **4.7%**): growth is not reaching the individual share.
@@ -5199,7 +5214,7 @@ EHC,growth,1,flag,3,"Profit has compounded much faster than cash (**17.8%** agai
 EHC,growth:verdict,0,neutral,0,"Bullish — 2 weighted points for, 0 against"
 EHC,_assessment,0,neutral,0,"Bullish — 16 weighted points for, 0 against"
 EHC,_context,0,neutral,0,"Research spending runs through the income statement, so margins understate the cash economics of a business that is investing in its pipeline."
-EIX,income,0,bull,2,An operating margin of **30.8%** means the company keeps a wide slice of every sale after the cost of running the business — usually the fingerprint of pricing power. It is **+7.8 pp** above the peer median.
+EIX,income,0,bull,2,An operating margin of **30.8%** means the company keeps a wide slice of every sale after the cost of running the business — usually the fingerprint of pricing power. It is **+7.7 pp** above the peer median.
 EIX,income,1,bull,2,The operating margin has been **widening** across the filed years (+17.4 pp): the company is keeping more of each sale than it used to.
 EIX,income,2,bull,2,"Earnings per share are growing faster than revenue (**30.3%** against **13.1%**): margins are widening, the share count is shrinking, or both."
 EIX,income,3,flag,2,There is a wide gap between the operating margin (**30.8%**) and the net margin (**18.1%**): interest and tax are eating a large part of what the business itself earns.
@@ -5668,7 +5683,7 @@ ETR,cash,0,bear,3,"Free cash flow is **negative** (-2.8 B$) over the last twelve
 ETR,cash,1,bear,3,"Only **-159.0%** of the accounting profit is turning into cash. A lasting gap between the two is where receivables, inventory and capitalised costs hide — it is the single most useful warning on this page."
 ETR,cash,2,neutral,1,"Capital spending absorbs **62.3%** of revenue — a capital-hungry business, where growth costs cash before it produces any."
 ETR,cash:verdict,0,neutral,0,"Bearish — 0 for, 6 against"
-ETR,ratios,0,bear,2,At a P/E of **27.6** the stock trades **+32%** against its peer group: the market is already paying for something better than average here.
+ETR,ratios,0,bear,2,At a P/E of **27.6** the stock trades **+33%** against its peer group: the market is already paying for something better than average here.
 ETR,ratios,1,bear,2,A PEG of **4.7** says you are paying more than two years of growth for each point of multiple.
 ETR,ratios,2,flag,2,"The earnings yield (**3.6%**) is well above the cash yield (**-5.6%**): the profit looks better than the cash, and it is the cash that pays dividends and debt."
 ETR,ratios:verdict,0,neutral,0,"Bearish — 0 for, 4 against"
@@ -5714,7 +5729,7 @@ EVR,growth:verdict,0,neutral,0,"Leaning bullish — 3 for, 2 against"
 EVR,_assessment,0,neutral,0,"Bullish — 17 weighted points for, 5 against"
 EVR,_context,0,neutral,0,"Banks and insurers fund themselves with other people's money by design, and their cash flow statement has a different shape: leverage and cash-flow ratios are not read here the way they are elsewhere."
 EVRG,income,0,neutral,1,Revenue is essentially flat (**0.7%** year on year): whatever happens to profit from here has to come from costs or from prices.
-EVRG,income,1,bull,2,An operating margin of **27.1%** means the company keeps a wide slice of every sale after the cost of running the business — usually the fingerprint of pricing power. It is **+4.1 pp** above the peer median.
+EVRG,income,1,bull,2,An operating margin of **27.1%** means the company keeps a wide slice of every sale after the cost of running the business — usually the fingerprint of pricing power. It is **+4.0 pp** above the peer median.
 EVRG,income,2,bull,2,The operating margin has been **widening** across the filed years (+2.3 pp): the company is keeping more of each sale than it used to.
 EVRG,income:verdict,0,neutral,0,"Bullish — 4 weighted points for, 0 against"
 EVRG,balance,0,bear,3,"Only **29.5%** of the assets is equity: the rest belongs to creditors, and it is the creditors who set the terms when results disappoint."
@@ -5770,12 +5785,11 @@ EXC,cash,0,bear,3,"Free cash flow is **negative** (-2.2 B$) over the last twelve
 EXC,cash,1,bear,3,"Only **-77.8%** of the accounting profit is turning into cash. A lasting gap between the two is where receivables, inventory and capitalised costs hide — it is the single most useful warning on this page."
 EXC,cash,2,neutral,1,"Capital spending absorbs **36.1%** of revenue — a capital-hungry business, where growth costs cash before it produces any."
 EXC,cash:verdict,0,neutral,0,"Bearish — 0 for, 6 against"
-EXC,ratios,0,bull,2,"At a P/E of **16.8** the stock trades **-20%** against the median of its own peer group — cheaper than the companies it should be compared with, which is the only comparison a P/E supports."
-EXC,ratios,1,flag,2,"The earnings yield (**6.0%**) is well above the cash yield (**-4.6%**): the profit looks better than the cash, and it is the cash that pays dividends and debt."
-EXC,ratios:verdict,0,neutral,0,"Bullish — 2 weighted points for, 0 against"
+EXC,ratios,0,flag,2,"The earnings yield (**6.0%**) is well above the cash yield (**-4.6%**): the profit looks better than the cash, and it is the cash that pays dividends and debt."
+EXC,ratios:verdict,0,neutral,0,Inconclusive — not enough comparable figures
 EXC,growth,0,bull,2,"Earnings per share have compounded faster than revenue (**20.5%** against **14.6%**) — margins widening, share count falling, or both, sustained over five years."
 EXC,growth:verdict,0,neutral,0,"Bullish — 2 weighted points for, 0 against"
-EXC,_assessment,0,neutral,0,"Leaning bearish — 8 for, 12 against"
+EXC,_assessment,0,neutral,0,"Leaning bearish — 6 for, 12 against"
 EXC,_context,0,neutral,0,"Regulated utilities invest heavily and carry high debt against predictable, rate-set revenue: capex intensity and leverage that would be alarming elsewhere are the business model here."
 EXE,income,0,bull,2,"Revenue is up **167.8%** over the last twelve months — the top line is still expanding, which is what every margin below is a fraction of."
 EXE,income,1,bull,2,An operating margin of **29.8%** means the company keeps a wide slice of every sale after the cost of running the business — usually the fingerprint of pricing power. It is **+5.2 pp** above the peer median.
@@ -11301,7 +11315,7 @@ NRG,cash,1,bear,3,"Only **-149.8%** of the accounting profit is turning into cas
 NRG,cash,2,bull,2,Capital spending takes only **3.9%** of revenue: an asset-light business can grow without swallowing its own cash.
 NRG,cash,3,bear,3,"The dividend costs **167.5%** of profit — more than the company earns. That is funded from cash or debt, and it is the state a business is in shortly before a cut."
 NRG,cash:verdict,0,neutral,0,"Bearish — 2 for, 9 against"
-NRG,ratios,0,bear,2,At a P/E of **152.2** the stock trades **+611%** against its peer group: the market is already paying for something better than average here.
+NRG,ratios,0,bear,2,At a P/E of **152.2** the stock trades **+615%** against its peer group: the market is already paying for something better than average here.
 NRG,ratios:verdict,0,neutral,0,"Bearish — 0 for, 2 against"
 NRG,growth,0,bull,3,"Revenue has compounded at **16.8% a year** over five years — the hardest number on the page to massage, and the most reliable evidence that the business is genuinely getting bigger."
 NRG,growth,1,bear,2,Earnings per share have grown more slowly than revenue over five years (**-5.9%** against **16.8%**): growth is not reaching the individual share.
@@ -14671,7 +14685,7 @@ SRE,cash,1,bear,3,"Only **-298.7%** of the accounting profit is turning into cas
 SRE,cash,2,neutral,1,"Capital spending absorbs **88.3%** of revenue — a capital-hungry business, where growth costs cash before it produces any."
 SRE,cash,3,flag,2,"The payout ratio is **87.9%**: most of the profit leaves the company, which leaves little room for both reinvestment and a bad year."
 SRE,cash:verdict,0,neutral,0,"Bearish — 0 for, 6 against"
-SRE,ratios,0,bear,2,At a P/E of **29.8** the stock trades **+39%** against its peer group: the market is already paying for something better than average here.
+SRE,ratios,0,bear,2,At a P/E of **29.8** the stock trades **+40%** against its peer group: the market is already paying for something better than average here.
 SRE,ratios,1,bear,2,A PEG of **4.3** says you are paying more than two years of growth for each point of multiple.
 SRE,ratios,2,flag,2,"The earnings yield (**3.4%**) is well above the cash yield (**-10.2%**): the profit looks better than the cash, and it is the cash that pays dividends and debt."
 SRE,ratios:verdict,0,neutral,0,"Bearish — 0 for, 4 against"
@@ -17239,7 +17253,7 @@ WTM,growth,2,bear,2,Current earnings sit **+107%** above their own three-year me
 WTM,growth:verdict,0,neutral,0,"Mixed — 3 for, 4 against — evenly balanced"
 WTM,_assessment,0,neutral,0,"Bullish — 15 weighted points for, 4 against"
 WTM,_context,0,neutral,0,"Banks and insurers fund themselves with other people's money by design, and their cash flow statement has a different shape: leverage and cash-flow ratios are not read here the way they are elsewhere."
-WTRG,income,0,bull,2,An operating margin of **35.6%** means the company keeps a wide slice of every sale after the cost of running the business — usually the fingerprint of pricing power. It is **+14.2 pp** above the peer median.
+WTRG,income,0,bull,2,An operating margin of **35.6%** means the company keeps a wide slice of every sale after the cost of running the business — usually the fingerprint of pricing power. It is **+13.6 pp** above the peer median.
 WTRG,income,1,bull,2,The operating margin has been **widening** across the filed years (+6.3 pp): the company is keeping more of each sale than it used to.
 WTRG,income,2,flag,2,There is a wide gap between the operating margin (**35.6%**) and the net margin (**20.2%**): interest and tax are eating a large part of what the business itself earns.
 WTRG,income:verdict,0,neutral,0,"Bullish — 4 weighted points for, 0 against"
