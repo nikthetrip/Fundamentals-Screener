@@ -131,6 +131,16 @@ struct Stock: Identifiable, Hashable {
     let earningsYieldPct: Double?
     let payoutRatioPct: Double?
 
+    // costo del capitale (derived_metrics.py)
+    let riskFreePct: Double?
+    let betaUsed: Double?
+    let costOfEquityPct: Double?
+    let costOfDebtPct: Double?
+    let waccPct: Double?
+    /// Quanto il ROIC supera il costo del capitale, in punti. Vuoto dove il
+    /// ROIC non e' interpretabile — banche, assicurazioni, REIT.
+    let roicSpreadPP: Double?
+
     // CAGR per orizzonte
     let cagrEPS3y: Double?, cagrEPS5y: Double?, cagrEPS10y: Double?
     let cagrRevenue3y: Double?, cagrRevenue5y: Double?, cagrRevenue10y: Double?
@@ -191,6 +201,8 @@ struct Stock: Identifiable, Hashable {
         "roic_pct", "net_debt_to_equity", "debt_to_assets_pct",
         "net_debt_to_fcf", "cash_to_debt_pct", "earnings_yield_pct",
         "payout_ratio_pct",
+        "risk_free_pct", "beta_used", "cost_of_equity_pct",
+        "cost_of_debt_pct", "wacc_pct", "roic_spread_pp",
         "cagr_eps_3y", "cagr_eps_5y", "cagr_eps_10y",
         "cagr_revenue_3y", "cagr_revenue_5y", "cagr_revenue_10y",
         "cagr_fcf_3y", "cagr_fcf_5y", "cagr_fcf_10y",
@@ -254,6 +266,9 @@ struct Stock: Identifiable, Hashable {
         roicPct = d(); netDebtToEquity = d(); debtToAssetsPct = d()
         netDebtToFcf = d(); cashToDebtPct = d(); earningsYieldPct = d()
         payoutRatioPct = d()
+
+        riskFreePct = d(); betaUsed = d(); costOfEquityPct = d()
+        costOfDebtPct = d(); waccPct = d(); roicSpreadPP = d()
 
         cagrEPS3y = d(); cagrEPS5y = d(); cagrEPS10y = d()
         cagrRevenue3y = d(); cagrRevenue5y = d(); cagrRevenue10y = d()
@@ -337,6 +352,10 @@ struct Stock: Identifiable, Hashable {
 
         case "roe_pct":                 return roePct
         case "roic_pct":                return roicPct
+        case "wacc_pct":                return waccPct
+        case "roic_spread_pp":          return roicSpreadPP
+        case "cost_of_equity_pct":      return costOfEquityPct
+        case "cost_of_debt_pct":        return costOfDebtPct
         case "earning_power_pct":       return earningPowerPct
 
         case "book_value_per_share":    return bookValuePerShare

@@ -1687,6 +1687,23 @@ DIVIDENDS_PAID_TAG_CANDIDATES = (
     "PaymentsOfDividends",
 )
 
+# Oneri finanziari. Servono a UNA cosa: il costo del debito effettivamente
+# pagato da questa societa' (interessi / debito medio), che e' la componente
+# del costo del capitale che si puo' leggere da un bilancio invece di stimarla.
+#
+# L'ORDINE E' DAL PIU' PULITO AL PIU' SPORCO. `InterestExpenseDebt` e' proprio
+# quello che si cerca. `InterestExpense` include spesso anche gli interessi sui
+# leasing e su altre passivita', che gonfiano leggermente il tasso. Il netto
+# (`InterestIncomeExpenseNet`) e' l'ultimo perche' sottrae gli interessi
+# ATTIVI: su una societa' con molta cassa puo' risultare negativo, e un costo
+# del debito negativo non e' un costo del debito.
+INTEREST_EXPENSE_TAG_CANDIDATES = (
+    "InterestExpenseDebt",
+    "InterestExpense",
+    "InterestExpenseNonoperating",
+    "InterestAndDebtExpense",
+)
+
 ASSETS_TAG_CANDIDATES = ("Assets",)
 
 # Patrimonio netto. Il primo esclude le minoranze (definizione corretta per il
@@ -1964,10 +1981,12 @@ def extract_financials(companyfacts: dict,
     ocf_f = extract_flow_facts(companyfacts, OCF_TAG_CANDIDATES)
     capex_f = extract_flow_facts(companyfacts, CAPEX_TAG_CANDIDATES)
     div_f = extract_flow_facts(companyfacts, DIVIDENDS_PAID_TAG_CANDIDATES)
+    int_f = extract_flow_facts(companyfacts, INTEREST_EXPENSE_TAG_CANDIDATES)
 
     out: dict = {}
     for name, facts in (("revenue", rev_f), ("net_income", ni_f), ("ebit", ebit_f),
-                        ("ocf", ocf_f), ("capex", capex_f), ("dividends_paid", div_f)):
+                        ("ocf", ocf_f), ("capex", capex_f), ("dividends_paid", div_f),
+                        ("interest_expense", int_f)):
         q = build_quarterly_flow(facts)
         out[f"{name}_q"] = q
         out[f"{name}_ttm"] = rolling_ttm(q)
@@ -2026,6 +2045,7 @@ def extract_financials(companyfacts: dict,
         "ebit": concepts_used(ebit_f),
         "ocf": concepts_used(ocf_f),
         "capex": concepts_used(capex_f),
+        "interest_expense": concepts_used(int_f),
         "assets": instant_concept_used(companyfacts, ASSETS_TAG_CANDIDATES),
         "equity": instant_concept_used(companyfacts, EQUITY_TAG_CANDIDATES),
         "long_term_debt": instant_concept_used(
@@ -2156,6 +2176,10 @@ def compute_ratios(fin: dict, price: Optional[float] = None,
     r["ebit_ttm"] = ebit_ttm
     r["ocf_ttm"] = ocf_ttm
     r["fcf_ttm"] = fcf_ttm
+    # Oneri finanziari degli ultimi dodici mesi. Non serve a un rapporto di
+    # bilancio ma al costo del debito: quanto questa societa' paga davvero
+    # sul proprio debito, invece di quanto si stima che lo paghi.
+    r["interest_expense_ttm"] = flow_now("interest_expense")
     r["fcf_latest_fy"] = fin["fcf_fy"][-1][1] if fin.get("fcf_fy") else None
     r["revenue_latest_fy"] = fin["revenue_fy"][-1][1] if fin.get("revenue_fy") else None
     r["equity"] = equity_now

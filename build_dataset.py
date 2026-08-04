@@ -51,6 +51,7 @@ from edgar_logic import (
     compute_cagr_details, merge_predecessor_eps,
 )
 from data_sources import (
+    fetch_risk_free_rate,
     CompanyFactsSource, fetch_price_history, fetch_current_snapshot,
     fetch_submissions, parse_company_meta, parse_recent_filings,
     fetch_shares_outstanding, fetch_us_universe, resolve_cik,
@@ -773,6 +774,11 @@ def process_ticker(ticker: str, facts_source: CompanyFactsSource, freq: str = "D
         "shares_outstanding": snap.get("shares_outstanding"),
         "next_earnings_date": snap.get("next_earnings_date"),
         "beta": _round(snap.get("beta")),
+        # Lo stesso per tutte le righe: e' il tasso su cui poggia il costo del
+        # capitale di ogni societa'. Sta nel dataset e non in una costante del
+        # codice perche' cambia ogni giorno, e perche' un fair value di sei mesi
+        # fa deve restare ricostruibile con il tasso di allora.
+        "risk_free_pct": RISK_FREE_PCT,
         # --- bilanci EDGAR ---
         "revenue_ttm": ratios.get("revenue_ttm"),
         "revenue_latest_fy": ratios.get("revenue_latest_fy"),
@@ -780,6 +786,7 @@ def process_ticker(ticker: str, facts_source: CompanyFactsSource, freq: str = "D
         "ebit_ttm": ratios.get("ebit_ttm"),
         "ocf_ttm": ratios.get("ocf_ttm"),
         "fcf_ttm": ratios.get("fcf_ttm"),
+        "interest_expense_ttm": ratios.get("interest_expense_ttm"),
         "fcf_latest_fy": ratios.get("fcf_latest_fy"),
         "equity": ratios.get("equity"),
         "assets": ratios.get("assets"),
@@ -935,6 +942,9 @@ def merge_parts() -> None:
             p.unlink()
 
 
+RISK_FREE_PCT: float | None = None
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--universe", default=None,
@@ -970,6 +980,13 @@ def main() -> None:
     if args.merge:
         merge_parts()
         return
+
+    # Il tasso privo di rischio: una chiamata per build, prima di tutto il
+    # resto, cosi' ogni riga del dataset porta lo stesso numero e il costo del
+    # capitale di due societa' resta confrontabile.
+    global RISK_FREE_PCT
+    RISK_FREE_PCT = fetch_risk_free_rate()
+    log(f"Tasso privo di rischio (Treasury 10 anni): {RISK_FREE_PCT:.2f}%")
 
     universe = args.universe or ("sp500" if args.full else "test")
     tickers = build_universe(universe)

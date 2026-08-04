@@ -1089,3 +1089,40 @@ def fetch_current_snapshot(ticker: str) -> dict:
         "currency": info.get("currency"),
         "quote_type": info.get("quoteType"),
     }
+
+
+# ---------------------------------------------------------------------------
+# TASSO PRIVO DI RISCHIO
+# ---------------------------------------------------------------------------
+
+RISK_FREE_FALLBACK = 4.25
+
+
+def fetch_risk_free_rate(default: float = RISK_FREE_FALLBACK) -> float:
+    """
+    Il rendimento del Treasury decennale, da FRED.
+
+    E' UN NUMERO PER BUILD, non per societa': il costo del capitale di tutte le
+    societa' poggia sullo stesso tasso privo di rischio, ed e' l'unico input del
+    WACC che cambia ogni giorno. FRED lo espone in CSV senza chiave.
+
+    Quando non risponde si usa il valore di ripiego invece di fallire: un tasso
+    vecchio di qualche settimana sposta il costo del capitale di frazioni di
+    punto, mentre una build che si ferma lascia il dataset intero senza
+    aggiornamento.
+    """
+    try:
+        r = requests.get(
+            "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS10", timeout=20)
+        r.raise_for_status()
+        for line in reversed(r.text.strip().split("\n")):
+            value = line.split(",")[-1].strip()
+            if value not in (".", "value", "DGS10"):
+                rate = float(value)
+                # Fra zero e venti: sopra o sotto non e' il decennale, e'
+                # una riga malformata o un cambio di formato del file.
+                if 0 < rate < 20:
+                    return rate
+    except Exception:                                        # noqa: BLE001
+        pass
+    return default

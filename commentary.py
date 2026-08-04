@@ -39,11 +39,11 @@ from dataclasses import dataclass, field
 import pandas as pd
 import streamlit as st
 
-# Costo del capitale di riferimento per giudicare il ROIC. E' un ordine di
-# grandezza, non un numero preciso: sopra questa soglia la crescita crea
-# valore, sotto lo distrugge, ed e' l'unico modo di leggere un ROIC senza
-# confrontarlo con nient'altro.
-COST_OF_CAPITAL = 9.0
+# La soglia del ROIC non e' piu' una costante di questo file: arriva riga per
+# riga dal dataset, nella colonna `wacc_pct` che derived_metrics calcola dal
+# beta della societa', dal tasso privo di rischio e dagli interessi che paga.
+# Chi legge «below its cost of capital» trova quel numero fra i KPI della
+# stessa scheda, invece di doverlo cercare in un sorgente.
 
 
 @dataclass
@@ -358,16 +358,29 @@ def balance_findings(r, peers, a, ctx: SectorContext, f) -> list[Finding]:
                                "difference is leverage: the return to "
                                "shareholders is being amplified by debt, and "
                                "leverage amplifies losses on the same terms.", 2))
-        elif roic >= _t(ctx, "roic_good"):
+    # IL CONFRONTO CON IL COSTO DEL CAPITALE, quando ha senso farlo.
+    #
+    # `roic_spread_pp` e' vuoto per due ragioni diverse, ed entrambe portano a
+    # tacere invece che a ipotizzare: o il settore e' uno di quelli in cui il
+    # ROIC nella forma «EBIT su capitale investito» non misura niente — banche,
+    # assicurazioni, REIT — oppure mancano gli ingredienti per stimare il costo
+    # del capitale di questa societa'. Un rilievo che dichiara distruzione di
+    # valore sulla base di una soglia inventata e' peggio di nessun rilievo.
+    spread = _num(r.get("roic_spread_pp"))
+    wacc = _num(r.get("wacc_pct"))
+    if spread is not None and wacc is not None and roic is not None:
+        if spread <= -1:
+            out.append(Finding("bear", f"ROIC of **{f('roic_pct', roic)}** is "
+                               f"below this company's cost of capital "
+                               f"(**{f('wacc_pct', wacc)}**, from its own beta "
+                               f"and the rate it pays on its debt): on these "
+                               f"returns, growing the business destroys value "
+                               f"instead of adding it.", 3))
+        elif spread >= 5:
             out.append(Finding("bull", f"ROIC of **{f('roic_pct', roic)}** is "
-                               f"comfortably above what capital costs (~{COST_OF_CAPITAL:.0f}%): "
-                               "growth here creates value rather than consuming "
-                               "it.", 3))
-    if roic is not None and roic < COST_OF_CAPITAL:
-        out.append(Finding("bear", f"ROIC of **{f('roic_pct', roic)}** is below "
-                           f"the rough cost of capital (~{COST_OF_CAPITAL:.0f}%): "
-                           "on these returns, growing the business destroys "
-                           "value instead of adding it.", 3))
+                               f"**{spread:+.0f} points** above what its capital "
+                               f"costs (**{f('wacc_pct', wacc)}**): growth here "
+                               f"creates value rather than consuming it.", 3))
     return out
 
 

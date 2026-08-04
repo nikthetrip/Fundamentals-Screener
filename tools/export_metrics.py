@@ -12,9 +12,11 @@ cioe' due spiegazioni discordanti della stessa voce.
 Cosi' invece la fonte resta una: si modifica app.py, si rilancia questo script,
 e l'app iOS mostra la stessa cosa.
 
-NON IMPORTA app.py. Importarlo significherebbe eseguirlo, e app.py all'import
-apre Streamlit e carica i dataset. Si legge l'albero sintattico, si isola la
-sola assegnazione di METRICS e si esegue quella.
+IMPORTA metrics_catalog. Nella prima versione leggeva l'albero sintattico di
+app.py per isolarne l'assegnazione di METRICS senza eseguire il resto — una
+acrobazia necessaria finche' il catalogo viveva dentro la dashboard. Da quando
+sta in un modulo suo, che non apre Streamlit e non carica dataset, basta
+importarlo: meno codice e nessun modo di rompersi se qualcuno sposta una riga.
 
 Uso:
   python tools/export_metrics.py
@@ -22,8 +24,12 @@ Uso:
 
 from __future__ import annotations
 
-import ast
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from metrics_catalog import METRICS  # noqa: E402
 
 OUT = Path("ios/FundamentalsScreener/Design/Metrics.swift")
 
@@ -120,16 +126,7 @@ def swift_string(text: str) -> str:
 
 
 def main() -> None:
-    tree = ast.parse(Path("app.py").read_text())
-    node = next((n for n in tree.body
-                 if isinstance(n, ast.AnnAssign)
-                 and getattr(n.target, "id", "") == "METRICS"), None)
-    if node is None:
-        raise SystemExit("METRICS non trovato in app.py")
-
-    namespace: dict = {}
-    exec(compile(ast.Module([node], []), "app.py", "exec"), namespace)
-    metrics: dict[str, dict] = namespace["METRICS"]
+    metrics: dict[str, dict] = METRICS
 
     lines = [HEADER, "    static let all: [String: MetricSpec] = [\n"]
     for key, spec in metrics.items():

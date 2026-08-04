@@ -457,7 +457,21 @@ enum Metrics {
             better: .high,
             comparable: true,
             group: "returns",
-            help: "**What it is** — the return on *all* the capital at work, borrowed as well as owned. The one profitability measure leverage cannot flatter.\n\n**Formula** — EBIT × (1 − 21%) ÷ (equity + total debt − cash). The 21% US federal rate is applied to every company rather than each one's own effective rate, which the dataset does not carry — comparable beats individually exact.\n\n**How to read it** — compare it with what the capital costs (roughly 8–10%): above it the company creates value by growing, below it growth destroys value. Blank when invested capital is negative."),
+            help: "**What it is** — the return on *all* the capital at work, borrowed as well as owned. The one profitability measure leverage cannot flatter.\n\n**Formula** — EBIT × (1 − 21%) ÷ (equity + total debt − cash). The 21% US federal rate is applied to every company rather than each one's own effective rate, which the dataset does not carry — comparable beats individually exact.\n\n**How to read it** — the benchmark is a flat 9% cost of capital: above it the company creates value by growing, below it growth destroys value. That figure is a fixed order of magnitude applied to every company, not a WACC computed for this one — the dataset carries neither beta nor the cost of its debt. Blank when invested capital is negative."),
+        "wacc_pct": MetricSpec(
+            label: "Cost of capital",
+            kind: .pct,
+            better: .low,
+            comparable: true,
+            group: "returns",
+            help: "**What it is** — what this company's capital costs, blending what shareholders require with what its lenders charge. It is the bar the ROIC has to clear: above it, growing creates value; below it, growing consumes it.\n\n**Formula** — equity weight × (risk-free + beta × 5% equity risk premium) + debt weight × (interest actually paid ÷ total debt) × (1 − 21%). The risk-free rate is the 10-year Treasury; the beta is clamped to 0.4–2.0 and falls back to the sector median where it is missing or implausible.\n\n**How to read it** — it replaced a flat 9% applied to everyone, which was not merely imprecise but wrong in a consistent direction: utilities, whose capital genuinely costs about 6%, were marked as destroying value, and technology companies, whose capital costs over 11%, were flattered. The one judgement left in it is the 5% equity risk premium — nobody files that number, and every WACC assumes one.\n\n**Where it is blank** — banks, insurers and REITs. For a bank debt is raw material rather than financing, so neither the ROIC nor a comparison against it means anything."),
+        "roic_spread_pp": MetricSpec(
+            label: "ROIC − cost of capital",
+            kind: .pct,
+            better: .high,
+            comparable: true,
+            group: "returns",
+            help: "**What it is** — how far the return on capital clears what the capital costs, in percentage points. The single number behind the sentence in the commentary.\n\n**Formula** — ROIC − WACC.\n\n**How to read it** — positive means every dollar reinvested comes back worth more than a dollar, which is what makes growth worth having. Negative means the opposite, and a company in that position should be shrinking rather than expanding. Blank where the ROIC is not interpretable."),
         "earning_power_pct": MetricSpec(
             label: "Earning power",
             kind: .pct,

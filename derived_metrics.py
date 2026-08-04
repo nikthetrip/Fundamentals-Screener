@@ -55,6 +55,107 @@ def _ratio(num: pd.Series, den: pd.Series, *, positive_den: bool = True,
     return num / den * scale
 
 
+# ---------------------------------------------------------------------------
+# COSTO DEL CAPITALE
+#
+# COSA SOSTITUISCE. Prima era una costante: 9% per tutte le societa'. Il
+# problema di una soglia fissa non era l'imprecisione ma la DISTORSIONE
+# SISTEMATICA: con un beta medio di 0,62 le utility hanno un costo del capitale
+# intorno al 6%, e la soglia fissa le marchiava come distruttrici di valore
+# rendendo l'8%; le tecnologiche, con beta 1,35, arrivano oltre l'11% e la
+# stessa soglia le promuoveva rendendo il 10%. Un errore che punta sempre nella
+# stessa direzione per interi settori e' peggio del rumore.
+#
+# COSA RESTA UNA STIMA. Il premio per il rischio azionario. Non e' un dato
+# depositato da nessuno e chiunque calcoli un WACC ne assume uno; qui e'
+# dichiarato in una costante invece di essere nascosto dentro una soglia.
+# Tutto il resto viene da grandezze reali: il beta dal provider, il tasso privo
+# di rischio da FRED, il costo del debito dagli interessi effettivamente pagati
+# e depositati alla SEC.
+# ---------------------------------------------------------------------------
+
+EQUITY_RISK_PREMIUM = 5.0
+
+# Il beta oltre questa forbice non descrive piu' il rischio dell'impresa: e'
+# il sintomo di un titolo poco scambiato o di una serie storica corta. Fuori
+# dai limiti si usa la mediana del settore, che e' stabile.
+BETA_FLOOR, BETA_CAP = 0.4, 2.0
+
+# Un costo del debito fuori da questa forbice non e' un costo del debito: e'
+# un rapporto fra due voci disallineate — interessi di un anno su un debito
+# appena estinto, o su un debito appena acceso a fine esercizio.
+COST_OF_DEBT_FLOOR, COST_OF_DEBT_CAP = 1.0, 15.0
+
+
+def add_cost_of_capital(df: pd.DataFrame,
+                        risk_free: float | None = None) -> pd.DataFrame:
+    """
+    Costo dei mezzi propri, costo del debito e WACC, societa' per societa'.
+
+    IL RIPIEGO E' SUL SETTORE, NON SU UNA MEDIA GENERALE. Dove il beta manca o
+    e' assurdo si usa la mediana del proprio settore: un'utility senza beta
+    somiglia molto piu' alle altre utility che alla mediana del listino.
+    """
+    rf = risk_free
+    if rf is None and "risk_free_pct" in df.columns:
+        rf = pd.to_numeric(df["risk_free_pct"], errors="coerce").dropna().median()
+    if rf is None or not (0 < rf < 20):
+        from data_sources import RISK_FREE_FALLBACK
+        rf = RISK_FREE_FALLBACK
+    df["risk_free_pct"] = rf
+
+    beta = _series(df, "beta")
+    usable = beta.where(beta.between(BETA_FLOOR, BETA_CAP))
+    if "sector" in df.columns:
+        by_sector = usable.groupby(df["sector"]).transform("median")
+        beta_used = usable.fillna(by_sector)
+    else:
+        beta_used = usable
+    beta_used = beta_used.fillna(usable.median()).clip(BETA_FLOOR, BETA_CAP)
+    df["beta_used"] = beta_used
+
+    # Costo dei mezzi propri: il CAPM, che con tre input e' l'unica formula
+    # ricostruibile a mano da chi legge.
+    df["cost_of_equity_pct"] = rf + beta_used * EQUITY_RISK_PREMIUM
+
+    # Costo del debito: quello EFFETTIVAMENTE pagato, non stimato. Dove manca —
+    # una societa' senza debito, o che non tagga gli oneri finanziari — si usa
+    # il tasso privo di rischio piu' uno scarto, che e' quanto costa il debito
+    # a un emittente di qualita' media.
+    interest = _series(df, "interest_expense_ttm").abs()
+    debt = _series(df, "total_debt")
+    rd = _ratio(interest, debt, scale=100)
+    rd = rd.where(rd.between(COST_OF_DEBT_FLOOR, COST_OF_DEBT_CAP))
+    df["cost_of_debt_pct"] = rd.fillna(rf + 1.5)
+
+    # WACC: la media dei due costi pesata su quanto capitale arriva da ciascuna
+    # fonte, con lo scudo fiscale sugli interessi. Il debito entra al valore di
+    # bilancio e i mezzi propri a quello di mercato — e' la convenzione, e la
+    # ragione e' che il debito si rimborsa al nominale mentre l'azionista
+    # incassa il prezzo.
+    equity_value = _series(df, "market_cap")
+    total_value = equity_value.fillna(0) + debt.fillna(0)
+    we = _ratio(equity_value, total_value)
+    wd = _ratio(debt, total_value)
+    df["wacc_pct"] = (we.fillna(1.0) * df["cost_of_equity_pct"]
+                      + wd.fillna(0.0) * df["cost_of_debt_pct"] * (1 - ROIC_TAX_RATE))
+    # Senza capitalizzazione non c'e' peso da assegnare: resta il solo costo
+    # dei mezzi propri, che e' la stima piu' prudente.
+    df.loc[total_value <= 0, "wacc_pct"] = df["cost_of_equity_pct"]
+    return df
+
+
+# I settori dove il ROIC nella forma «EBIT su capitale investito» non misura
+# nulla, e quindi confrontarlo con un costo del capitale non significa niente.
+#
+# Per una banca il debito non e' finanziamento, e' MATERIA PRIMA: raccoglie
+# depositi per impiegarli, e metterli al denominatore del capitale investito
+# produce un numero che non ha interpretazione. Per un REIT il risultato
+# operativo e' depresso dagli ammortamenti su immobili che si rivalutano, ed e'
+# il motivo per cui il settore usa gli FFO invece dell'utile.
+SECTORS_WITHOUT_MEANINGFUL_ROIC = {"Financial Services", "Real Estate"}
+
+
 def derive_ratios(df: pd.DataFrame) -> pd.DataFrame:
     """
     I rapporti che il dataset non porta gia' pronti, calcolati QUI e una volta
@@ -107,4 +208,13 @@ def derive_ratios(df: pd.DataFrame) -> pd.DataFrame:
     # Dividendi pagati (rendimento × capitalizzazione) sugli utili dello stesso
     # periodo: quanta parte dell'utile esce dall'azienda verso i soci.
     df["payout_ratio_pct"] = _ratio(dy / 100 * mcap, ni, scale=100)
+
+    df = add_cost_of_capital(df)
+    # Quanto il ROIC supera cio' che il capitale costa. E' il numero che il
+    # commento descrive a parole: positivo, crescere crea valore; negativo, lo
+    # consuma. Vuoto dove il ROIC non e' interpretabile.
+    spread = _series(df, "roic_pct") - df["wacc_pct"]
+    if "sector" in df.columns:
+        spread = spread.where(~df["sector"].isin(SECTORS_WITHOUT_MEANINGFUL_ROIC))
+    df["roic_spread_pp"] = spread
     return df

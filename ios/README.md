@@ -137,6 +137,34 @@ con chiave (ticker, data) — la tabella e' il proprio indice invece di essere u
 copia piu' un indice che ne duplica le colonne — e le date sono interi
 `YYYYMMDD`, che si ordinano come il testo ISO ma stanno in quattro byte.
 
+**Il costo del capitale non e' una costante.** Era `COST_OF_CAPITAL = 9.0`,
+uguale per tutte le societa'. Il difetto non era l'imprecisione ma la direzione
+dell'errore: con beta medio 0,62 le utility hanno un costo del capitale intorno
+al 6% e venivano marchiate come distruttrici di valore rendendo l'8%; le
+tecnologiche, beta 1,35, superano l'11% ed erano promosse rendendo il 10%.
+
+Ora `derived_metrics.add_cost_of_capital` calcola un WACC per societa':
+
+```
+Ke   = tasso privo di rischio + beta x 5%      beta limitato a 0,4-2,0,
+Kd   = interessi pagati / debito totale        ripiego sulla mediana di settore
+WACC = E/V x Ke + D/V x Kd x (1 - 21%)
+```
+
+Il tasso privo di rischio e' il Treasury decennale, letto da FRED una volta per
+build e **scritto nel dataset**: un fair value di sei mesi fa deve restare
+ricostruibile con il tasso di allora. Gli interessi arrivano da EDGAR
+(`InterestExpenseDebt` e simili, 21 societa' su 24 nel campione).
+
+L'unica assunzione rimasta e' il premio per il rischio azionario al 5%: nessuno
+lo deposita, e ogni WACC ne assume uno. E' dichiarato in una costante invece di
+essere nascosto dentro una soglia.
+
+**Dove il rilievo tace.** Per banche, assicurazioni e REIT — un quinto del
+listino — `roic_spread_pp` resta vuoto e il commento non viene emesso: per una
+banca il debito e' materia prima, non finanziamento, e «EBIT su capitale
+investito» non misura redditivita'.
+
 **Perche' i rapporti derivati stanno in `derived_metrics.py`.** ROIC,
 conversione in cassa, payout ed earnings yield non sono nel dataset: erano
 calcolati dentro `app.py`. Con due lettori — dashboard e app — quel codice deve

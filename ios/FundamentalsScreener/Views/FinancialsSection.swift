@@ -284,6 +284,34 @@ struct FinancialsSection: View {
                     kpi("fcf_margin_pct"),
                 ])
             }
+            Panel {
+                // IL COSTO DEL CAPITALE E' LA SOGLIA CITATA DAL COMMENTO, e
+                // deve stare fra i numeri: una frase che dichiara distruzione
+                // di valore rispetto a una soglia introvabile non e'
+                // verificabile, ed e' esattamente il difetto che aveva.
+                SectionHeader(title: "What the capital costs",
+                              note: "The bar the ROIC has to clear")
+                KPIGrid(items: [
+                    kpi("wacc_pct"),
+                    kpi("roic_spread_pp"),
+                    kpi("cost_of_equity_pct"),
+                    kpi("cost_of_debt_pct"),
+                ])
+                if stock.roicSpreadPP == nil {
+                    Caption(text: "Left blank on purpose. For banks, insurers "
+                            + "and REITs debt is raw material rather than "
+                            + "financing, so «EBIT over invested capital» does "
+                            + "not measure profitability and comparing it with "
+                            + "a cost of capital would be arithmetic without "
+                            + "meaning.")
+                } else {
+                    Caption(text: "Built from this company's own beta and the "
+                            + "rate it actually pays on its debt, not from a "
+                            + "flat threshold applied to everyone. The single "
+                            + "assumption left is the 5% equity risk premium — "
+                            + "nobody files that number.")
+                }
+            }
             commentary("ratios")
             Panel {
                 SectionHeader(title: "Multiples")
