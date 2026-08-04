@@ -226,6 +226,7 @@ def load_cagr_detail() -> pd.DataFrame | None:
 from metrics_catalog import (                                   # noqa: E402
     METRICS, fmt_money, fmt_pct, fmt_ratio, fmt_usd, fmt_count,
     fmt_metric, _num, peer_reference, peer_gap, delta_color,
+    CAGR_METRICS, CAGR_HORIZONS, CAGR_LABELS,
 )
 import metrics_catalog as _catalog                              # noqa: E402
 

@@ -106,6 +106,10 @@ jobs:
 
       - name: Verifica logica (test offline)
         run: |
+          # PRIMA di tutto: nessun modulo deve usare un nome che non ha.
+          # Un NameError in un ramo poco battuto — la scheda Bilancio di un
+          # titolo — non si vede all'avvio e arriva in produzione.
+          python test_imports.py
           python test_logic.py
           python test_categories.py
           python test_guardrails.py
