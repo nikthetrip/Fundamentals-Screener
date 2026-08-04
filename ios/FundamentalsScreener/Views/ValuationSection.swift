@@ -75,10 +75,29 @@ struct ValuationSection: View {
 
     private var peers: [String: Double] { store.peers(for: stock).medians }
 
+    /// Quale dei due grafici si sta guardando. Sono due domande diverse —
+    /// «quanto vale» e «come si e' mosso» — e nella dashboard sono due
+    /// linguette; qui pure.
+    enum ChartKind: String, CaseIterable, Identifiable {
+        case valuation = "Valuation"
+        case price     = "Price"
+        var id: String { rawValue }
+    }
+
+    @State private var chartKind: ChartKind = .valuation
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             classification
-            chartPanel
+            Picker("Chart", selection: $chartKind) {
+                ForEach(ChartKind.allCases) { Text($0.rawValue).tag($0) }
+            }
+            .pickerStyle(.segmented)
+            if chartKind == .valuation {
+                chartPanel
+            } else {
+                PriceChartSection(ticker: stock.ticker)
+            }
             headlineNumbers
             derivation
             modelsCompared
@@ -87,6 +106,13 @@ struct ValuationSection: View {
         .task(id: stock.ticker) {
             history = store.history(stock.ticker)
             normalizedEPS = Self.rollingMedian(history)
+            // Compagna di OPEN_TICKER: apre direttamente il grafico prezzo.
+            // Solo in Debug — vedi la nota in ScreenerView.
+            #if DEBUG
+            if ProcessInfo.processInfo.environment["OPEN_CHART"] == "price" {
+                chartKind = .price
+            }
+            #endif
         }
     }
 
