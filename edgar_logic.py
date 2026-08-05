@@ -15,6 +15,7 @@ Concetti chiave:
 """
 
 from __future__ import annotations
+import bisect
 import math
 from datetime import date, datetime
 from typing import Optional
@@ -28,6 +29,13 @@ MAX_PLAUSIBLE_EPS = 5000.0
 
 # Durate (in giorni) che qualificano un fatto XBRL come trimestrale o annuale.
 QUARTER_MIN_DUR, QUARTER_MAX_DUR = 80, 100
+
+# Due chiusure a meno di questi giorni l'una dall'altra sono LO STESSO periodo
+# dichiarato due volte, non due periodi: chi chiude a settimane data lo stesso
+# trimestre in modo diverso nel 10-Q e nel 10-K. Un trimestre vero dista almeno
+# 80 giorni dal precedente (vedi QUARTER_MIN_DUR), quindi la soglia non puo'
+# fondere due trimestri distinti nemmeno con un esercizio da 53 settimane.
+SAME_PERIOD_TOLERANCE_DAYS = 15
 ANNUAL_MIN_DUR, ANNUAL_MAX_DUR = 330, 400
 
 # Ampiezza ammessa per una finestra TTM, misurata tra la chiusura del primo e
@@ -228,7 +236,81 @@ def extract_eps_facts(companyfacts: dict) -> list[dict]:
     if not node:
         return []
     rows = node.get("units", {}).get("USD/shares", [])
-    return _normalize_facts(rows, name or "", max_abs=MAX_PLAUSIBLE_EPS)
+    facts = _normalize_facts(rows, name or "", max_abs=MAX_PLAUSIBLE_EPS)
+    return _fill_concept_gaps(gaap, facts, name or "")
+
+
+def _period_bucket(dur: int) -> str:
+    """Trimestre, esercizio o durata irrilevante: i buchi si contano per tipo."""
+    if QUARTER_MIN_DUR <= dur <= QUARTER_MAX_DUR:
+        return "Q"
+    if ANNUAL_MIN_DUR <= dur <= ANNUAL_MAX_DUR:
+        return "A"
+    return "-"
+
+
+def _fill_concept_gaps(gaap: dict, primary: list[dict],
+                       primary_name: str) -> list[dict]:
+    """
+    Riempie i periodi che il concetto scelto NON copre usando gli altri.
+
+    UN CONCETTO SOLO NON BASTA A COPRIRE LA STORIA. `_pick_concept` sceglie il
+    tag piu' aggiornato, ed e' giusto: e' quello che descrive l'azienda di oggi.
+    Ma una societa' che ha cambiato tagging lascia il suo passato nel tag
+    vecchio, e prenderne uno solo butta via gli anni dell'altro. Waters espone
+    EarningsPerShareDiluted dal 2007 con un vuoto dal 2010 al 2014, e proprio
+    quegli anni stanno in IncomeLossFromContinuingOperationsPerDilutedShare;
+    Southern Copper, Altria e Verisign perdevano allo stesso modo meta' della
+    fair value line.
+
+    SI RIEMPIE SOLO IL VUOTO. Dove il concetto scelto ha gia' un dato per quel
+    periodo, quello resta: le due misure non sono la stessa cosa — l'utile delle
+    attivita' continuative esclude cio' che e' stato ceduto — e mescolarle dove
+    entrambe esistono introdurrebbe un gradino che nei bilanci non c'e'. Nel
+    buco, invece, l'alternativa e' fra una misura vicina e nessuna misura.
+
+    L'ordine conta: i fatti del concetto scelto restano in testa, cosi' chi
+    legge `facts[0]["concept"]` continua a vedere il tag principale.
+    """
+    covered: dict[str, list[date]] = {}
+    for f in primary:
+        covered.setdefault(_period_bucket(f["dur"]), []).append(f["end"])
+    for ends in covered.values():
+        ends.sort()
+
+    def _is_gap(f: dict) -> bool:
+        """Vero se nessun fatto gia' accettato descrive quel periodo.
+
+        Il confronto e' a tolleranza, non sulla data esatta: chi chiude a
+        settimane data lo stesso trimestre in modo diverso nel 10-Q e nel 10-K,
+        e una differenza di due giorni non e' un periodo scoperto.
+        """
+        ends = covered.get(_period_bucket(f["dur"]))
+        if not ends:
+            return True
+        i = bisect.bisect_left(ends, f["end"])
+        return all(abs((f["end"] - ends[j]).days) > SAME_PERIOD_TOLERANCE_DAYS
+                   for j in (i - 1, i) if 0 <= j < len(ends))
+
+    out = list(primary)
+    for name in EPS_TAG_CANDIDATES:
+        if name == primary_name:
+            continue
+        rows = (gaap.get(name) or {}).get("units", {}).get("USD/shares")
+        if not rows:
+            continue
+        # I fatti di un concetto si valutano tutti insieme contro cio' che era
+        # gia' coperto PRIMA di lui: altrimenti la prima dichiarazione di un
+        # periodo escluderebbe le sue stesse ridichiarazioni successive, che
+        # sono quelle che `_dedupe_by_end` deve poter preferire.
+        extra = [f for f in _normalize_facts(rows, name, max_abs=MAX_PLAUSIBLE_EPS)
+                 if _is_gap(f)]
+        if not extra:
+            continue
+        for f in extra:
+            bisect.insort(covered.setdefault(_period_bucket(f["dur"]), []), f["end"])
+        out.extend(extra)
+    return out
 
 
 def extract_net_income_facts(companyfacts: dict) -> list[dict]:
@@ -343,16 +425,53 @@ def _dedupe_by_end(facts: list[dict]) -> dict[date, dict]:
     for f in facts:
         e = f["end"]
         cur = best.get(e)
-        if cur is None:
-            best[e] = f
-            continue
-        f_filed = f.get("filed") or date.min
-        c_filed = cur.get("filed") or date.min
-        if f_filed > c_filed:
-            best[e] = f
-        elif f_filed == c_filed and f.get("frame") and not cur.get("frame"):
+        if cur is None or _more_authoritative(f, cur):
             best[e] = f
     return best
+
+
+def _more_authoritative(f: dict, cur: dict) -> bool:
+    """Regola di preferenza fra due dichiarazioni dello stesso periodo."""
+    f_filed = f.get("filed") or date.min
+    c_filed = cur.get("filed") or date.min
+    if f_filed != c_filed:
+        return f_filed > c_filed
+    return bool(f.get("frame")) and not cur.get("frame")
+
+
+def _collapse_near_ends(by_end: dict[date, dict]) -> dict[date, dict]:
+    """
+    Unifica le chiusure che distano pochi giorni: sono lo stesso periodo.
+
+    CHI DEPOSITA A SETTIMANE, NON A MESI, DICHIARA OGNI TRIMESTRE DUE VOLTE.
+    Waters chiude il primo trimestre 2024 il 30 marzo nel 10-Q e il 31 marzo nel
+    10-K successivo, con lo stesso identico utile per azione: sono due etichette
+    dello stesso trimestre, ma `_dedupe_by_end` lavora sulla data esatta e le
+    tiene entrambe. La serie trimestrale raddoppia, e quattro punti consecutivi
+    non coprono piu' dodici mesi ma sei: `rolling_ttm` li scarta tutti, e con
+    essi l'intera storia. Waters passava da diciotto anni di fair value line a
+    un anno e mezzo, e per la SEC risultava "senza EPS recente", finendo sul
+    ripiego dell'utile netto diviso per le azioni — 6,50$ al posto dei 10,71$
+    depositati nel 10-K.
+
+    Nel gruppo vince la stessa dichiarazione che vincerebbe a parita' di data:
+    l'ultima depositata, cioe' quella che riflette rettifiche e split.
+    """
+    out: dict[date, dict] = {}
+    last: date | None = None
+    for e in sorted(by_end):
+        f = by_end[e]
+        if last is not None and (e - last).days <= SAME_PERIOD_TOLERANCE_DAYS:
+            if _more_authoritative(f, out[last]):
+                # La chiusura del gruppo diventa quella della dichiarazione che
+                # vince: e' la data che la societa' usa oggi per quel periodo.
+                del out[last]
+                out[e] = f
+                last = e
+            continue
+        out[e] = f
+        last = e
+    return out
 
 
 def build_quarterly_eps(facts: list[dict]) -> list[tuple[date, float]]:
@@ -378,10 +497,10 @@ def build_quarterly_eps(facts: list[dict]) -> list[tuple[date, float]]:
     Per lo stesso motivo gli esercizi vanno percorsi in ORDINE CRONOLOGICO: su un
     dizionario l'ordine dipende da come sono arrivati i fatti nel JSON.
     """
-    quarterly = _dedupe_by_end(
-        [f for f in facts if QUARTER_MIN_DUR <= f["dur"] <= QUARTER_MAX_DUR])
-    annual = _dedupe_by_end(
-        [f for f in facts if ANNUAL_MIN_DUR <= f["dur"] <= ANNUAL_MAX_DUR])
+    quarterly = _collapse_near_ends(_dedupe_by_end(
+        [f for f in facts if QUARTER_MIN_DUR <= f["dur"] <= QUARTER_MAX_DUR]))
+    annual = _collapse_near_ends(_dedupe_by_end(
+        [f for f in facts if ANNUAL_MIN_DUR <= f["dur"] <= ANNUAL_MAX_DUR]))
 
     # mappa end_date -> valore del trimestre discreto
     q_by_end = {e: f["val"] for e, f in quarterly.items()}
@@ -410,8 +529,8 @@ def build_quarterly_eps(facts: list[dict]) -> list[tuple[date, float]]:
 
 def build_annual_eps(facts: list[dict]) -> list[tuple[date, float]]:
     """Serie annuale FY (fallback quando i trimestri sono insufficienti)."""
-    annual = _dedupe_by_end(
-        [f for f in facts if ANNUAL_MIN_DUR <= f["dur"] <= ANNUAL_MAX_DUR])
+    annual = _collapse_near_ends(_dedupe_by_end(
+        [f for f in facts if ANNUAL_MIN_DUR <= f["dur"] <= ANNUAL_MAX_DUR]))
     return sorted((e, f["val"]) for e, f in annual.items())
 
 
@@ -1898,10 +2017,13 @@ def build_quarterly_flow(facts: list[dict]) -> list[tuple[date, float]]:
             best[key] = f
     facts = sorted(best.values(), key=lambda f: (f["start"], f["end"]))
 
-    quarters: dict[date, float] = {}
+    # I fatti restano interi, non ridotti al solo valore: la data di deposito
+    # serve piu' avanti a decidere quale vince fra due dichiarazioni dello
+    # stesso trimestre chiuse a un giorno di distanza.
+    quarters: dict[date, dict] = {}
     for f in facts:                                    # 1) trimestri diretti
         if QUARTER_MIN_DUR <= f["dur"] <= QUARTER_MAX_DUR:
-            quarters[f["end"]] = f["val"]
+            quarters[f["end"]] = f
 
     by_start: dict[date, list[dict]] = {}
     for f in facts:
@@ -1915,9 +2037,13 @@ def build_quarterly_flow(facts: list[dict]) -> list[tuple[date, float]]:
             gap = (cur["end"] - prev["end"]).days
             if not (QUARTER_MIN_DUR <= gap <= QUARTER_MAX_DUR):
                 continue                                # non sono consecutivi
-            quarters.setdefault(cur["end"], cur["val"] - prev["val"])
+            quarters.setdefault(cur["end"], {**cur, "val": cur["val"] - prev["val"]})
 
-    return sorted(quarters.items())
+    # Stessa unificazione delle chiusure ravvicinate della serie EPS: chi chiude
+    # a settimane dichiara il trimestre due volte (30 marzo nel 10-Q, 31 marzo
+    # nel 10-K) e senza questo passo il TTM di ricavi e flussi di cassa si
+    # spezza esattamente come si spezzava la fair value line.
+    return sorted((e, f["val"]) for e, f in _collapse_near_ends(quarters).items())
 
 
 def build_annual_flow(facts: list[dict]) -> list[tuple[date, float]]:

@@ -29,7 +29,7 @@ from pathlib import Path
 from edgar_logic import (
     extract_eps_facts, build_ttm_eps, build_quarterly_eps, build_annual_eps,
     build_derived_eps_facts, extract_net_income_facts, extract_dei_shares,
-    series_age_days, series_is_stale,
+    series_age_days, series_is_stale, _period_bucket,
     TTM_MIN_SPAN, TTM_MAX_SPAN, MAX_SERIES_AGE_DAYS,
 )
 
@@ -231,6 +231,70 @@ def test_derived_eps_is_proportional() -> None:
           f"{a[-1][1]:.4f} contro {b[-1][1]:.4f}" if a and b else "serie vuota")
 
 
+def test_weekly_calendar_duplicates() -> None:
+    section("TEST 9 — chi chiude a settimane non ha ogni trimestre due volte")
+    # Waters dichiara il primo trimestre 2024 chiuso il 30 marzo nel 10-Q e il
+    # 31 marzo nel 10-K: stesso trimestre, stesso EPS, due date. Tenendole
+    # entrambe la serie trimestrale raddoppiava, quattro punti consecutivi
+    # coprivano sei mesi invece di dodici e rolling_ttm li scartava tutti: la
+    # fair value line passava da diciassette anni a uno e mezzo, e la societa'
+    # finiva sul ripiego dell'utile netto diviso per le azioni (6,50$ contro i
+    # 10,71$ del 10-K 2024).
+    facts = extract_eps_facts(load("WAT"))
+    quarters = build_quarterly_eps(facts)
+    close = [(str(a), str(b)) for a, b in zip(quarters, quarters[1:])
+             if (b[0] - a[0]).days <= 15]
+    check("WAT: nessuna coppia di chiusure a meno di 15 giorni", not close,
+          f"{len(close)} coppie, es. {close[:2]}")
+
+    series, method = build_ttm_eps(facts)
+    check(f"WAT: {len(series)} punti TTM col metodo {method}",
+          method == "ttm" and len(series) > 60, "serie ancora frammentata")
+    check(f"WAT: la serie parte dal {series[0][0]}",
+          series[0][0].year <= 2010, "storia persa in testa")
+    got_date, got = series[-1]
+    check(f"WAT: ultimo TTM {got:+.2f}$ @ {got_date}",
+          abs(got - 7.87) < 0.02 and str(got_date) == "2026-04-04",
+          "atteso +7,87$ @ 2026-04-04 (FY2025 10-K = 10,76$)")
+
+
+def test_concept_gaps_are_filled() -> None:
+    section("TEST 10 — i buchi di un concetto XBRL si riempiono con gli altri")
+    # Southern Copper espone EarningsPerShareDiluted solo dal 2021: gli undici
+    # anni precedenti stanno in EarningsPerShareBasicAndDiluted. Prendendo un
+    # concetto solo, la fair value line partiva dal 2021 pur essendoci i dati.
+    facts = extract_eps_facts(load("SCCO"))
+    series, method = build_ttm_eps(facts)
+    check(f"SCCO: {len(series)} punti TTM dal {series[0][0]} al {series[-1][0]}",
+          method == "ttm" and series[0][0].year <= 2010 and len(series) > 60,
+          "storia ancora troncata")
+    got_date, got = series[-1]
+    check(f"SCCO: ultimo TTM {got:+.2f}$ @ {got_date}",
+          abs(got - 6.85) < 0.02 and str(got_date) == "2026-06-30",
+          "atteso +6,85$ @ 2026-06-30")
+
+    # Il riempimento e' SOLO nei buchi: dove il concetto scelto ha un dato, quel
+    # dato resta. Se cosi' non fosse, le due misure — utile totale e utile delle
+    # attivita' continuative — si mescolerebbero e la serie avrebbe un gradino.
+    # Il confronto e' per TIPO di periodo: un concetto secondario che porta il
+    # Q4 dove il principale ha solo l'esercizio intero non e' una sovrapposizione,
+    # e' proprio il buco che si voleva riempire.
+    primary = facts[0]["concept"]
+    ends = {(_period_bucket(f["dur"]), f["end"])
+            for f in facts if f["concept"] == primary}
+    intruders = [f for f in facts if f["concept"] != primary
+                 and (_period_bucket(f["dur"]), f["end"]) in ends]
+    check("nessun concetto secondario dove il principale ha gia' il periodo",
+          not intruders, f"{len(intruders)} periodi contesi")
+
+    # Controprova su una societa' sana: riempire i buchi non deve aggiungere
+    # nulla dove non ci sono buchi.
+    for ticker, expected in (("WM", 6.91), ("NKE", 2.10), ("QCOM", 9.32)):
+        series, _ = build_ttm_eps(extract_eps_facts(load(ticker)))
+        check(f"{ticker}: ultimo TTM invariato ({series[-1][1]:+.2f}$)",
+              abs(series[-1][1] - expected) < 0.02)
+
+
 def main() -> None:
     print("=" * 72)
     print("REGRESSIONE TTM — dati SEC reali congelati al 2026-07-29")
@@ -243,6 +307,8 @@ def main() -> None:
     test_stale_series_rejected()
     test_derived_eps_for_multiclass()
     test_derived_eps_is_proportional()
+    test_weekly_calendar_duplicates()
+    test_concept_gaps_are_filled()
 
     print("\n" + "=" * 72)
     if failures:

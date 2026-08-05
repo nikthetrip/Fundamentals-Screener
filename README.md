@@ -723,6 +723,11 @@ Stessa logica del tuo setup Patterns-Screener.
 - **Profondità storica:** EDGAR ha EPS dal ~2009 (obbligo XBRL). La linea storica
   parte da lì, non dal 1990 come la WMT di GuruFocus (che usa un DB a pagamento).
   I *prezzi* vanno più indietro, ma senza utili non c'è fair value da disegnare.
+  Dove la linea parte **più tardi del 2009** la ragione è quasi sempre una sola:
+  presso la SEC quella società è **nata dopo**, perché scorporata (GEV, SOLV, SW)
+  o riorganizzata sotto un CIK nuovo, che nasce senza storia. Se il predecessore
+  è identificabile, il suo CIK va in `predecessor_ciks.csv`: i suoi EPS riempiono
+  il vuoto davanti.
 - **P/E fisso 15/20/25:** è la versione "classica" della linea. Il fair-P/E
   legato alla crescita è il secondo modello, per categoria.
 - **Settore e industria arrivano dal provider, e non sempre ci sono.** È la
